@@ -1,0 +1,170 @@
+<!-- Hero -->
+<section class="page-hero">
+  <div class="page-hero-bg">
+    <div class="orb orb-purple" style="width:500px;height:500px;top:-80px;right:-80px;opacity:0.25"></div>
+    <div class="orb orb-cyan"   style="width:350px;height:350px;bottom:0;left:-60px;opacity:0.15"></div>
+  </div>
+  <div class="container page-hero-inner">
+    <div class="section-badge"><i class="fas fa-paper-plane"></i> Contact Us</div>
+    <h1 class="page-hero-title">Let's Build Something<br><span class="gradient-text">Amazing Together</span></h1>
+    <p class="page-hero-desc">
+      Tell us about your project. We'll get back to you within 24 hours with ideas, timelines, and transparent pricing.
+    </p>
+  </div>
+</section>
+
+<!-- Contact Section -->
+<section class="section contact-section">
+  <div class="container contact-grid">
+
+    <!-- Info Panel -->
+    <div class="contact-info">
+      <h2 class="info-title">Get in Touch</h2>
+      <p class="info-desc">
+        Whether you have a fully-formed idea or just a spark of inspiration — we'd love to hear from you.
+        Our team is ready to help you shape and build it.
+      </p>
+
+      <div class="contact-cards">
+        @for (c of contactInfo; track c.label) {
+          <div class="contact-info-card">
+            <div class="ci-icon"><i [class]="c.icon"></i></div>
+            <div>
+              <span class="ci-label">{{ c.label }}</span>
+              @if (c.href) {
+                <a [href]="c.href" class="ci-value link">{{ c.value }}</a>
+              } @else {
+                <span class="ci-value">{{ c.value }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="info-socials">
+        <p class="socials-label">Follow Us</p>
+        <div class="socials-row">
+          <a href="https://linkedin.com"  target="_blank" rel="noopener" class="social-chip"><i class="fab fa-linkedin-in"></i> LinkedIn</a>
+          <a href="https://twitter.com"   target="_blank" rel="noopener" class="social-chip"><i class="fab fa-twitter"></i> Twitter</a>
+          <a href="https://github.com"    target="_blank" rel="noopener" class="social-chip"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://instagram.com" target="_blank" rel="noopener" class="social-chip"><i class="fab fa-instagram"></i> Instagram</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Panel -->
+    <div class="contact-form-wrap">
+      @if (!submitted()) {
+        <form class="contact-form" (ngSubmit)="onSubmit()" #f="ngForm">
+          <h2 class="form-title">Send Us a Message</h2>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Full Name <span>*</span></label>
+              <input id="name" name="name" type="text"
+                     [(ngModel)]="form.name"
+                     placeholder="John Doe"
+                     required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address <span>*</span></label>
+              <input id="email" name="email" type="email"
+                     [(ngModel)]="form.email"
+                     placeholder="john@company.com"
+                     required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input id="phone" name="phone" type="tel"
+                     [(ngModel)]="form.phone"
+                     placeholder="+91 98765 43210" />
+            </div>
+            <div class="form-group">
+              <label for="service">Service Interested In <span>*</span></label>
+              <select id="service" name="service" [(ngModel)]="form.service" required>
+                <option value="" disabled>Select a service...</option>
+                @for (s of services; track s) {
+                  <option [value]="s">{{ s }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="budget">Estimated Budget</label>
+            <div class="budget-chips">
+              @for (b of budgets; track b) {
+                <button type="button"
+                        class="budget-chip"
+                        [class.selected]="form.budget === b"
+                        (click)="form.budget = b">
+                  {{ b }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="message">Your Message <span>*</span></label>
+            <textarea id="message" name="message"
+                      [(ngModel)]="form.message"
+                      placeholder="Tell us about your project, goals, timeline..."
+                      rows="5"
+                      required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary submit-btn"
+                  [disabled]="sending() || !f.valid">
+            @if (sending()) {
+              <i class="fas fa-spinner fa-spin"></i> Sending...
+            } @else {
+              <i class="fas fa-paper-plane"></i> Send Message
+            }
+          </button>
+        </form>
+      } @else {
+        <div class="success-state">
+          <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+          <h2>Message Sent!</h2>
+          <p>Thank you for reaching out. We'll get back to you within 24 hours with next steps.</p>
+          <button class="btn btn-outline" (click)="resetForm()">
+            <i class="fas fa-plus"></i>
+            Send Another Message
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Strip -->
+<section class="section faq-section">
+  <div class="faq-bg"></div>
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-badge"><i class="fas fa-question-circle"></i> FAQ</div>
+      <h2 class="section-title">Frequently Asked Questions</h2>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item card">
+        <h4><i class="fas fa-clock"></i> How long does a project take?</h4>
+        <p>Timelines vary by scope. A standard website takes 2–4 weeks; a full mobile app or ERP takes 8–16 weeks. We provide detailed timelines after discovery.</p>
+      </div>
+      <div class="faq-item card">
+        <h4><i class="fas fa-rupee-sign"></i> How is pricing structured?</h4>
+        <p>We offer fixed-price projects for well-defined scopes and time-and-material engagements for evolving requirements. No hidden fees, ever.</p>
+      </div>
+      <div class="faq-item card">
+        <h4><i class="fas fa-globe-asia"></i> Do you work with international clients?</h4>
+        <p>Absolutely. We're a remote-first team and work with clients across the globe. Communication is async-friendly with weekly syncs.</p>
+      </div>
+      <div class="faq-item card">
+        <h4><i class="fas fa-tools"></i> Do you offer post-launch support?</h4>
+        <p>Yes — we provide maintenance retainers covering bug fixes, updates, performance monitoring, and feature additions after launch.</p>
+      </div>
+    </div>
+  </div>
+</section>

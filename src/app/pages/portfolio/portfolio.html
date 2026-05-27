@@ -1,0 +1,77 @@
+<!-- Hero -->
+<section class="page-hero">
+  <div class="page-hero-bg">
+    <div class="orb orb-purple" style="width:500px;height:500px;top:-100px;left:-100px;opacity:0.25"></div>
+    <div class="orb orb-blue"   style="width:400px;height:400px;bottom:0;right:-80px;opacity:0.2"></div>
+  </div>
+  <div class="container page-hero-inner">
+    <div class="section-badge"><i class="fas fa-briefcase"></i> Portfolio</div>
+    <h1 class="page-hero-title">Work That <span class="gradient-text">Speaks for Itself</span></h1>
+    <p class="page-hero-desc">
+      From AI-powered platforms to sleek mobile apps — here's a glimpse of what we've built for our clients.
+    </p>
+  </div>
+</section>
+
+<!-- Filter + Grid -->
+<section class="section portfolio-section">
+  <div class="container">
+    <!-- Filters -->
+    <div class="filter-bar">
+      @for (f of filters; track f) {
+        <button
+          class="filter-btn"
+          [class.active]="activeFilter() === f"
+          (click)="setFilter(f)"
+        >{{ f }}</button>
+      }
+    </div>
+
+    <!-- Projects -->
+    <div class="projects-grid">
+      @for (p of filtered; track p.title) {
+        <div class="project-card" [class.highlight]="p.highlight">
+          <div class="project-icon-wrap" [style.background]="'rgba(255,255,255,0.04)'"
+               [style.border-color]="'rgba(255,255,255,0.08)'">
+            <i [class]="p.icon" [style.color]="p.color"></i>
+          </div>
+          <div class="project-category" [style.color]="p.color">{{ p.category }}</div>
+          <h3 class="project-title">{{ p.title }}</h3>
+          <p class="project-desc">{{ p.desc }}</p>
+          <div class="project-tags">
+            @for (tag of p.tags; track tag) {
+              <span class="project-tag">{{ tag }}</span>
+            }
+          </div>
+          <div class="project-footer">
+            <a routerLink="/contact" class="project-cta">
+              Discuss Similar Project <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+          @if (p.highlight) {
+            <div class="featured-badge">
+              <i class="fas fa-star"></i> Featured
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="container cta-inner">
+    <div class="cta-content">
+      <h2>Have a Project in<br><span class="gradient-text">Mind?</span></h2>
+      <p>Let's add your project to this portfolio. Tell us your idea and we'll make it a reality.</p>
+    </div>
+    <div class="cta-actions">
+      <a routerLink="/contact" class="btn btn-primary">
+        <i class="fas fa-rocket"></i>
+        Start Your Project
+      </a>
+    </div>
+  </div>
+</section>

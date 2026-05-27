@@ -1,0 +1,142 @@
+<!-- Hero -->
+<section class="page-hero">
+  <div class="page-hero-bg">
+    <div class="orb orb-purple" style="width:500px;height:500px;top:-80px;right:-80px;opacity:0.25"></div>
+    <div class="orb orb-cyan"   style="width:350px;height:350px;bottom:0;left:-50px;opacity:0.15"></div>
+  </div>
+  <div class="container page-hero-inner">
+    <div class="section-badge"><i class="fas fa-users"></i> About Us</div>
+    <h1 class="page-hero-title">We Are <span class="gradient-text">Vilaasa Labs</span></h1>
+    <p class="page-hero-desc">
+      A passionate team of engineers, designers, and AI specialists united by one mission:
+      building digital products that make a real difference.
+    </p>
+  </div>
+</section>
+
+<!-- Mission -->
+<section class="section mission-section">
+  <div class="container mission-grid">
+    <div class="mission-content">
+      <div class="section-badge"><i class="fas fa-bullseye"></i> Our Mission</div>
+      <h2 class="section-title">Building Tomorrow's<br>Technology <span class="gradient-text">Today</span></h2>
+      <p class="section-subtitle">
+        At Vilaasa Labs, we believe great software should be accessible to every business,
+        regardless of size. We combine cutting-edge technology with deep business understanding
+        to deliver solutions that don't just work — they grow with you.
+      </p>
+      <div class="mission-stats">
+        <div class="m-stat">
+          <strong>50+</strong><span>Projects Delivered</span>
+        </div>
+        <div class="m-stat">
+          <strong>30+</strong><span>Happy Clients</span>
+        </div>
+        <div class="m-stat">
+          <strong>5+</strong><span>Years of Excellence</span>
+        </div>
+      </div>
+    </div>
+    <div class="mission-visual">
+      <div class="mission-card">
+        <div class="mc-icon"><i class="fas fa-rocket"></i></div>
+        <h3>Our Vision</h3>
+        <p>To be the most trusted technology partner for businesses building the next generation of digital products.</p>
+      </div>
+      <div class="mission-card accent-card">
+        <div class="mc-icon cyan"><i class="fas fa-eye"></i></div>
+        <h3>Our Purpose</h3>
+        <p>Empower businesses of all sizes with AI-driven, scalable, and beautifully crafted digital solutions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Values -->
+<section class="section values-section">
+  <div class="values-bg"></div>
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-badge"><i class="fas fa-heart"></i> Core Values</div>
+      <h2 class="section-title">What Drives Everything We Do</h2>
+    </div>
+    <div class="grid-4 values-grid">
+      @for (v of values; track v.title) {
+        <div class="value-card card">
+          <div class="value-icon"><i [class]="v.icon"></i></div>
+          <h3 class="value-title">{{ v.title }}</h3>
+          <p class="value-desc">{{ v.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Team -->
+<section class="section team-section">
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-badge"><i class="fas fa-user-friends"></i> Our Team</div>
+      <h2 class="section-title">The Minds Behind Vilaasa Labs</h2>
+      <p class="section-subtitle">A multidisciplinary team united by curiosity, craftsmanship, and a drive to build products that matter.</p>
+    </div>
+    <div class="grid-3 team-grid">
+      @for (m of team; track m.name) {
+        <div class="team-card card">
+          <div class="team-avatar">{{ m.initials }}</div>
+          <div class="team-role-badge">{{ m.role }}</div>
+          <h3 class="team-name">{{ m.name }}</h3>
+          <p class="team-desc">{{ m.desc }}</p>
+          <div class="team-socials">
+            <a href="#" class="ts-btn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" class="ts-btn"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Timeline -->
+<section class="section timeline-section">
+  <div class="timeline-bg"></div>
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-badge"><i class="fas fa-history"></i> Our Journey</div>
+      <h2 class="section-title">Milestones That Define Us</h2>
+    </div>
+    <div class="timeline">
+      @for (m of milestones; track m.year; let i = $index) {
+        <div class="timeline-item" [class.right]="i % 2 !== 0">
+          <div class="tl-content card">
+            <div class="tl-year">{{ m.year }}</div>
+            <h3 class="tl-title">{{ m.title }}</h3>
+            <p class="tl-desc">{{ m.desc }}</p>
+          </div>
+          <div class="tl-dot"></div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="container cta-inner">
+    <div class="cta-content">
+      <h2>Want to Work With<br><span class="gradient-text">Our Team?</span></h2>
+      <p>We're always excited to meet new partners and clients. Let's create something extraordinary together.</p>
+    </div>
+    <div class="cta-actions">
+      <a routerLink="/contact" class="btn btn-primary">
+        <i class="fas fa-paper-plane"></i>
+        Get in Touch
+      </a>
+      <a routerLink="/portfolio" class="btn btn-outline">
+        <i class="fas fa-briefcase"></i>
+        See Our Work
+      </a>
+    </div>
+  </div>
+</section>

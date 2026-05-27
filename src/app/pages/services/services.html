@@ -1,0 +1,94 @@
+<!-- Page Hero -->
+<section class="page-hero">
+  <div class="page-hero-bg">
+    <div class="orb orb-purple" style="width:500px;height:500px;top:-100px;left:-100px;opacity:0.3"></div>
+    <div class="orb orb-blue"   style="width:400px;height:400px;bottom:-50px;right:-50px;opacity:0.2"></div>
+  </div>
+  <div class="container page-hero-inner">
+    <div class="section-badge"><i class="fas fa-cogs"></i> Our Services</div>
+    <h1 class="page-hero-title">Everything You Need to<br><span class="gradient-text">Build & Grow Digitally</span></h1>
+    <p class="page-hero-desc">
+      From intelligent AI integrations to stunning mobile apps — we offer the full spectrum
+      of digital services your business needs to thrive in the modern world.
+    </p>
+  </div>
+</section>
+
+<!-- Services Grid -->
+<section class="section">
+  <div class="container">
+    <div class="services-list">
+      @for (s of services; track s.title; let i = $index) {
+        <div class="service-detail-card" [class.reverse]="i % 2 !== 0">
+          <div class="sdc-content">
+            <div class="sdc-icon-wrap" [style.background]="'rgba(' + hexToRgb(s.color) + ',0.12)'"
+                 [style.border-color]="'rgba(' + hexToRgb(s.color) + ',0.25)'">
+              <i [class]="s.icon" [style.color]="s.color"></i>
+            </div>
+            <div class="sdc-badge">{{ s.tagline }}</div>
+            <h2 class="sdc-title">{{ s.title }}</h2>
+            <p class="sdc-desc">{{ s.desc }}</p>
+            <ul class="sdc-features">
+              @for (f of s.features; track f) {
+                <li>
+                  <i class="fas fa-check-circle" [style.color]="s.color"></i>
+                  {{ f }}
+                </li>
+              }
+            </ul>
+            <a routerLink="/contact" class="btn btn-primary" [style.background]="'linear-gradient(135deg, ' + s.color + ', #2563EB)'">
+              <i class="fas fa-paper-plane"></i>
+              Request This Service
+            </a>
+          </div>
+          <div class="sdc-visual">
+            <div class="sdc-glow" [style.background]="'radial-gradient(circle, rgba(' + hexToRgb(s.color) + ',0.2) 0%, transparent 70%)'"></div>
+            <div class="sdc-icon-large">
+              <i [class]="s.icon" [style.color]="s.color"></i>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Process Section -->
+<section class="section process-section">
+  <div class="process-bg"></div>
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-badge"><i class="fas fa-route"></i> How We Work</div>
+      <h2 class="section-title">Our Proven Process</h2>
+      <p class="section-subtitle">A structured, transparent approach that delivers results — every time.</p>
+    </div>
+    <div class="process-grid">
+      @for (p of process; track p.step) {
+        <div class="process-step">
+          <div class="step-number">{{ p.step }}</div>
+          <div class="step-icon"><i [class]="p.icon"></i></div>
+          <h3 class="step-title">{{ p.title }}</h3>
+          <p class="step-desc">{{ p.desc }}</p>
+          <div class="step-connector"></div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="container cta-inner">
+    <div class="cta-content">
+      <h2>Not Sure Which Service<br><span class="gradient-text">You Need?</span></h2>
+      <p>Let's have a free consultation. We'll analyse your requirements and recommend the best solution for your goals and budget.</p>
+    </div>
+    <div class="cta-actions">
+      <a routerLink="/contact" class="btn btn-primary">
+        <i class="fas fa-calendar-check"></i>
+        Book Free Consultation
+      </a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,102 @@
+<footer class="footer">
+  <div class="footer-glow"></div>
+  <div class="container">
+
+    <!-- Top Row -->
+    <div class="footer-top">
+
+      <!-- Brand -->
+      <div class="footer-brand">
+        <a routerLink="/" class="footer-logo">
+          <div class="logo-icon"><span>V</span></div>
+          <div>
+            <div class="logo-name">Vilaasa<span class="logo-accent">Labs</span></div>
+            <div class="logo-tagline">AI • Apps • Software</div>
+          </div>
+        </a>
+        <p class="footer-desc">
+          Transforming ideas into intelligent digital solutions. We build AI-powered apps,
+          enterprise platforms, and immersive digital experiences.
+        </p>
+        <div class="footer-socials">
+          @for (s of socials; track s.url) {
+            <a [href]="s.url" target="_blank" rel="noopener noreferrer"
+               class="social-btn" [attr.aria-label]="s.label">
+              <i [class]="s.icon"></i>
+            </a>
+          }
+        </div>
+      </div>
+
+      <!-- Services -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Services</h4>
+        <ul class="footer-list">
+          @for (service of services; track service) {
+            <li>
+              <a routerLink="/services" class="footer-link">
+                <i class="fas fa-chevron-right"></i>
+                {{ service }}
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Quick Links</h4>
+        <ul class="footer-list">
+          @for (link of links; track link.path) {
+            <li>
+              <a [routerLink]="link.path" class="footer-link">
+                <i class="fas fa-chevron-right"></i>
+                {{ link.label }}
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Contact Us</h4>
+        <ul class="footer-contact-list">
+          <li>
+            <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+            <div>
+              <span class="contact-label">Email</span>
+              <a href="mailto:hello@vilaasalabs.com" class="contact-value">hello&#64;vilaasalabs.com</a>
+            </div>
+          </li>
+          <li>
+            <div class="contact-icon"><i class="fas fa-globe"></i></div>
+            <div>
+              <span class="contact-label">Website</span>
+              <a href="https://www.vilaasalabs.com" class="contact-value">www.vilaasalabs.com</a>
+            </div>
+          </li>
+          <li>
+            <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div>
+              <span class="contact-label">Location</span>
+              <span class="contact-value">India</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="footer-bottom">
+      <p class="footer-copy">
+        © {{ currentYear }} <strong>Vilaasa Labs</strong>. All rights reserved.
+      </p>
+      <p class="footer-tagline-bottom">
+        Crafted with <i class="fas fa-heart"></i> & <i class="fas fa-brain"></i> by Vilaasa Labs
+      </p>
+    </div>
+
+  </div>
+</footer>

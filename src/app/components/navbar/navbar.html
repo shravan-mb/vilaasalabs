@@ -1,0 +1,65 @@
+<nav class="navbar" [class.scrolled]="scrolled()">
+  <div class="container nav-inner">
+
+    <!-- Logo -->
+    <a routerLink="/" class="logo" (click)="closeMenu()">
+      <div class="logo-icon">
+        <span class="logo-v">V</span>
+      </div>
+      <div class="logo-text">
+        <span class="logo-name">Vilaasa<span class="logo-accent">Labs</span></span>
+        <span class="logo-tagline">AI • Apps • Software</span>
+      </div>
+    </a>
+
+    <!-- Desktop Nav Links -->
+    <ul class="nav-links">
+      @for (link of navLinks; track link.path) {
+        <li>
+          <a
+            [routerLink]="link.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+            class="nav-link"
+          >{{ link.label }}</a>
+        </li>
+      }
+    </ul>
+
+    <!-- CTA -->
+    <div class="nav-cta">
+      <a routerLink="/contact" class="btn btn-primary btn-sm">
+        <i class="fas fa-rocket"></i>
+        Get Started
+      </a>
+    </div>
+
+    <!-- Mobile Hamburger -->
+    <button class="hamburger" (click)="toggleMenu()" [class.open]="menuOpen()" aria-label="Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" [class.open]="menuOpen()">
+    <ul>
+      @for (link of navLinks; track link.path) {
+        <li>
+          <a
+            [routerLink]="link.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+            (click)="closeMenu()"
+            class="mobile-link"
+          >{{ link.label }}</a>
+        </li>
+      }
+    </ul>
+    <a routerLink="/contact" class="btn btn-primary" (click)="closeMenu()">
+      <i class="fas fa-rocket"></i>
+      Get Started
+    </a>
+  </div>
+</nav>
