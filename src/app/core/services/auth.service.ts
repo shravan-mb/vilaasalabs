@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
 export interface AdminUser {
   id: string;
@@ -11,7 +12,7 @@ export interface AdminUser {
   institution_id: string | null;
 }
 
-const API = 'http://localhost:3000/api/v1';
+const API = environment.apiUrl;
 const TOKEN_KEY = 'vl_access_token';
 const REFRESH_KEY = 'vl_refresh_token';
 const USER_KEY = 'vl_user';

@@ -14,8 +14,13 @@ async function bootstrap() {
     origin: [
       'http://localhost:4200',
       'http://localhost:4201',
-      'https://vilaasalabs.com',
-      'https://app.eduvilaasa.com',
+      // Add your Vercel URLs here after deploying:
+      // 'https://eduvilaasa-web.vercel.app',
+      // 'https://vilaasalabs-admin.vercel.app',
+      // Custom domain (when ready):
+      // 'https://app.eduvilaasa.com',
+      // 'https://admin.vilaasalabs.com',
+      /\.vercel\.app$/,
       /\.eduvilaasa\.com$/,
     ],
     credentials: true,

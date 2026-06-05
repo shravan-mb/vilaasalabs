@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-admin-forgot-password',
@@ -58,7 +59,7 @@ export class AdminForgotPassword {
   submit() {
     if (!this.email.trim()) { this.err.set('Email is required'); return; }
     this.loading.set(true); this.err.set('');
-    this.http.post('http://localhost:3000/api/v1/auth/forgot-password', { email: this.email, app: 'vilaasalabs' })
+    this.http.post(`${environment.apiUrl}/auth/forgot-password`, { email: this.email, app: 'vilaasalabs' })
       .subscribe({ next: () => { this.sent.set(true); this.loading.set(false); }, error: () => { this.sent.set(true); this.loading.set(false); } });
   }
 }
