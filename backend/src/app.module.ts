@@ -57,7 +57,7 @@ import { VilaasalabsAdminModule } from './modules/vilaasalabs-admin/vilaasalabs-
           PasswordResetToken, TestResult, Announcement, TimetableSlot, AcademicYear,
           ProctorNote, MeetingRequest,
         ],
-        synchronize: config.get('NODE_ENV') !== 'production',
+        synchronize: config.get('NODE_ENV') !== 'production' || config.get('DB_SYNC') === 'true',
         logging: config.get('NODE_ENV') === 'development',
       }),
     }),

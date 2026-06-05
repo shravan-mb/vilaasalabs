@@ -8,6 +8,10 @@ import { DataSource } from 'typeorm';
 async function seedSuperAdmin() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const dataSource = app.get(DataSource);
+
+  // In production synchronize is off, so run it once here to create all tables
+  await dataSource.synchronize();
+
   const userRepo = dataSource.getRepository(User);
 
   const email = 'admin@vilaasalabs.com';
