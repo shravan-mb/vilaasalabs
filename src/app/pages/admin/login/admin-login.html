@@ -1,0 +1,47 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="brand">
+      <span class="logo">V</span>
+      <div>
+        <h1>Vilaasalabs</h1>
+        <p>Internal Admin Access</p>
+      </div>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="field">
+        <label>Email</label>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="admin@vilaasalabs.com"
+          required
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="••••••••"
+          required
+          autocomplete="current-password"
+        />
+      </div>
+
+      @if (error()) {
+        <div class="error-msg">{{ error() }}</div>
+      }
+
+      <button type="submit" [disabled]="loading()">
+        @if (loading()) { Signing in... } @else { Sign In }
+      </button>
+    </form>
+
+    <p class="back-link"><a href="/">← Back to vilaasalabs.com</a></p>
+  </div>
+</div>

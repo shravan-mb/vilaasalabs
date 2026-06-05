@@ -9,11 +9,11 @@ export class User {
 
   // null for vilaasalabs internal staff (super admin / dev)
   @Column({ nullable: true })
-  institution_id: string;
+  institution_id: string | null;
 
   @ManyToOne(() => Institution, (inst) => inst.users, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'institution_id' })
-  institution: Institution;
+  institution: Institution | null;
 
   @Column({ type: 'enum', enum: Role })
   role: Role;

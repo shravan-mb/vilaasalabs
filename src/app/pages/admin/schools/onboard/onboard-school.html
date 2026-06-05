@@ -1,0 +1,128 @@
+<div class="onboard-page">
+  <div class="page-header">
+    <div>
+      <h2>Onboard New Institution</h2>
+      <p>Creates institution + admin account + 7-day trial automatically</p>
+    </div>
+    <a routerLink="/admin/schools" class="btn-back">← Back to Schools</a>
+  </div>
+
+  @if (success()) {
+    <div class="alert success">✅ {{ success() }}</div>
+  }
+  @if (error()) {
+    <div class="alert error">{{ error() }}</div>
+  }
+
+  <form (ngSubmit)="onSubmit()" class="onboard-form">
+    <div class="form-section">
+      <h3>Institution Details</h3>
+      <div class="grid-2">
+
+        <div class="field">
+          <label>Institution Name *</label>
+          <input [(ngModel)]="form.name" name="name"
+            placeholder="St. Joseph School"
+            [class.invalid]="isInvalid('name')"
+            (blur)="touch('name')" />
+          @if (isInvalid('name')) {
+            <span class="field-error">Institution name is required</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>Type *</label>
+          <select [(ngModel)]="form.type" name="type">
+            @for (t of institutionTypes; track t) {
+              <option [value]="t">{{ t | titlecase }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Subdomain * <span class="hint">.eduvilaasa.com</span></label>
+          <input [(ngModel)]="form.subdomain" name="subdomain"
+            placeholder="stjoseph"
+            [class.invalid]="isInvalid('subdomain')"
+            (blur)="touch('subdomain')"
+            (input)="onSubdomainInput()" />
+          @if (isInvalid('subdomain')) {
+            <span class="field-error">Min 3 chars, only lowercase letters, numbers, hyphens</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>Official Email *</label>
+          <input [(ngModel)]="form.email" name="email" type="email"
+            placeholder="admin@school.edu"
+            [class.invalid]="isInvalid('email')"
+            (blur)="touch('email')" />
+          @if (isInvalid('email')) {
+            <span class="field-error">Valid email is required</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>Phone</label>
+          <input [(ngModel)]="form.phone" name="phone" placeholder="+91 9876543210" />
+        </div>
+
+        <div class="field">
+          <label>Principal Name</label>
+          <input [(ngModel)]="form.principal_name" name="principal_name" placeholder="Dr. John Smith" />
+        </div>
+
+        <div class="field">
+          <label>City</label>
+          <input [(ngModel)]="form.city" name="city" placeholder="Bangalore" />
+        </div>
+
+        <div class="field">
+          <label>State</label>
+          <input [(ngModel)]="form.state" name="state" placeholder="Karnataka" />
+        </div>
+
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Admin Account</h3>
+      <div class="grid-2">
+
+        <div class="field">
+          <label>Admin Name *</label>
+          <input [(ngModel)]="form.admin_name" name="admin_name"
+            placeholder="School Administrator"
+            [class.invalid]="isInvalid('admin_name')"
+            (blur)="touch('admin_name')" />
+          @if (isInvalid('admin_name')) {
+            <span class="field-error">Admin name is required</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>Admin Password *</label>
+          <input [(ngModel)]="form.admin_password" name="admin_password" type="password"
+            placeholder="Min 8 chars, mixed case + number + symbol"
+            [class.invalid]="isInvalid('admin_password')"
+            (blur)="touch('admin_password')"
+            (input)="touch('admin_password')" />
+          @if (isInvalid('admin_password') && passwordHint()) {
+            <span class="field-error">{{ passwordHint() }}</span>
+          }
+          @if (!isInvalid('admin_password') && form.admin_password) {
+            <span class="field-ok">✓ Password meets requirements</span>
+          }
+        </div>
+
+      </div>
+      <p class="note">The admin will login with the institution email + this password at app.eduvilaasa.com</p>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" [disabled]="loading()">
+        @if (loading()) { Onboarding... } @else { Onboard Institution }
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,109 @@
+.dashboard { max-width: 1100px; }
+
+.page-header {
+  margin-bottom: 28px;
+  h2 { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 4px; }
+  p  { color: #666; font-size: 13px; margin: 0; }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  .stat-icon { font-size: 28px; }
+  .stat-value { font-size: 26px; font-weight: 700; color: #fff; margin: 0; }
+  .stat-label { font-size: 12px; color: #666; margin: 0; }
+}
+
+.alert-section {
+  background: #1a1200;
+  border: 1px solid #3d2e00;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+
+  h3 { margin: 0 0 12px; font-size: 14px; color: #fbbf24; }
+
+  .alert-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 1px solid #2a2200;
+    color: #e5e5e5;
+
+    &:last-child { border: none; }
+    span { color: #888; }
+  }
+}
+
+.section {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 20px;
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    h3 { font-size: 15px; font-weight: 600; color: #fff; margin: 0; }
+    .view-all { font-size: 13px; color: #7c3aed; text-decoration: none;
+      &:hover { color: #a78bfa; }
+    }
+  }
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    color: #666;
+    border-bottom: 1px solid #2a2a2a;
+    font-weight: 500;
+  }
+  td {
+    padding: 12px;
+    border-bottom: 1px solid #1f1f1f;
+    color: #ccc;
+  }
+  tr:last-child td { border: none; }
+  tr:hover td { background: #1f1f1f; }
+}
+
+.badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: #2a2a2a;
+  color: #888;
+
+  &.plan { background: #1e1529; color: #a78bfa; }
+  &.trial { background: #1a2e1a; color: #4ade80; }
+  &.active { background: #1a2e1a; color: #4ade80; }
+  &.expired { background: #2d1515; color: #f87171; }
+  &.suspended { background: #2d1515; color: #f87171; }
+}
+
+.loading { color: #666; padding: 40px 0; }
+.error   { color: #f87171; padding: 20px 0; }

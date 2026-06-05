@@ -1,0 +1,53 @@
+<div class="schools-page">
+  <div class="page-header">
+    <div>
+      <h2>Institutions</h2>
+      <p>All onboarded schools, colleges & academies</p>
+    </div>
+    <a routerLink="/admin/schools/onboard" class="btn-primary">+ Onboard New</a>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">Loading...</div>
+  } @else if (error()) {
+    <div class="error">{{ error() }}</div>
+  } @else {
+    <div class="table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Institution</th><th>Type</th><th>Location</th>
+            <th>Plan</th><th>Status</th><th>Trial Expires</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (school of schools(); track school.id) {
+            <tr [class.inactive]="!school.is_active">
+              <td>
+                <strong>{{ school.name }}</strong>
+                <span class="subdomain">{{ school.subdomain }}.eduvilaasa.com</span>
+              </td>
+              <td>{{ school.type }}</td>
+              <td>{{ school.city || '—' }}, {{ school.state || '—' }}</td>
+              <td><span class="badge plan">{{ school.subscription_plan }}</span></td>
+              <td><span class="badge" [class]="school.subscription_status">{{ school.subscription_status }}</span></td>
+              <td>{{ school.subscription_expires_at ? (school.subscription_expires_at | date:'mediumDate') : '—' }}</td>
+              <td>
+                <button
+                  class="action-btn"
+                  [class.suspend]="school.is_active"
+                  (click)="toggleActive(school.id)"
+                >
+                  {{ school.is_active ? 'Suspend' : 'Reactivate' }}
+                </button>
+              </td>
+            </tr>
+          }
+          @empty {
+            <tr><td colspan="7" class="empty">No institutions onboarded yet.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

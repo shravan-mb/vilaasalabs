@@ -9,7 +9,10 @@
     "test": "ng test",
     "backend": "cd backend && npm run start:dev",
     "backend:build": "cd backend && npm run build",
-    "eduvilaasa": "cd eduvilaasa-web && npm start -- --port 4201"
+    "eduvilaasa": "cd eduvilaasa-web && npm start -- --port 4201",
+    "db:up": "cd backend && npm run db:up",
+    "db:down": "cd backend && npm run db:down",
+    "db:seed": "cd backend && npm run db:seed"
   },
   "prettier": {
     "printWidth": 100,

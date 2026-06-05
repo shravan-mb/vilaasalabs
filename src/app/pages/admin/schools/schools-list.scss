@@ -1,0 +1,58 @@
+.schools-page { max-width: 1100px; }
+
+.page-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 24px;
+  h2 { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 4px; }
+  p  { color: #666; font-size: 13px; margin: 0; }
+}
+
+.btn-primary {
+  padding: 10px 18px;
+  background: #7c3aed;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  &:hover { background: #6d28d9; }
+}
+
+.table-card {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.data-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+  th { text-align: left; padding: 12px 16px; color: #666; border-bottom: 1px solid #2a2a2a; font-weight: 500; background: #161616; }
+  td { padding: 14px 16px; border-bottom: 1px solid #1f1f1f; color: #ccc; vertical-align: middle; }
+  tr:last-child td { border: none; }
+  tr:hover td { background: #1f1f1f; }
+  tr.inactive td { opacity: 0.5; }
+}
+
+.subdomain { display: block; font-size: 11px; color: #555; margin-top: 2px; }
+.empty { text-align: center; color: #555; padding: 40px !important; }
+
+.badge {
+  padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; background: #2a2a2a; color: #888;
+  &.plan    { background: #1e1529; color: #a78bfa; }
+  &.trial   { background: #1a2e1a; color: #4ade80; }
+  &.active  { background: #1a2e1a; color: #4ade80; }
+  &.expired { background: #2d1515; color: #f87171; }
+  &.suspended { background: #2d1515; color: #f87171; }
+}
+
+.action-btn {
+  padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;
+  border: 1px solid #333; background: transparent; color: #4ade80;
+  &.suspend { color: #f87171; border-color: #7f1d1d; }
+  &:hover { opacity: 0.8; }
+}
+
+.loading { color: #666; padding: 40px 0; }
+.error   { color: #f87171; padding: 20px 0; }

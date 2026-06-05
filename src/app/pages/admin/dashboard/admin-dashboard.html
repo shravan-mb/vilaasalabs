@@ -1,0 +1,81 @@
+<div class="dashboard">
+  <div class="page-header">
+    <h2>Business Overview</h2>
+    <p>EduVilaasa — live metrics</p>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">Loading...</div>
+  } @else if (error()) {
+    <div class="error">{{ error() }}</div>
+  } @else if (overview()) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">🏫</span>
+        <div>
+          <p class="stat-value">{{ overview()!.stats.total_institutions }}</p>
+          <p class="stat-label">Total Institutions</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">✅</span>
+        <div>
+          <p class="stat-value">{{ overview()!.stats.active_institutions }}</p>
+          <p class="stat-label">Active</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">👥</span>
+        <div>
+          <p class="stat-value">{{ overview()!.stats.total_users }}</p>
+          <p class="stat-label">Total Users</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🆓</span>
+        <div>
+          <p class="stat-value">{{ getPlanCount('trial') }}</p>
+          <p class="stat-label">On Trial</p>
+        </div>
+      </div>
+    </div>
+
+    @if (overview()!.expiring_trials.length > 0) {
+      <div class="alert-section">
+        <h3>⚠️ Trials Expiring Soon</h3>
+        @for (inst of overview()!.expiring_trials; track inst.id) {
+          <div class="alert-item">
+            <strong>{{ inst.name }}</strong>
+            <span>Expires: {{ inst.subscription_expires_at | date:'mediumDate' }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="section">
+      <div class="section-header">
+        <h3>Recent Institutions</h3>
+        <a routerLink="/admin/schools" class="view-all">View all →</a>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th><th>Type</th><th>City</th><th>Plan</th><th>Status</th><th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inst of overview()!.recent_institutions; track inst.id) {
+            <tr>
+              <td><strong>{{ inst.name }}</strong></td>
+              <td>{{ inst.type }}</td>
+              <td>{{ inst.city || '—' }}</td>
+              <td><span class="badge plan">{{ inst.subscription_plan }}</span></td>
+              <td><span class="badge" [class]="inst.subscription_status">{{ inst.subscription_status }}</span></td>
+              <td>{{ inst.created_at | date:'mediumDate' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
