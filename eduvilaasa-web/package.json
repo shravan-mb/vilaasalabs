@@ -1,15 +1,12 @@
 {
-  "name": "vilaasalabs",
+  "name": "eduvilaasa-web",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port 4200",
+    "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "backend": "cd backend && npm run start:dev",
-    "backend:build": "cd backend && npm run build",
-    "eduvilaasa": "cd eduvilaasa-web && npm start -- --port 4201"
+    "test": "ng test"
   },
   "prettier": {
     "printWidth": 100,

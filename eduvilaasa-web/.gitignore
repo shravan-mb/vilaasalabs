@@ -7,18 +7,13 @@
 /bazel-out
 
 # Node
-/node_modules
-**/node_modules
+node_modules/
 npm-debug.log
 yarn-error.log
 
-# Environment files — never commit secrets
+# Environment
 .env
-backend/.env
-eduvilaasa-web/.env
-
-# Backend build output
-backend/dist/
+.env.local
 
 # IDEs and editors
 .idea/
