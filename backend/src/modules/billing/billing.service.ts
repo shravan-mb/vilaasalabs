@@ -30,10 +30,11 @@ export class BillingService {
     private readonly institutionRepo: Repository<Institution>,
     private readonly mailService: MailService,
   ) {
-    this.razorpay = new Razorpay({
-      key_id: config.get<string>('RAZORPAY_KEY_ID') as string,
-      key_secret: config.get<string>('RAZORPAY_KEY_SECRET') as string,
-    });
+    const keyId = config.get<string>('RAZORPAY_KEY_ID');
+    const keySecret = config.get<string>('RAZORPAY_KEY_SECRET');
+    if (keyId && keySecret) {
+      this.razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+    }
   }
 
   async createOrder(
@@ -41,6 +42,7 @@ export class BillingService {
     plan: SubscriptionPlan,
     billingCycle: BillingCycle,
   ): Promise<{ order_id: string; amount: number; currency: string; key_id: string }> {
+    if (!this.razorpay) throw new BadRequestException('Billing not configured — add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET');
     if (plan === SubscriptionPlan.TRIAL) {
       throw new BadRequestException('Cannot create an order for the trial plan');
     }
@@ -75,6 +77,7 @@ export class BillingService {
     plan: SubscriptionPlan,
     billingCycle: BillingCycle,
   ): Promise<Subscription> {
+    if (!this.razorpay) throw new BadRequestException('Billing not configured — add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET');
     // Verify signature
     const body = `${razorpayOrderId}|${razorpayPaymentId}`;
     const expectedSignature = crypto
