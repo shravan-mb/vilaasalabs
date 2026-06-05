@@ -1,0 +1,106 @@
+<div class="page-header">
+  <div>
+    <h1>Question Bank</h1>
+    <p>Add and manage your questions</p>
+  </div>
+  <button class="btn btn-primary" (click)="showForm.set(!showForm())">
+    @if (showForm()) { Cancel } @else { + Add Question }
+  </button>
+</div>
+
+@if (success()) { <div class="alert alert-success">{{ success() }}</div> }
+@if (error())   { <div class="alert alert-error">{{ error() }}</div> }
+
+@if (showForm()) {
+  <div class="card form-card">
+    <div class="grid-2">
+      <div class="field">
+        <label>Subject *</label>
+        <input [(ngModel)]="form.subject" placeholder="Mathematics" />
+      </div>
+      <div class="field">
+        <label>Topic</label>
+        <input [(ngModel)]="form.topic" placeholder="Algebra" />
+      </div>
+      <div class="field">
+        <label>Type</label>
+        <select [(ngModel)]="form.type" (ngModelChange)="form.correct_answer = ''">
+          <option value="mcq">Multiple Choice (MCQ)</option>
+          <option value="true_false">True / False</option>
+          <option value="short_answer">Short Answer</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Difficulty</label>
+        <select [(ngModel)]="form.difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:12px">
+      <label>Question Text *</label>
+      <textarea [(ngModel)]="form.question_text" rows="3" placeholder="Enter the question..."></textarea>
+    </div>
+
+    @if (form.type === 'mcq') {
+      <div class="options-grid">
+        @for (i of [0,1,2,3]; track i) {
+          <div class="field">
+            <label>Option {{ i + 1 }}</label>
+            <input [(ngModel)]="form.options[i]" [placeholder]="'Option ' + (i+1)" />
+          </div>
+        }
+      </div>
+    }
+
+    <div class="grid-2" style="margin-top:12px">
+      <div class="field">
+        <label>Correct Answer *</label>
+        @if (form.type === 'true_false') {
+          <select [(ngModel)]="form.correct_answer">
+            <option value="">— Select —</option>
+            <option value="True">True</option>
+            <option value="False">False</option>
+          </select>
+        } @else {
+          <input [(ngModel)]="form.correct_answer" placeholder="Enter correct answer" />
+        }
+      </div>
+      <div class="field">
+        <label>Tags (comma-separated)</label>
+        <input [(ngModel)]="form.tags" placeholder="chapter-1, algebra" />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="onSubmit()" [disabled]="saving()">
+        @if (saving()) { Saving... } @else { Add Question }
+      </button>
+    </div>
+  </div>
+}
+
+<div class="card">
+  @if (loading()) {
+    <p class="loading-text">Loading questions...</p>
+  } @else if (questions().length === 0) {
+    <div class="empty-state"><p>No questions yet. Add your first question above.</p></div>
+  } @else {
+    <table class="table">
+      <thead><tr><th>Question</th><th>Subject</th><th>Type</th><th>Difficulty</th></tr></thead>
+      <tbody>
+        @for (q of questions(); track q.id) {
+          <tr>
+            <td class="q-text">{{ q.question_text }}</td>
+            <td>{{ q.subject }}@if (q.topic) { / {{ q.topic }} }</td>
+            <td>{{ q.type }}</td>
+            <td><span class="badge" [class]="diffBadge(q.difficulty)">{{ q.difficulty }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

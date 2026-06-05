@@ -1,0 +1,22 @@
+<div class="page-header">
+  <h1>Teacher Dashboard</h1>
+  <p>Welcome, {{ auth.currentUser()?.name }}</p>
+</div>
+
+<div class="grid-stats">
+  <a routerLink="/teacher/attendance" class="quick-card card">
+    <div class="qc-icon">📋</div>
+    <div class="qc-label">Mark Attendance</div>
+    <div class="qc-desc">Record today's attendance for your class</div>
+  </a>
+  <a routerLink="/teacher/questions" class="quick-card card">
+    <div class="qc-icon">❓</div>
+    <div class="qc-label">Question Bank</div>
+    <div class="qc-desc">Add and manage questions</div>
+  </a>
+  <a routerLink="/teacher/tests" class="quick-card card">
+    <div class="qc-icon">📝</div>
+    <div class="qc-label">Tests</div>
+    <div class="qc-desc">Create and manage tests</div>
+  </a>
+</div>

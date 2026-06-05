@@ -21,11 +21,22 @@ export class User {
   @Column()
   name: string;
 
-  @Column({ unique: true })
-  email: string;
+  @Column({ type: 'varchar', unique: true, nullable: true })
+  email: string | null;
 
   @Column({ nullable: true })
   phone: string;
+
+  @Column({ nullable: true })
+  class_id: string;
+
+  // Proctor / reporting teacher assigned to this student
+  @Column({ type: 'uuid', nullable: true })
+  proctor_id: string | null;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'proctor_id' })
+  proctor: User | null;
 
   @Column()
   password_hash: string;

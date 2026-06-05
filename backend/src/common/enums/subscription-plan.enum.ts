@@ -3,6 +3,7 @@ export enum SubscriptionPlan {
   STARTER = 'starter',
   GROWTH = 'growth',
   PRO = 'pro',
+  PRO_MAX = 'pro_max',
 }
 
 export enum SubscriptionStatus {
@@ -20,10 +21,11 @@ export enum BillingCycle {
 }
 
 export const PLAN_LIMITS: Record<SubscriptionPlan, { maxStudents: number; maxTeachers: number }> = {
-  [SubscriptionPlan.TRIAL]:   { maxStudents: 100,  maxTeachers: 5 },
-  [SubscriptionPlan.STARTER]: { maxStudents: 300,  maxTeachers: 10 },
-  [SubscriptionPlan.GROWTH]:  { maxStudents: 1000, maxTeachers: 50 },
-  [SubscriptionPlan.PRO]:     { maxStudents: 9999, maxTeachers: 999 },
+  [SubscriptionPlan.TRIAL]:   { maxStudents: 40,     maxTeachers: 3 },
+  [SubscriptionPlan.STARTER]: { maxStudents: 50,     maxTeachers: 3 },
+  [SubscriptionPlan.GROWTH]:  { maxStudents: 200,    maxTeachers: 10 },
+  [SubscriptionPlan.PRO]:     { maxStudents: 9999,   maxTeachers: 999 },
+  [SubscriptionPlan.PRO_MAX]: { maxStudents: 999999, maxTeachers: 999999 },
 };
 
 export const TRIAL_DURATION_DAYS = 7;

@@ -1,0 +1,54 @@
+<div class="page-header">
+  <div><h1>Academic Years</h1><p>Manage academic year periods</p></div>
+  <button class="btn btn-primary" (click)="showForm.set(true)">+ New Year</button>
+</div>
+
+@if (loading()) {
+  <div class="card"><app-skeleton [lines]="4" /></div>
+} @else {
+  <div class="card">
+    @if (!years().length) {
+      <div class="empty-state">No academic years set up yet.</div>
+    } @else {
+      <table class="table">
+        <thead><tr><th>Name</th><th>Start</th><th>End</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          @for (y of years(); track y.id) {
+            <tr>
+              <td>{{ y.name }}</td>
+              <td>{{ y.start_date }}</td>
+              <td>{{ y.end_date }}</td>
+              <td>
+                @if (y.is_current) { <span class="badge badge-success">Current</span> }
+                @else { <span class="badge badge-neutral">Inactive</span> }
+              </td>
+              <td style="display:flex;gap:8px">
+                @if (!y.is_current) {
+                  <button class="btn btn-secondary btn-sm" (click)="activate(y)">Set Current</button>
+                  <button class="btn btn-danger btn-sm" (click)="deleteTarget.set(y)">Delete</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+
+@if (showForm()) {
+  <div class="modal-overlay" (click)="showForm.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>New Academic Year</h3>
+      <div class="field"><label>Name (e.g. 2024-25)</label><input [(ngModel)]="form.name" placeholder="2024-25" /></div>
+      <div class="field"><label>Start Date</label><input [(ngModel)]="form.start_date" type="date" /></div>
+      <div class="field"><label>End Date</label><input [(ngModel)]="form.end_date" type="date" /></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showForm.set(false)">Cancel</button>
+        <button class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Creating...' : 'Create' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-confirm-dialog [open]="!!deleteTarget()" title="Delete Academic Year" [message]="'Delete ' + deleteTarget()?.name + '?'" (confirm)="doDelete()" (cancel)="deleteTarget.set(null)" />

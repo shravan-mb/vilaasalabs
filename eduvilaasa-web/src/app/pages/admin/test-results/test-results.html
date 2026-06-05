@@ -1,0 +1,59 @@
+<div class="page-header">
+  <div>
+    <h1>Test Results</h1>
+    <p>Enter and manage student scores per test</p>
+  </div>
+</div>
+
+<div class="results-layout">
+  <div class="card test-list">
+    <h3>Select Test</h3>
+    @if (!tests().length) { <div class="empty-state">No published tests yet.</div> }
+    @for (t of tests(); track t.id) {
+      <div class="test-item" [class.active]="selectedTest()?.id === t.id" (click)="selectTest(t)">
+        <div class="test-title">{{ t.title }}</div>
+        <div class="test-meta">{{ t.subject }} · {{ t.total_marks }} marks</div>
+      </div>
+    }
+  </div>
+
+  <div class="card result-entry">
+    @if (!selectedTest()) {
+      <div class="empty-state">Select a test to enter results</div>
+    } @else if (loading()) {
+      <app-skeleton [lines]="6" />
+    } @else {
+      <div class="result-header">
+        <h3>{{ selectedTest().title }}</h3>
+        <span class="badge badge-info">Max: {{ selectedTest().total_marks }} marks</span>
+      </div>
+
+      @if (!students().length) {
+        <div class="empty-state">No students found</div>
+      } @else {
+        <table class="table">
+          <thead><tr><th>Student</th><th>Score <small>(/ {{ selectedTest().total_marks }})</small></th><th>Remarks</th></tr></thead>
+          <tbody>
+            @for (s of students(); track s.id) {
+              <tr>
+                <td>{{ s.name }}</td>
+                <td>
+                  <input type="number" class="score-input" min="0" [max]="selectedTest().total_marks"
+                    [value]="getScore(s.id)" (input)="setScore(s.id, $any($event.target).value)"
+                    placeholder="—" />
+                </td>
+                <td>
+                  <input class="remark-input" [value]="getRemarks(s.id)"
+                    (input)="setRemarks(s.id, $any($event.target).value)" placeholder="Optional remarks" />
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div style="margin-top:16px;text-align:right">
+          <button class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Save Results' }}</button>
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -14,6 +14,8 @@ export class AdminLayout {
   navItems = [
     { label: 'Dashboard',  path: '/admin/dashboard',  icon: '📊' },
     { label: 'Schools',    path: '/admin/schools',     icon: '🏫' },
+    { label: 'Revenue',    path: '/admin/revenue',     icon: '💰' },
+    { label: 'Broadcast',  path: '/admin/broadcast',   icon: '📢' },
     { label: 'Onboard',    path: '/admin/schools/onboard', icon: '➕' },
   ];
 

@@ -1,0 +1,51 @@
+<div class="page-header">
+  <h1>Attendance Report</h1>
+  <p>View attendance by class and date range</p>
+</div>
+
+<div class="card filter-card">
+  <div class="filter-row">
+    <div class="field">
+      <label>Class</label>
+      <select [(ngModel)]="filter.class_id">
+        <option value="">Select a class</option>
+        @for (cls of classes(); track cls.id) {
+          <option [value]="cls.id">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label>From Date</label>
+      <input [(ngModel)]="filter.from_date" type="date" />
+    </div>
+    <div class="field">
+      <label>To Date</label>
+      <input [(ngModel)]="filter.to_date" type="date" />
+    </div>
+    <button class="btn btn-primary" (click)="search()" [disabled]="!filter.class_id || loading()">
+      @if (loading()) { Loading... } @else { View Report }
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  @if (records().length === 0) {
+    <div class="empty-state"><p>Select a class and date range, then click View Report.</p></div>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr><th>Date</th><th>Student</th><th>Status</th><th>Remarks</th></tr>
+      </thead>
+      <tbody>
+        @for (r of records(); track r.id) {
+          <tr>
+            <td>{{ r.date }}</td>
+            <td>{{ r.student?.name ?? r.student_id }}</td>
+            <td><span class="badge" [class]="statusClass(r.status)">{{ r.status }}</span></td>
+            <td>{{ r.remarks || '—' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

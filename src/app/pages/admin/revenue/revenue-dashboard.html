@@ -1,0 +1,61 @@
+<div class="rev-page">
+  <div class="page-header">
+    <div><h2>Revenue Dashboard</h2><p>MRR, plan distribution and payment history</p></div>
+  </div>
+
+  @if (loading()) { <div class="loading">Loading...</div> }
+  @else if (data()) {
+    <div class="stats-row">
+      <div class="stat-card mrr">
+        <div class="stat-label">Monthly Recurring Revenue</div>
+        <div class="stat-value">₹{{ data().mrr | number }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Subscriptions</div>
+        <div class="stat-value">{{ data().active_subscriptions }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Free Trials</div>
+        <div class="stat-value">{{ data().trial_subscriptions }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Expired</div>
+        <div class="stat-value red">{{ data().expired_subscriptions }}</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Plan Distribution (Active)</h3>
+        <div class="plan-list">
+          @for (p of data().plan_breakdown; track p.plan) {
+            <div class="plan-row">
+              <span class="plan-dot" [style.background]="planColor(p.plan)"></span>
+              <span class="plan-name">{{ p.plan | uppercase }}</span>
+              <span class="plan-count">{{ p.count }} schools</span>
+            </div>
+          }
+          @empty { <p class="empty">No active plans.</p> }
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Recent Payments</h3>
+        <table class="mini-table">
+          <thead><tr><th>Plan</th><th>Billing</th><th>Amount</th><th>Date</th></tr></thead>
+          <tbody>
+            @for (p of data().recent_payments; track p.id) {
+              <tr>
+                <td>{{ p.plan | uppercase }}</td>
+                <td>{{ p.billing_cycle }}</td>
+                <td style="color:#34d399">₹{{ p.amount }}</td>
+                <td style="color:#666">{{ p.created_at | date:'mediumDate' }}</td>
+              </tr>
+            }
+            @empty { <tr><td colspan="4" style="text-align:center;color:#555;padding:20px">No payments yet</td></tr> }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

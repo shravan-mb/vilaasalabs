@@ -1,0 +1,51 @@
+<div class="page-header">
+  <h1>Parent Dashboard</h1>
+  <p>Welcome, {{ auth.currentUser()?.name }}</p>
+</div>
+
+<div class="grid-stats">
+  <a routerLink="/parent/attendance" class="stat-card" style="cursor:pointer;text-decoration:none">
+    <div class="label">Child's Attendance</div>
+    <div class="value">→</div>
+  </a>
+  <a routerLink="/parent/tests" class="stat-card" style="cursor:pointer;text-decoration:none">
+    <div class="label">Child's Tests</div>
+    <div class="value">→</div>
+  </a>
+</div>
+
+@if (children().length > 0) {
+  <div style="margin-top:24px">
+    <div style="font-size:11px;text-transform:uppercase;color:#888;letter-spacing:.06em;margin-bottom:12px">My Children</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      @for (child of children(); track child.id) {
+        <div class="card" style="padding:16px 20px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+            <div>
+              <div style="font-weight:600;color:#e5e5e5;font-size:15px">{{ child.name }}</div>
+              @if (child.phone) { <div style="color:#888;font-size:13px;margin-top:2px">📞 {{ child.phone }}</div> }
+              @if (child.email) { <div style="color:#888;font-size:13px;margin-top:2px">✉ {{ child.email }}</div> }
+            </div>
+            @if (child.proctor) {
+              <div style="background:#0d0d0d;border:1px solid #2a2a2a;border-radius:10px;padding:10px 14px;min-width:200px">
+                <div style="font-size:10px;text-transform:uppercase;color:#888;letter-spacing:.05em;margin-bottom:6px">Reporting Teacher</div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:32px;height:32px;border-radius:50%;background:#1e0a3c;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#a78bfa;flex-shrink:0">
+                    {{ child.proctor.name?.charAt(0)?.toUpperCase() }}
+                  </div>
+                  <div>
+                    <div style="font-weight:600;color:#e5e5e5;font-size:13px">{{ child.proctor.name }}</div>
+                    @if (child.proctor.phone) { <div style="color:#888;font-size:12px">{{ child.proctor.phone }}</div> }
+                    @if (child.proctor.email) { <div style="color:#888;font-size:12px">{{ child.proctor.email }}</div> }
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <div style="color:#555;font-size:13px;font-style:italic">No proctor assigned</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

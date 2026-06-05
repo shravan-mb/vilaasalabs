@@ -1,0 +1,81 @@
+<div class="page-header no-print">
+  <div><h1>Reports</h1><p>Attendance and test performance reports</p></div>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-secondary" (click)="exportCSV()">Export CSV</button>
+    <button class="btn btn-secondary" (click)="printReport()">Print</button>
+  </div>
+</div>
+
+<div class="report-controls card no-print">
+  <div class="filters">
+    <div class="field">
+      <label>Class</label>
+      <select [(ngModel)]="selectedClass" (ngModelChange)="selectedClass.set($event)">
+        <option value="">All Classes</option>
+        @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }} {{ c.section }}</option> }
+      </select>
+    </div>
+    <div class="field">
+      <label>From</label>
+      <input type="date" [value]="dateFrom()" (change)="dateFrom.set($any($event.target).value)" />
+    </div>
+    <div class="field">
+      <label>To</label>
+      <input type="date" [value]="dateTo()" (change)="dateTo.set($any($event.target).value)" />
+    </div>
+  </div>
+  <div class="tab-btns">
+    <button class="btn" [class.btn-primary]="activeTab()==='attendance'" [class.btn-secondary]="activeTab()!=='attendance'" (click)="activeTab.set('attendance');runAttendanceReport()">Attendance Report</button>
+    <button class="btn" [class.btn-primary]="activeTab()==='tests'" [class.btn-secondary]="activeTab()!=='tests'" (click)="activeTab.set('tests');runTestReport()">Test Scores Report</button>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card"><app-skeleton [lines]="6" /></div>
+} @else if (activeTab() === 'attendance') {
+  <div class="card print-area">
+    <h2 class="print-title">Attendance Report</h2>
+    @if (!attendanceData().length) {
+      <div class="empty-state">Run the report to see attendance data.</div>
+    } @else {
+      <table class="table">
+        <thead><tr><th>Student</th><th>Present</th><th>Absent</th><th>Late</th><th>Total Days</th><th>%</th></tr></thead>
+        <tbody>
+          @for (s of attendanceData(); track s.student_id) {
+            <tr>
+              <td>{{ s.student_name }}</td>
+              <td>{{ s.present }}</td>
+              <td>{{ s.absent }}</td>
+              <td>{{ s.late }}</td>
+              <td>{{ s.total }}</td>
+              <td><span class="badge" [class.badge-success]="s.percentage>=75" [class.badge-warning]="s.percentage<75&&s.percentage>=50" [class.badge-error]="s.percentage<50">{{ s.percentage }}%</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+} @else {
+  <div class="card print-area">
+    <h2 class="print-title">Test Scores Report</h2>
+    @if (!testData().length) {
+      <div class="empty-state">Run the report to see test data.</div>
+    } @else {
+      <table class="table">
+        <thead><tr><th>Test</th><th>Subject</th><th>Max Marks</th><th>Avg Score</th><th>Highest</th><th>Lowest</th></tr></thead>
+        <tbody>
+          @for (t of testData(); track t.test_id) {
+            <tr>
+              <td>{{ t.test_title }}</td>
+              <td>{{ t.subject }}</td>
+              <td>{{ t.total_marks }}</td>
+              <td>{{ t.avg_score | number:'1.1-1' }}</td>
+              <td>{{ t.highest }}</td>
+              <td>{{ t.lowest }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}

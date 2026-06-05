@@ -10,14 +10,14 @@
 
     <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
       <div class="field">
-        <label>Email</label>
+        <label>Phone Number or Email</label>
         <input
-          type="email"
-          [(ngModel)]="email"
-          name="email"
-          placeholder="admin@vilaasalabs.com"
+          type="text"
+          [(ngModel)]="identifier"
+          name="identifier"
+          placeholder="9876543210 or admin@vilaasalabs.com"
           required
-          autocomplete="email"
+          autocomplete="username"
         />
       </div>
 
@@ -42,6 +42,9 @@
       </button>
     </form>
 
+    <div style="text-align:center;margin-top:12px">
+      <a routerLink="/admin/forgot-password" style="color:#7c3aed;font-size:13px">Forgot password?</a>
+    </div>
     <p class="back-link"><a href="/">← Back to vilaasalabs.com</a></p>
   </div>
 </div>

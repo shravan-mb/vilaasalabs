@@ -1,0 +1,38 @@
+<div class="page-header">
+  <h1>Tests</h1>
+  <p>View and manage all tests created by teachers</p>
+</div>
+
+<div class="card">
+  @if (loading()) {
+    <p class="loading-text">Loading tests...</p>
+  } @else if (tests().length === 0) {
+    <div class="empty-state"><p>No tests created yet. Teachers can create tests from the Teacher portal.</p></div>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr><th>Title</th><th>Subject</th><th>Class</th><th>Total Marks</th><th>Duration</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        @for (t of tests(); track t.id) {
+          <tr>
+            <td>{{ t.title }}</td>
+            <td>{{ t.subject || '—' }}</td>
+            <td><span style="font-size:12px;color:#a78bfa">{{ className(t.class_id) }}</span></td>
+            <td>{{ t.total_marks }}</td>
+            <td>{{ t.duration_minutes ? t.duration_minutes + ' min' : '—' }}</td>
+            <td><span class="badge" [class]="statusClass(t.status)">{{ t.status }}</span></td>
+            <td class="actions">
+              @if (t.status === 'draft') {
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="changeStatus(t.id, 'published')">Publish</button>
+              }
+              @if (t.status === 'published') {
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="changeStatus(t.id, 'closed')">Close</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

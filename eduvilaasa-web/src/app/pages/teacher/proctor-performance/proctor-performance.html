@@ -1,0 +1,69 @@
+<div class="page-header">
+  <div><h1>Proctor Performance</h1><p>Attendance and test results for your proctored students</p></div>
+</div>
+
+@if (alerts.length > 0) {
+  <div class="alert-banner">
+    <span class="alert-icon">⚠</span>
+    <span><strong>{{ alerts.length }} student{{ alerts.length > 1 ? 's' : '' }}</strong> have attendance below 75% in the last 90 days</span>
+  </div>
+}
+
+@if (loading()) {
+  <div class="card"><p class="loading-text">Loading performance data...</p></div>
+} @else if (rows().length === 0) {
+  <div class="card">
+    <div class="empty-state">
+      <p>No proctored students found.</p>
+      <p style="color:#555;font-size:13px;margin-top:8px">Ask your admin to assign students to you as proctor.</p>
+    </div>
+  </div>
+} @else {
+  <div class="card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Phone</th>
+          <th>Attendance (90d)</th>
+          <th>Recent Tests</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.student.id) {
+          <tr [class.alert-row]="row.low_attendance">
+            <td>
+              <div style="font-weight:600;color:#e5e5e5">{{ row.student.name }}</div>
+              @if (row.student.email) { <div style="font-size:12px;color:#888">{{ row.student.email }}</div> }
+            </td>
+            <td>{{ row.student.phone || '—' }}</td>
+            <td>
+              @if (row.attendance_pct === null) {
+                <span style="color:#555;font-size:12px">No records</span>
+              } @else {
+                <div class="att-bar-wrap">
+                  <div class="att-bar" [style.width.%]="row.attendance_pct" [class.att-low]="row.low_attendance"></div>
+                </div>
+                <span class="att-pct" [class.att-pct-low]="row.low_attendance">
+                  {{ row.attendance_pct }}%
+                  @if (row.low_attendance) { <span class="warn-tag">⚠ Low</span> }
+                </span>
+              }
+            </td>
+            <td>
+              @if (!row.test_results?.length) {
+                <span style="color:#555;font-size:12px">No results</span>
+              } @else {
+                <div class="test-pills">
+                  @for (tr of row.test_results; track tr.id) {
+                    <span class="test-pill">{{ tr.score }}</span>
+                  }
+                </div>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

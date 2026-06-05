@@ -1,0 +1,188 @@
+<div class="page-header">
+  <div>
+    <h1>Students</h1>
+    <p>Manage student accounts in your institution</p>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-outline" (click)="openBulkProctor()">Bulk Assign Proctor</button>
+    <button class="btn btn-primary" (click)="showForm.set(!showForm())">
+      @if (showForm()) { Cancel } @else { + Add Student }
+    </button>
+  </div>
+</div>
+
+@if (showBulkProctor()) {
+  <div class="modal-overlay" (click)="showBulkProctor.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header"><h2>Bulk Assign Proctor</h2></div>
+      <p style="font-size:13px;color:#888;margin-bottom:16px">Assigns one teacher as proctor to all students in the selected class.</p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Class *</label>
+          <select [(ngModel)]="bulkProctorClassId">
+            <option value="">Select class...</option>
+            @for (c of classes(); track c.id) {
+              <option [value]="c.id">{{ c.name }}{{ c.section ? ' — ' + c.section : '' }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Proctor Teacher *</label>
+          <select [(ngModel)]="bulkProctorTeacherId">
+            <option value="">Select teacher...</option>
+            @for (t of teachers(); track t.id) {
+              <option [value]="t.id">{{ t.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" (click)="showBulkProctor.set(false)">Cancel</button>
+        <button class="btn btn-primary" (click)="saveBulkProctor()" [disabled]="bulkAssigning()">
+          {{ bulkAssigning() ? 'Assigning...' : 'Assign Proctor' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (error()) { <div class="alert alert-error">{{ error() }}</div> }
+
+@if (showForm()) {
+  <div class="card form-card">
+    <h3>NEW STUDENT</h3>
+    <div class="grid-2">
+      <div class="field">
+        <label>Full Name *</label>
+        <input [(ngModel)]="form.name" [class.invalid]="isInvalid('name')" (blur)="touch('name')" placeholder="Student name" />
+        @if (isInvalid('name')) { <span class="err">Name is required</span> }
+      </div>
+      <div class="field">
+        <label>Class</label>
+        <select [(ngModel)]="form.class_id">
+          <option value="">— Not assigned —</option>
+          @for (cls of classes(); track cls.id) {
+            <option [value]="cls.id">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <input [(ngModel)]="form.phone" placeholder="+91 9876543210" />
+      </div>
+      <div class="field">
+        <label>Email <span style="color:#888;font-weight:400">(optional)</span></label>
+        <input [(ngModel)]="form.email" type="email" [class.invalid]="isInvalid('email')" (blur)="touch('email')" placeholder="student@school.edu" />
+        @if (isInvalid('email')) { <span class="err">Enter a valid email</span> }
+      </div>
+      <div class="field">
+        <label>Reporting Teacher / Proctor <span style="color:#888;font-weight:400">(optional)</span></label>
+        <select [(ngModel)]="form.proctor_id">
+          <option value="">— Not assigned —</option>
+          @for (t of teachers(); track t.id) {
+            <option [value]="t.id">{{ t.name }}{{ t.phone ? ' (' + t.phone + ')' : '' }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Password *</label>
+        <input [(ngModel)]="form.password" type="password" [class.invalid]="isInvalid('password')" (blur)="touch('password')" placeholder="Min 8 characters" />
+        @if (isInvalid('password')) { <span class="err">Min 8 characters</span> }
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="onSubmit()" [disabled]="saving()">
+        @if (saving()) { Saving... } @else { Add Student }
+      </button>
+    </div>
+  </div>
+}
+
+<div class="card">
+  @if (loading()) {
+    <p class="loading-text">Loading students...</p>
+  } @else if (students().length === 0) {
+    <div class="empty-state"><p>No students yet. Add your first student above.</p></div>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr><th>Name</th><th>Class</th><th>Proctor</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        @for (s of students(); track s.id) {
+          <tr>
+            <td>{{ s.name }}</td>
+            <td>{{ className(s.class_id) }}</td>
+            <td>{{ s.proctor?.name ?? teacherName(s.proctor_id) }}</td>
+            <td>{{ s.phone || '—' }}</td>
+            <td>{{ s.email || '—' }}</td>
+            <td>
+              <span class="badge" [class]="s.is_active ? 'badge-green' : 'badge-red'">
+                {{ s.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openEdit(s)">Edit</button>
+              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openResetPassword(s)">Reset PW</button>
+              @if (s.is_active) {
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#d97706;border-color:#d97706" (click)="deactivate(s.id)">Deactivate</button>
+              } @else {
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#16a34a;border-color:#16a34a" (click)="activate(s.id)">Activate</button>
+              }
+              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#dc2626;border-color:#dc2626" (click)="delete(s.id)">Delete</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (editTarget()) {
+  <div class="modal-overlay" (click)="editTarget.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Edit Student</h3>
+      <div class="field"><label>Full Name *</label><input [(ngModel)]="editForm.name" placeholder="Student name" /></div>
+      <div class="field">
+        <label>Class</label>
+        <select [(ngModel)]="editForm.class_id">
+          <option value="">— Not assigned —</option>
+          @for (cls of classes(); track cls.id) {
+            <option [value]="cls.id">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Reporting Teacher / Proctor</label>
+        <select [(ngModel)]="editForm.proctor_id">
+          <option value="">— Not assigned —</option>
+          @for (t of teachers(); track t.id) {
+            <option [value]="t.id">{{ t.name }}{{ t.phone ? ' (' + t.phone + ')' : '' }}</option>
+          }
+        </select>
+      </div>
+      <div class="field"><label>Phone</label><input [(ngModel)]="editForm.phone" placeholder="+91 9876543210" /></div>
+      <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="editForm.email" type="email" placeholder="student@school.edu" /></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="editTarget.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="saveEdit()" [disabled]="editSaving()">{{ editSaving() ? 'Saving...' : 'Save Changes' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (passwordTarget()) {
+  <div class="modal-overlay" (click)="passwordTarget.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Reset Password — {{ passwordTarget().name }}</h3>
+      <div class="field">
+        <label>New Password *</label>
+        <input [(ngModel)]="newPassword" type="password" placeholder="Min 8 characters" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="passwordTarget.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="savePassword()" [disabled]="passwordSaving()">{{ passwordSaving() ? 'Updating...' : 'Set Password' }}</button>
+      </div>
+    </div>
+  </div>
+}

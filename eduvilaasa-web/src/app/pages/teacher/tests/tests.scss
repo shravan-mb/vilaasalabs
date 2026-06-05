@@ -1,0 +1,15 @@
+.form-card { margin-bottom: 20px; h3 { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 16px; } }
+.form-actions { margin-top: 16px; }
+.loading-text { color: #555; }
+.questions-picker { margin-top: 20px; }
+.picker-label { font-size: 12px; color: #888; font-weight: 500; margin-bottom: 10px; }
+.q-list { max-height: 280px; overflow-y: auto; border: 1px solid #2a2a2a; border-radius: 8px; }
+.q-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+  border-bottom: 1px solid #1f1f1f; cursor: pointer;
+  &:last-child { border-bottom: none; }
+  &:hover { background: #1a1a1a; }
+  &.selected { background: #1e0a3c; }
+}
+.q-check { font-size: 16px; color: #7c3aed; flex-shrink: 0; }
+.q-preview { flex: 1; font-size: 13px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

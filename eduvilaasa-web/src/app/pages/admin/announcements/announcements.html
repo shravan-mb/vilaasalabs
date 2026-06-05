@@ -1,0 +1,52 @@
+<div class="page-header">
+  <div><h1>Announcements</h1><p>Post notices to students and parents</p></div>
+  <button class="btn btn-primary" (click)="showForm.set(true)">+ New Announcement</button>
+</div>
+
+@if (loading()) {
+  <div class="card"><app-skeleton [lines]="4" /></div>
+} @else {
+  @if (!items().length) {
+    <div class="empty-state card">No announcements yet.</div>
+  }
+  @for (item of items(); track item.id) {
+    <div class="card notice-card">
+      <div class="notice-header">
+        <h3>{{ item.title }}</h3>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="badge badge-info" style="font-size:11px">{{ dateStr(item.created_at) }}</span>
+          <span class="badge badge-neutral" style="font-size:11px">{{ item.target_role || 'all' }}</span>
+          <button class="btn btn-danger btn-sm" (click)="deleteTarget.set(item)">Delete</button>
+        </div>
+      </div>
+      <p class="notice-body">{{ item.body }}</p>
+      <div class="notice-by">Posted by {{ item.created_by_name || 'Admin' }}</div>
+    </div>
+  }
+}
+
+@if (showForm()) {
+  <div class="modal-overlay" (click)="showForm.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>New Announcement</h3>
+      <div class="field"><label>Title</label><input [(ngModel)]="form.title" placeholder="Announcement title" /></div>
+      <div class="field"><label>Message</label><textarea [(ngModel)]="form.body" rows="4" placeholder="Write the announcement..."></textarea></div>
+      <div class="field">
+        <label>Audience</label>
+        <select [(ngModel)]="form.target_role">
+          <option value="all">Everyone</option>
+          <option value="student">Students only</option>
+          <option value="parent">Parents only</option>
+          <option value="teacher">Teachers only</option>
+          <option value="institution_staff">Staff only</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showForm.set(false)">Cancel</button>
+        <button class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Posting...' : 'Post' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-confirm-dialog [open]="!!deleteTarget()" title="Delete Announcement" [message]="'Delete &quot;' + deleteTarget()?.title + '&quot;?'" (confirm)="doDelete()" (cancel)="deleteTarget.set(null)" />

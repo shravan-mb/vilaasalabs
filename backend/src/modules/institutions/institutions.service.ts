@@ -7,6 +7,7 @@ import { Institution } from '../../database/entities/institution.entity';
 import { Subscription } from '../../database/entities/subscription.entity';
 import { User } from '../../database/entities/user.entity';
 import { AuthService } from '../auth/auth.service';
+import { MailService } from '../mail/mail.service';
 import { CreateInstitutionDto } from './dto/create-institution.dto';
 
 @Injectable()
@@ -19,6 +20,7 @@ export class InstitutionsService {
     @InjectRepository(Subscription)
     private readonly subscriptionRepo: Repository<Subscription>,
     private readonly authService: AuthService,
+    private readonly mailService: MailService,
   ) {}
 
   async onboard(dto: CreateInstitutionDto): Promise<{ institution: Institution; admin: Partial<User> }> {
@@ -71,6 +73,9 @@ export class InstitutionsService {
         expires_at: trialExpiry,
       }),
     );
+
+    // Fire-and-forget welcome email
+    if (savedAdmin.email) this.mailService.sendWelcome(savedInstitution.name, savedAdmin.email, savedAdmin.name);
 
     const { password_hash: _, ...adminWithoutPassword } = savedAdmin;
     return { institution: savedInstitution, admin: adminWithoutPassword };

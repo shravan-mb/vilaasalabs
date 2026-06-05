@@ -1,30 +1,31 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as path from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Global validation pipe — rejects bad request bodies automatically
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
 
-  // CORS — allow Angular dev server and production domains
   app.enableCors({
     origin: [
-      'http://localhost:4200',   // vilaasalabs-web dev
-      'http://localhost:4201',   // eduvilaasa-web dev
+      'http://localhost:4200',
+      'http://localhost:4201',
       'https://vilaasalabs.com',
       'https://app.eduvilaasa.com',
-      /\.eduvilaasa\.com$/,      // any school subdomain
+      /\.eduvilaasa\.com$/,
     ],
     credentials: true,
   });
 
-  // API prefix
+  // Serve uploaded files as static
+  app.useStaticAssets(path.join(process.cwd(), 'uploads'), { prefix: '/uploads' });
+
   app.setGlobalPrefix('api/v1');
 
-  // Swagger docs — available at /api/v1/docs
   const config = new DocumentBuilder()
     .setTitle('EduVilaasa API')
     .setDescription('Backend API for EduVilaasa school management system')

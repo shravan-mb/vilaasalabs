@@ -1,0 +1,33 @@
+<div class="app-shell" [class.sidebar-collapsed]="!sidebarOpen()">
+  <app-sidebar [open]="sidebarOpen()" />
+
+  <div class="main-area">
+    <header class="topbar">
+      <button class="toggle-btn" (click)="toggleSidebar()">☰</button>
+      <div class="topbar-right">
+        <span class="user-name">{{ user()?.name }}</span>
+        <span class="role-badge">{{ roleLabel() }}</span>
+        <button class="logout-btn" (click)="logout()">Sign out</button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>
+
+<!-- Global toast overlay -->
+<app-toast />
+
+<!-- Session timeout warning -->
+<app-confirm-dialog
+  [open]="session.showWarning()"
+  title="Session Expiring"
+  [message]="'Your session expires in ' + session.secondsLeft() + ' seconds. Stay logged in?'"
+  confirmLabel="Stay Logged In"
+  cancelLabel="Log Out"
+  icon="⏱"
+  (confirm)="extendSession()"
+  (cancel)="forceLogout()"
+/>

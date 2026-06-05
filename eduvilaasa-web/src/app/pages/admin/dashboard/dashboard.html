@@ -1,0 +1,53 @@
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <p>Welcome back, {{ auth.currentUser()?.name }}</p>
+</div>
+
+@if (loading()) {
+  <p class="loading-text">Loading...</p>
+} @else {
+  <div class="grid-stats">
+    <div class="stat-card">
+      <div class="label">Students</div>
+      <div class="value">{{ students }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Teachers</div>
+      <div class="value">{{ teachers }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Staff</div>
+      <div class="value">{{ staff }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Parents</div>
+      <div class="value">{{ parents }}</div>
+    </div>
+  </div>
+
+  <div class="card subscription-card">
+    <h3>Subscription</h3>
+    <div class="sub-grid">
+      <div>
+        <span class="sub-label">Plan</span>
+        <span class="sub-value">{{ planName | uppercase }}</span>
+      </div>
+      <div>
+        <span class="sub-label">Status</span>
+        <span class="badge" [class]="planStatus === 'active' || planStatus === 'trial' ? 'badge-green' : 'badge-red'">
+          {{ planStatus }}
+        </span>
+      </div>
+      <div>
+        <span class="sub-label">Expires</span>
+        <span class="sub-value">{{ planExpiry }}</span>
+      </div>
+      @if (daysLeft !== null) {
+        <div>
+          <span class="sub-label">Days Left</span>
+          <span class="sub-value" [class.warning]="daysLeft < 5">{{ daysLeft }}</span>
+        </div>
+      }
+    </div>
+  </div>
+}

@@ -1,0 +1,122 @@
+<div class="page-header">
+  <div>
+    <h1>Parents</h1>
+    <p>Manage parent accounts and student links</p>
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-secondary" (click)="showLink.set(true)">Link Parent → Student</button>
+    <button class="btn btn-primary" (click)="showForm.set(true)">+ Add Parent</button>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card"><app-skeleton [lines]="5" /></div>
+} @else {
+  <div class="card">
+    @if (!parents().length) {
+      <div class="empty-state">No parents added yet.</div>
+    } @else {
+      <table class="table">
+        <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
+        <tbody>
+          @for (p of parents(); track p.id) {
+            <tr>
+              <td>{{ p.name }}</td>
+              <td>{{ p.phone || '—' }}</td>
+              <td>{{ p.email || '—' }}</td>
+              <td style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-outline btn-sm" (click)="openEdit(p)">Edit</button>
+                <button class="btn btn-outline btn-sm" (click)="openResetPassword(p)">Reset PW</button>
+                <button class="btn btn-danger btn-sm" (click)="confirmDelete(p)">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+
+@if (showForm()) {
+  <div class="modal-overlay" (click)="showForm.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Add Parent</h3>
+      <div class="field"><label>Full Name *</label><input [(ngModel)]="form.name" placeholder="Parent name" /></div>
+      <div class="field"><label>Phone * <span style="color:#888;font-weight:400">(used for login)</span></label><input [(ngModel)]="form.phone" placeholder="+91 9876543210" /></div>
+      <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="form.email" type="email" placeholder="parent@gmail.com" /></div>
+      <div class="field"><label>Password *</label><input [(ngModel)]="form.password" type="password" placeholder="Temporary password" /></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showForm.set(false)">Cancel</button>
+        <button class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Add Parent' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (editTarget()) {
+  <div class="modal-overlay" (click)="editTarget.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Edit Parent</h3>
+      <div class="field"><label>Full Name *</label><input [(ngModel)]="editForm.name" placeholder="Parent name" /></div>
+      <div class="field"><label>Phone</label><input [(ngModel)]="editForm.phone" placeholder="+91 9876543210" /></div>
+      <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="editForm.email" type="email" placeholder="parent@gmail.com" /></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="editTarget.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="saveEdit()" [disabled]="editSaving()">{{ editSaving() ? 'Saving...' : 'Save Changes' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (passwordTarget()) {
+  <div class="modal-overlay" (click)="passwordTarget.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Reset Password — {{ passwordTarget().name }}</h3>
+      <div class="field">
+        <label>New Password *</label>
+        <input [(ngModel)]="newPassword" type="password" placeholder="Min 8 characters" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="passwordTarget.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="savePassword()" [disabled]="passwordSaving()">{{ passwordSaving() ? 'Updating...' : 'Set Password' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showLink()) {
+  <div class="modal-overlay" (click)="showLink.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Link Parent to Student</h3>
+      <div class="field">
+        <label>Parent</label>
+        <select [(ngModel)]="linkForm.parent_id">
+          <option value="">Select parent...</option>
+          @for (p of parents(); track p.id) { <option [value]="p.id">{{ p.name }} {{ p.phone ? '(' + p.phone + ')' : '' }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label>Student</label>
+        <select [(ngModel)]="linkForm.student_id">
+          <option value="">Select student...</option>
+          @for (s of students(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label>Relationship</label>
+        <select [(ngModel)]="linkForm.relationship">
+          <option value="father">Father</option>
+          <option value="mother">Mother</option>
+          <option value="guardian">Guardian</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showLink.set(false)">Cancel</button>
+        <button class="btn btn-primary" (click)="linkParent()" [disabled]="saving()">{{ saving() ? 'Linking...' : 'Link' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-confirm-dialog [open]="!!deleteTarget()" title="Delete Parent" [message]="'Remove ' + deleteTarget()?.name + '?'" (confirm)="doDelete()" (cancel)="deleteTarget.set(null)" />

@@ -1,0 +1,49 @@
+<div class="page-header">
+  <div><h1>My Schedule</h1><p>Your weekly class timetable</p></div>
+</div>
+
+@if (loading()) {
+  <div class="card"><p class="loading-text">Loading your schedule...</p></div>
+} @else if (!slots().length) {
+  <div class="card">
+    <div class="empty-state">
+      <p>No timetable assigned to you yet.</p>
+      <p style="color:#555;font-size:13px;margin-top:8px">Ask your admin to set up the timetable and assign your name to slots.</p>
+    </div>
+  </div>
+} @else {
+  <div class="week-grid">
+    @for (day of days; track $index; let d = $index) {
+      <div class="day-col">
+        <div class="day-header">{{ day }}</div>
+        @for (slot of slotsForDay(d); track slot.id) {
+          <div class="slot-card">
+            <div class="slot-subject">{{ slot.subject_name }}</div>
+            <div class="slot-time">{{ slot.start_time }} – {{ slot.end_time }}</div>
+            <div class="slot-class">Class: {{ slot.class_id }}</div>
+          </div>
+        }
+        @if (!slotsForDay(d).length) {
+          <div class="slot-empty">—</div>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="card" style="margin-top:24px">
+    <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">All Sessions (List View)</div>
+    <table class="table">
+      <thead><tr><th>Day</th><th>Subject</th><th>Start</th><th>End</th></tr></thead>
+      <tbody>
+        @for (slot of slots(); track slot.id) {
+          <tr>
+            <td>{{ days[slot.day_of_week] }}</td>
+            <td>{{ slot.subject_name }}</td>
+            <td>{{ slot.start_time }}</td>
+            <td>{{ slot.end_time }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

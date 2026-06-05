@@ -1,0 +1,126 @@
+<div class="page-header">
+  <div><h1>My Students</h1><p>View proctored students and class rosters</p></div>
+</div>
+
+@if (notesStudent()) {
+  <div class="modal-overlay" (click)="notesStudent.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Proctor Notes — {{ notesStudent().name }}</h2>
+        <span style="font-size:11px;color:#888">Visible only to you and admin</span>
+      </div>
+      <div class="note-input-row">
+        <textarea [(ngModel)]="newNote" rows="2" placeholder="Write a note..." style="flex:1;padding:10px;background:#111;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:13px;resize:vertical"></textarea>
+        <button class="btn btn-primary" (click)="addNote()" [disabled]="savingNote() || !newNote.trim()">
+          {{ savingNote() ? '...' : 'Save' }}
+        </button>
+      </div>
+      @if (loadingNotes()) {
+        <p style="color:#555;font-size:13px">Loading notes...</p>
+      } @else if (notes().length === 0) {
+        <p style="color:#555;font-size:13px;margin-top:8px">No notes yet.</p>
+      } @else {
+        <div class="notes-list">
+          @for (note of notes(); track note.id) {
+            <div class="note-item">
+              <div class="note-content">{{ note.content }}</div>
+              <div class="note-meta">{{ note.created_at | date:'dd MMM yyyy HH:mm' }}</div>
+              <button class="note-del" (click)="deleteNote(note.id)">×</button>
+            </div>
+          }
+        </div>
+      }
+      <div class="modal-actions"><button class="btn btn-outline" (click)="notesStudent.set(null)">Close</button></div>
+    </div>
+  </div>
+}
+
+<div class="tabs">
+  <button class="tab-btn" [class.active]="tab() === 'proctored'" (click)="tab.set('proctored')">
+    My Proctored Students
+    @if (!loadingProctor()) { <span class="tab-count">{{ proctoredStudents().length }}</span> }
+  </button>
+  <button class="tab-btn" [class.active]="tab() === 'byClass'" (click)="tab.set('byClass')">
+    Browse by Class
+  </button>
+</div>
+
+@if (tab() === 'proctored') {
+  @if (loadingProctor()) {
+    <div class="card"><p class="loading-text">Loading your proctored students...</p></div>
+  } @else if (proctoredStudents().length === 0) {
+    <div class="card">
+      <div class="empty-state">
+        <p>No students are assigned to you as proctor yet.</p>
+        <p style="color:#555;font-size:13px;margin-top:8px">Ask your admin to assign students to you in the Students section.</p>
+      </div>
+    </div>
+  } @else {
+    <div class="card">
+      <table class="table">
+        <thead>
+          <tr><th>#</th><th>Name</th><th>Phone</th><th>Email</th><th>Status</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          @for (s of proctoredStudents(); track s.id; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ s.name }}</td>
+              <td>{{ s.phone || '—' }}</td>
+              <td>{{ s.email || '—' }}</td>
+              <td>
+                <span class="badge" [class.badge-success]="s.is_active" [class.badge-error]="!s.is_active">
+                  {{ s.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openNotes(s)">Notes</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}
+
+@if (tab() === 'byClass') {
+  <div class="card" style="margin-bottom:16px">
+    <label style="font-size:13px;color:#888;display:block;margin-bottom:8px">Select Class</label>
+    <select [(ngModel)]="classId" (ngModelChange)="loadClassStudents($event)" style="width:100%;max-width:320px;padding:10px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:14px">
+      <option value="">Choose a class...</option>
+      @for (c of classes(); track c.id) {
+        <option [value]="c.id">{{ c.name }}{{ c.section ? ' — ' + c.section : '' }}</option>
+      }
+    </select>
+  </div>
+
+  @if (loadingClass()) {
+    <div class="card"><p class="loading-text">Loading students...</p></div>
+  } @else if (classId && classstudents().length === 0) {
+    <div class="card"><div class="empty-state">No students in this class.</div></div>
+  } @else if (classstudents().length > 0) {
+    <div class="card">
+      <table class="table">
+        <thead>
+          <tr><th>#</th><th>Name</th><th>Phone</th><th>Email</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          @for (s of classstudents(); track s.id; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ s.name }}</td>
+              <td>{{ s.phone || '—' }}</td>
+              <td>{{ s.email || '—' }}</td>
+              <td>
+                <span class="badge" [class.badge-success]="s.is_active" [class.badge-error]="!s.is_active">
+                  {{ s.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}

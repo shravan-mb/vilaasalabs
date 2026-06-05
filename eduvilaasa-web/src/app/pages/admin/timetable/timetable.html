@@ -1,0 +1,97 @@
+<div class="page-header">
+  <div><h1>Timetable</h1><p>Manage class schedules for all classes</p></div>
+  <button class="btn btn-primary" (click)="openForm()">+ Add Slot</button>
+</div>
+
+@if (showForm()) {
+  <div class="modal-overlay" (click)="showForm.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header"><h2>Add Timetable Slot</h2></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Class *</label>
+          <select [(ngModel)]="form.class_id">
+            <option value="">Select class...</option>
+            @for (c of classes(); track c.id) {
+              <option [value]="c.id">{{ c.name }}{{ c.section ? ' – ' + c.section : '' }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Subject *</label>
+          <input [(ngModel)]="form.subject_name" placeholder="e.g. Mathematics" />
+        </div>
+        <div class="form-group">
+          <label>Teacher</label>
+          <select [(ngModel)]="form.teacher_id">
+            <option value="">— No teacher assigned —</option>
+            @for (t of teachers(); track t.id) {
+              <option [value]="t.id">{{ t.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Day *</label>
+          <select [(ngModel)]="form.day_of_week">
+            @for (d of days; track $index; let i = $index) {
+              <option [value]="i">{{ d }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Start Time *</label>
+          <input type="time" [(ngModel)]="form.start_time" />
+        </div>
+        <div class="form-group">
+          <label>End Time *</label>
+          <input type="time" [(ngModel)]="form.end_time" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" (click)="showForm.set(false)">Cancel</button>
+        <button class="btn btn-primary" (click)="saveSlot()" [disabled]="saving()">
+          {{ saving() ? 'Saving...' : 'Add Slot' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<div class="filter-bar">
+  <select [ngModel]="filterClassId()" (ngModelChange)="filterClassId.set($event)" style="min-width:200px;padding:9px 12px;background:#111;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:14px">
+    <option value="">All Classes</option>
+    @for (c of classes(); track c.id) {
+      <option [value]="c.id">{{ c.name }}{{ c.section ? ' – ' + c.section : '' }}</option>
+    }
+  </select>
+</div>
+
+@if (loading()) {
+  <div class="card"><p class="loading-text">Loading timetable...</p></div>
+} @else if (filteredSlots().length === 0) {
+  <div class="card"><div class="empty-state">No timetable slots yet. Click "Add Slot" to create the schedule.</div></div>
+} @else {
+  @for (classId of uniqueClassIds(); track classId) {
+    <div class="class-section">
+      <div class="class-heading">{{ className(classId) }}</div>
+      <div class="week-grid">
+        @for (day of days; track $index; let d = $index) {
+          <div class="day-col">
+            <div class="day-header">{{ day }}</div>
+            @for (slot of slotsForDay(classId, d); track slot.id) {
+              <div class="slot-card">
+                <div class="slot-subject">{{ slot.subject_name }}</div>
+                <div class="slot-time">{{ slot.start_time }} – {{ slot.end_time }}</div>
+                @if (slot.teacher_name) { <div class="slot-teacher">{{ slot.teacher_name }}</div> }
+                <button class="slot-del" (click)="deleteSlot(slot.id)" title="Delete">×</button>
+              </div>
+            }
+            @if (!slotsForDay(classId, d).length) {
+              <div class="slot-empty">—</div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+}

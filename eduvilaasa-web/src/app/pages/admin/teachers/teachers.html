@@ -1,0 +1,108 @@
+<div class="page-header">
+  <div>
+    <h1>Teachers</h1>
+    <p>Manage teacher accounts in your institution</p>
+  </div>
+  <button class="btn btn-primary" (click)="showForm.set(!showForm())">
+    @if (showForm()) { Cancel } @else { + Add Teacher }
+  </button>
+</div>
+
+@if (error()) { <div class="alert alert-error">{{ error() }}</div> }
+
+@if (showForm()) {
+  <div class="card form-card">
+    <h3>NEW TEACHER</h3>
+    <div class="grid-2">
+      <div class="field">
+        <label>Full Name *</label>
+        <input [(ngModel)]="form.name" [class.invalid]="isInvalid('name')" (blur)="touch('name')" placeholder="Teacher name" />
+        @if (isInvalid('name')) { <span class="err">Name is required</span> }
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <input [(ngModel)]="form.phone" placeholder="+91 9876543210" />
+      </div>
+      <div class="field">
+        <label>Email <span style="color:#888;font-weight:400">(optional)</span></label>
+        <input [(ngModel)]="form.email" type="email" [class.invalid]="isInvalid('email')" (blur)="touch('email')" placeholder="teacher@school.edu" />
+        @if (isInvalid('email')) { <span class="err">Enter a valid email</span> }
+      </div>
+      <div class="field">
+        <label>Password *</label>
+        <input [(ngModel)]="form.password" type="password" [class.invalid]="isInvalid('password')" (blur)="touch('password')" placeholder="Min 8 characters" />
+        @if (isInvalid('password')) { <span class="err">Min 8 characters</span> }
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="onSubmit()" [disabled]="saving()">
+        @if (saving()) { Saving... } @else { Add Teacher }
+      </button>
+    </div>
+  </div>
+}
+
+<div class="card">
+  @if (loading()) {
+    <p class="loading-text">Loading teachers...</p>
+  } @else if (teachers().length === 0) {
+    <div class="empty-state"><p>No teachers yet. Add your first teacher above.</p></div>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr><th>Name</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        @for (t of teachers(); track t.id) {
+          <tr>
+            <td>{{ t.name }}</td>
+            <td>{{ t.phone || '—' }}</td>
+            <td>{{ t.email || '—' }}</td>
+            <td><span class="badge" [class]="t.is_active ? 'badge-green' : 'badge-red'">{{ t.is_active ? 'Active' : 'Inactive' }}</span></td>
+            <td style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openEdit(t)">Edit</button>
+              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openResetPassword(t)">Reset PW</button>
+              @if (t.is_active) {
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#d97706;border-color:#d97706" (click)="deactivate(t.id)">Deactivate</button>
+              } @else {
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#16a34a;border-color:#16a34a" (click)="activate(t.id)">Activate</button>
+              }
+              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#dc2626;border-color:#dc2626" (click)="delete(t.id)">Delete</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (editTarget()) {
+  <div class="modal-overlay" (click)="editTarget.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Edit Teacher</h3>
+      <div class="field"><label>Full Name *</label><input [(ngModel)]="editForm.name" placeholder="Teacher name" /></div>
+      <div class="field"><label>Phone</label><input [(ngModel)]="editForm.phone" placeholder="+91 9876543210" /></div>
+      <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="editForm.email" type="email" placeholder="teacher@school.edu" /></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="editTarget.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="saveEdit()" [disabled]="editSaving()">{{ editSaving() ? 'Saving...' : 'Save Changes' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (passwordTarget()) {
+  <div class="modal-overlay" (click)="passwordTarget.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Reset Password — {{ passwordTarget().name }}</h3>
+      <div class="field">
+        <label>New Password *</label>
+        <input [(ngModel)]="newPassword" type="password" placeholder="Min 8 characters" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="passwordTarget.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="savePassword()" [disabled]="passwordSaving()">{{ passwordSaving() ? 'Updating...' : 'Set Password' }}</button>
+      </div>
+    </div>
+  </div>
+}

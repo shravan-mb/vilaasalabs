@@ -1,0 +1,94 @@
+<div class="page-header">
+  <div>
+    <h1>Staff Management</h1>
+    <p>Manage institution staff accounts</p>
+  </div>
+  <button class="btn btn-primary" (click)="openForm()">+ Add Staff</button>
+</div>
+
+@if (loading()) {
+  <div class="card"><app-skeleton [lines]="5" /></div>
+} @else {
+  <div class="card">
+    @if (!staff().length) {
+      <div class="empty-state">No staff members yet. Add your first staff member.</div>
+    } @else {
+      <table class="table">
+        <thead><tr><th>Name</th><th>Department</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          @for (m of staff(); track m.id) {
+            <tr>
+              <td>{{ m.name }}</td>
+              <td>{{ m.department || '—' }}</td>
+              <td>{{ m.phone || '—' }}</td>
+              <td>{{ m.email || '—' }}</td>
+              <td><span class="badge" [class.badge-success]="m.is_active" [class.badge-error]="!m.is_active">{{ m.is_active ? 'Active' : 'Inactive' }}</span></td>
+              <td style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-outline btn-sm" (click)="openEdit(m)">Edit</button>
+                <button class="btn btn-outline btn-sm" (click)="openResetPassword(m)">Reset PW</button>
+                <button class="btn btn-danger btn-sm" (click)="confirmDelete(m)">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+
+@if (showForm()) {
+  <div class="modal-overlay" (click)="showForm.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Add Staff Member</h3>
+      <div class="field"><label>Full Name *</label><input [(ngModel)]="form.name" placeholder="Staff name" /></div>
+      <div class="field"><label>Department</label><input [(ngModel)]="form.department" placeholder="e.g. Administration, Finance, Library" /></div>
+      <div class="field"><label>Phone</label><input [(ngModel)]="form.phone" placeholder="+91 9876543210" /></div>
+      <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="form.email" type="email" placeholder="staff@school.com" /></div>
+      <div class="field"><label>Password *</label><input [(ngModel)]="form.password" type="password" placeholder="Temporary password" /></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showForm.set(false)">Cancel</button>
+        <button class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Add Staff' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (editTarget()) {
+  <div class="modal-overlay" (click)="editTarget.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Edit Staff Member</h3>
+      <div class="field"><label>Full Name *</label><input [(ngModel)]="editForm.name" placeholder="Staff name" /></div>
+      <div class="field"><label>Department</label><input [(ngModel)]="editForm.department" placeholder="e.g. Administration, Finance" /></div>
+      <div class="field"><label>Phone</label><input [(ngModel)]="editForm.phone" placeholder="+91 9876543210" /></div>
+      <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="editForm.email" type="email" placeholder="staff@school.com" /></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="editTarget.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="saveEdit()" [disabled]="editSaving()">{{ editSaving() ? 'Saving...' : 'Save Changes' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (passwordTarget()) {
+  <div class="modal-overlay" (click)="passwordTarget.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Reset Password — {{ passwordTarget().name }}</h3>
+      <div class="field">
+        <label>New Password *</label>
+        <input [(ngModel)]="newPassword" type="password" placeholder="Min 8 characters" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="passwordTarget.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="savePassword()" [disabled]="passwordSaving()">{{ passwordSaving() ? 'Updating...' : 'Set Password' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-confirm-dialog
+  [open]="!!deleteTarget()"
+  title="Delete Staff Member"
+  [message]="'Remove ' + deleteTarget()?.name + '? This cannot be undone.'"
+  (confirm)="doDelete()"
+  (cancel)="deleteTarget.set(null)"
+/>

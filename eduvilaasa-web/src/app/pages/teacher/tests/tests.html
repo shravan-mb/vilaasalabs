@@ -1,0 +1,105 @@
+<div class="page-header">
+  <div>
+    <h1>Tests</h1>
+    <p>Create and manage your tests</p>
+  </div>
+  <button class="btn btn-primary" (click)="showForm.set(!showForm())">
+    @if (showForm()) { Cancel } @else { + Create Test }
+  </button>
+</div>
+
+@if (success()) { <div class="alert alert-success">{{ success() }}</div> }
+@if (error())   { <div class="alert alert-error">{{ error() }}</div> }
+
+@if (showForm()) {
+  <div class="card form-card">
+    <h3>New Test</h3>
+    <div class="grid-2">
+      <div class="field">
+        <label>Test Title *</label>
+        <input [(ngModel)]="form.title" placeholder="Chapter 5 Test" />
+      </div>
+      <div class="field">
+        <label>Class</label>
+        <select [(ngModel)]="form.class_id" (ngModelChange)="onClassChange()">
+          <option value="">— All Classes —</option>
+          @for (cls of classes(); track cls.id) {
+            <option [value]="cls.id">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Subject</label>
+        @if (classSubjects().length > 0) {
+          <select [(ngModel)]="form.subject">
+            <option value="">— All Subjects —</option>
+            @for (sub of classSubjects(); track sub.id) {
+              <option [value]="sub.name">{{ sub.name }}</option>
+            }
+          </select>
+        } @else {
+          <input [(ngModel)]="form.subject" placeholder="e.g. Mathematics" />
+        }
+      </div>
+      <div class="field">
+        <label>Total Marks *</label>
+        <input [(ngModel)]="form.total_marks" type="number" min="1" />
+      </div>
+      <div class="field">
+        <label>Duration (minutes)</label>
+        <input [(ngModel)]="form.duration_minutes" type="number" min="0" />
+      </div>
+    </div>
+
+    <div class="questions-picker">
+      <div class="picker-label">
+        Select Questions * ({{ form.question_ids.length }} selected)
+        @if (form.subject) { <span style="color:#888;font-size:12px"> · filtered by {{ form.subject }}</span> }
+      </div>
+      @if (filteredQuestions.length === 0) {
+        <p style="color:#555;font-size:13px">No questions found. Add questions in Question Bank first.</p>
+      } @else {
+        <div class="q-list">
+          @for (q of filteredQuestions; track q.id) {
+            <div class="q-row" [class.selected]="isSelected(q.id)" (click)="toggleQuestion(q.id)">
+              <span class="q-check">{{ isSelected(q.id) ? '☑' : '☐' }}</span>
+              <span class="q-preview">{{ q.question_text }}</span>
+              <span class="badge badge-gray" style="font-size:10px;flex-shrink:0">{{ q.subject }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="onSubmit()" [disabled]="saving()">
+        @if (saving()) { Saving... } @else { Create Test }
+      </button>
+    </div>
+  </div>
+}
+
+<div class="card">
+  @if (loading()) {
+    <p class="loading-text">Loading tests...</p>
+  } @else if (tests().length === 0) {
+    <div class="empty-state"><p>No tests yet. Create your first test above.</p></div>
+  } @else {
+    <table class="table">
+      <thead><tr><th>Title</th><th>Class</th><th>Subject</th><th>Questions</th><th>Total Marks</th><th>Duration</th><th>Status</th></tr></thead>
+      <tbody>
+        @for (t of tests(); track t.id) {
+          <tr>
+            <td>{{ t.title }}</td>
+            <td>{{ t.class_id ? className(t.class_id) : '—' }}</td>
+            <td>{{ t.subject || '—' }}</td>
+            <td>{{ t.question_ids?.length ?? 0 }}</td>
+            <td>{{ t.total_marks }}</td>
+            <td>{{ t.duration_minutes ? t.duration_minutes + ' min' : '—' }}</td>
+            <td><span class="badge" [class]="statusClass(t.status)">{{ t.status }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

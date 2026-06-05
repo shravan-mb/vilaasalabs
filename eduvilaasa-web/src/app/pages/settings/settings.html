@@ -1,0 +1,66 @@
+<div class="page-header">
+  <h1>Settings</h1>
+  <p>Manage your profile and account security</p>
+</div>
+
+<div class="settings-grid">
+  <!-- Profile -->
+  <div class="card">
+    <h3>Profile Information</h3>
+
+    @if (profileSuccess()) { <div class="alert alert-success">{{ profileSuccess() }}</div> }
+    @if (profileError())   { <div class="alert alert-error">{{ profileError() }}</div> }
+
+    <div class="avatar">
+      <div class="avatar-circle">{{ auth.currentUser()?.name?.charAt(0)?.toUpperCase() }}</div>
+      <div>
+        <div class="avatar-name">{{ auth.currentUser()?.name }}</div>
+        <div class="avatar-role">{{ auth.currentUser()?.email }}</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Full Name</label>
+      <input [(ngModel)]="name" placeholder="Your name" />
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Phone Number</label>
+      <input [(ngModel)]="phone" placeholder="+91 9876543210" />
+    </div>
+
+    <button class="btn btn-primary" style="margin-top:20px" (click)="saveProfile()" [disabled]="profileSaving()">
+      @if (profileSaving()) { Saving... } @else { Save Changes }
+    </button>
+  </div>
+
+  <!-- Password -->
+  <div class="card">
+    <h3>Change Password</h3>
+
+    @if (passwordSuccess()) { <div class="alert alert-success">{{ passwordSuccess() }}</div> }
+    @if (passwordError())   { <div class="alert alert-error">{{ passwordError() }}</div> }
+
+    <div class="field">
+      <label>Current Password</label>
+      <input [(ngModel)]="currentPassword" type="password" (blur)="touch('currentPassword')" placeholder="••••••••" />
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>New Password</label>
+      <input [(ngModel)]="newPassword" type="password" [class.invalid]="newPasswordInvalid"
+        (blur)="touch('newPassword')" (input)="touch('newPassword')" placeholder="Min 8 chars, mixed case + number + symbol" />
+      @if (newPasswordInvalid) {
+        <span class="err">Must have uppercase, lowercase, number and special character (@$!%*?&)</span>
+      }
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Confirm New Password</label>
+      <input [(ngModel)]="confirmPassword" type="password" [class.invalid]="confirmInvalid"
+        (blur)="touch('confirm')" placeholder="Repeat new password" />
+      @if (confirmInvalid) { <span class="err">Passwords do not match</span> }
+    </div>
+
+    <button class="btn btn-primary" style="margin-top:20px" (click)="changePassword()" [disabled]="passwordSaving()">
+      @if (passwordSaving()) { Changing... } @else { Change Password }
+    </button>
+  </div>
+</div>

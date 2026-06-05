@@ -1,0 +1,71 @@
+<div class="page-header">
+  <h1>Mark Attendance</h1>
+  <p>Record attendance for your class</p>
+</div>
+
+@if (submitted()) { <div class="alert alert-success">Attendance submitted successfully!</div> }
+
+<div class="card filter-bar">
+  <div class="field">
+    <label>Class *</label>
+    <select [(ngModel)]="selectedClass" (ngModelChange)="onClassChange()">
+      <option value="">Select class</option>
+      @for (cls of classes(); track cls.id) {
+        <option [value]="cls.id">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</option>
+      }
+    </select>
+  </div>
+  <div class="field">
+    <label>Date</label>
+    <input type="date" [(ngModel)]="date" />
+  </div>
+</div>
+
+@if (loadingStudents()) {
+  <div class="card"><p style="text-align:center;color:#888;padding:24px">Loading students...</p></div>
+} @else if (selectedClass && entries().length === 0) {
+  <div class="card"><div class="empty-state">No students found in this class.</div></div>
+} @else if (entries().length > 0) {
+  <div class="card">
+    <div class="bulk-actions" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="color:#999;font-size:13px">Mark all as:</span>
+      <button class="btn btn-outline" style="font-size:12px" (click)="markAll('present')">Present</button>
+      <button class="btn btn-outline" style="font-size:12px" (click)="markAll('absent')">Absent</button>
+      <button class="btn btn-outline" style="font-size:12px" (click)="markAll('late')">Late</button>
+      <span style="margin-left:auto;color:#888;font-size:12px">
+        {{ presentCount }} present · {{ absentCount }} absent · {{ entries().length - presentCount - absentCount }} other
+      </span>
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>Student</th><th>Status</th><th>Remarks</th></tr>
+      </thead>
+      <tbody>
+        @for (e of entries(); track e.student_id; let i = $index) {
+          <tr [class]="'row-' + e.status">
+            <td style="color:#666;width:40px">{{ i + 1 }}</td>
+            <td>{{ e.name }}</td>
+            <td>
+              <div class="status-btns">
+                @for (s of ['present','absent','late','holiday']; track s) {
+                  <button class="status-btn" [class.active]="e.status === s" [attr.data-status]="s"
+                    (click)="setStatus(e.student_id, s)">{{ s }}</button>
+                }
+              </div>
+            </td>
+            <td>
+              <input class="remarks-input" [value]="e.remarks" (input)="setRemarks(e.student_id, $any($event.target).value)" placeholder="Optional note" />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div style="margin-top:20px">
+      <button class="btn btn-primary" (click)="submit()" [disabled]="saving()">
+        @if (saving()) { Submitting... } @else { Submit Attendance ({{ entries().length }} students) }
+      </button>
+    </div>
+  </div>
+}

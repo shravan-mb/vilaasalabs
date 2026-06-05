@@ -1,0 +1,22 @@
+<nav class="sidebar" [class.open]="open">
+  <div class="sidebar-logo">
+    @if (open) {
+      <span class="logo-text">EduVilaasa</span>
+    } @else {
+      <span class="logo-icon">EV</span>
+    }
+  </div>
+
+  <ul class="nav-list">
+    @for (item of navItems(); track item.route) {
+      <li>
+        <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
+          <span class="nav-icon">{{ item.icon }}</span>
+          @if (open) {
+            <span class="nav-label">{{ item.label }}</span>
+          }
+        </a>
+      </li>
+    }
+  </ul>
+</nav>

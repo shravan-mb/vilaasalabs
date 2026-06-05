@@ -1,0 +1,70 @@
+<div class="page-header">
+  <div><h1>Meeting Requests</h1><p>Parents requesting meetings with you about their child</p></div>
+</div>
+
+@if (respondTarget()) {
+  <div class="modal-overlay" (click)="respondTarget.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header"><h2>Respond to Meeting Request</h2></div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:13px;color:#888;margin-bottom:4px">From parent regarding: <strong style="color:#e5e5e5">{{ respondTarget().student?.name }}</strong></div>
+        <div class="message-box">{{ respondTarget().message }}</div>
+        @if (respondTarget().proposed_date) {
+          <div style="font-size:13px;color:#888;margin-top:8px">Proposed date: {{ respondTarget().proposed_date }}</div>
+        }
+      </div>
+      <div class="form-group">
+        <label>Your Response</label>
+        <select [(ngModel)]="responseStatus">
+          <option value="accepted">Accept</option>
+          <option value="declined">Decline</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Note (optional)</label>
+        <textarea [(ngModel)]="responseNote" rows="3" placeholder="Any additional message..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" (click)="respondTarget.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="submitResponse()" [disabled]="responding()">
+          {{ responding() ? 'Sending...' : 'Send Response' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (loading()) {
+  <div class="card"><p class="loading-text">Loading requests...</p></div>
+} @else if (requests().length === 0) {
+  <div class="card"><div class="empty-state">No meeting requests yet.</div></div>
+} @else {
+  <div class="card">
+    <table class="table">
+      <thead>
+        <tr><th>Student</th><th>Parent</th><th>Message</th><th>Proposed Date</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        @for (req of requests(); track req.id) {
+          <tr>
+            <td>{{ req.student?.name || '—' }}</td>
+            <td>
+              <div>{{ req.parent?.name || '—' }}</div>
+              @if (req.parent?.phone) { <div style="font-size:12px;color:#888">{{ req.parent.phone }}</div> }
+            </td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ req.message }}</td>
+            <td>{{ req.proposed_date || '—' }}</td>
+            <td><span class="badge" [class]="statusClass(req.status)">{{ req.status }}</span></td>
+            <td>
+              @if (req.status === 'pending') {
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openRespond(req)">Respond</button>
+              } @else if (req.response_note) {
+                <span style="font-size:11px;color:#555" [title]="req.response_note">Note ↗</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

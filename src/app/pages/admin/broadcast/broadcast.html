@@ -1,0 +1,40 @@
+<div class="broadcast-page">
+  <div class="page-header">
+    <div><h2>Broadcast Email</h2><p>Send announcements to all or selected institutions</p></div>
+  </div>
+
+  @if (msg()) { <div class="alert-success">{{ msg() }}</div> }
+  @if (err()) { <div class="alert-error">{{ err() }}</div> }
+
+  <div class="two-col">
+    <div class="card compose">
+      <h3>Compose Message</h3>
+      <div class="field"><label>Subject</label><input [(ngModel)]="subject" placeholder="Email subject..." /></div>
+      <div class="field"><label>Message (HTML supported)</label>
+        <textarea [(ngModel)]="body" rows="8" placeholder="Write your message..."></textarea>
+      </div>
+      <button class="btn-primary" (click)="send()" [disabled]="sending()">
+        {{ sending() ? 'Sending...' : 'Send Broadcast' }}
+      </button>
+    </div>
+
+    <div class="card recipients">
+      <h3>Recipients</h3>
+      <label class="check-row">
+        <input type="checkbox" [checked]="sendToAll" (change)="toggleAll($any($event.target).checked)" />
+        <span>All active institutions ({{ schools().length }})</span>
+      </label>
+      @if (!sendToAll) {
+        <div class="school-list">
+          @for (s of schools(); track s.id) {
+            <label class="check-row">
+              <input type="checkbox" [checked]="isSelected(s.id)" (change)="toggleSchool(s.id, $any($event.target).checked)" />
+              <span>{{ s.name }}</span>
+            </label>
+          }
+        </div>
+        <div class="selection-count">{{ selectedIds.size }} selected</div>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<div class="page-header">
+  <h1>Subscription</h1>
+  <p>Your current plan and usage limits</p>
+</div>
+
+@if (success()) { <div class="alert alert-success">{{ success() }}</div> }
+@if (error())   { <div class="alert alert-error">{{ error() }}</div> }
+
+@if (loading()) {
+  <p class="loading-text">Loading...</p>
+} @else {
+  <div class="grid-2" style="margin-bottom:24px">
+    <div class="card">
+      <div class="sub-section-title">Current Plan</div>
+      @if (current()) {
+        <div class="plan-info">
+          <div class="plan-name">{{ current().plan | uppercase }}</div>
+          <span class="badge" [class]="statusBadge(current().status)">{{ current().status }}</span>
+        </div>
+        <div class="plan-meta">
+          <div class="meta-row"><span>Billing</span><span>{{ current().billing_cycle || 'Trial' }}</span></div>
+          <div class="meta-row"><span>Expires</span><span>{{ current().expires_at | date:'mediumDate' }}</span></div>
+          <div class="meta-row days-left" [class.warning]="daysLeft < 5">
+            <span>Days Left</span><span>{{ daysLeft }}</span>
+          </div>
+        </div>
+        @if (daysLeft < 7) {
+          <div class="renew-notice">⚠ Your subscription expires soon. Upgrade to keep access.</div>
+        }
+        <button class="btn btn-primary" style="margin-top:16px" (click)="showUpgrade.set(!showUpgrade())">
+          @if (showUpgrade()) { Cancel } @else { Upgrade / Renew Plan }
+        </button>
+      }
+    </div>
+
+    <div class="card">
+      <div class="sub-section-title">Plan Limits</div>
+      @if (limits()) {
+        <div class="limits-grid">
+          <div class="limit-item">
+            <span class="limit-label">Max Students</span>
+            <span class="limit-value">{{ limits().limits.maxStudents }}</span>
+          </div>
+          <div class="limit-item">
+            <span class="limit-label">Max Teachers</span>
+            <span class="limit-value">{{ limits().limits.maxTeachers }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (showUpgrade()) {
+    <div class="card upgrade-card">
+      <div class="sub-section-title">Choose a Plan</div>
+
+      <div class="cycle-toggle">
+        <button [class.active]="selectedCycle === 'monthly'" (click)="selectedCycle = 'monthly'">Monthly</button>
+        <button [class.active]="selectedCycle === 'annual'" (click)="selectedCycle = 'annual'">
+          Annual <span class="save-tag">Save ~17%</span>
+        </button>
+      </div>
+
+      <div class="plan-cards">
+        @for (plan of plans; track plan) {
+          @if (plan !== 'pro_max' || selectedCycle === 'annual') {
+            <div class="plan-option" [class.selected]="selectedPlan === plan" (click)="selectedPlan = plan">
+              <div class="plan-option-name">{{ plan === 'pro_max' ? 'PRO MAX' : (plan | uppercase) }}</div>
+              @if (plan === 'pro_max') {
+                <div class="plan-option-price">₹99,999<span>/yr</span></div>
+                <div class="plan-option-badge" style="font-size:10px;color:#f59e0b;margin-bottom:4px">Annual only</div>
+              } @else {
+                <div class="plan-option-price">₹{{ selectedCycle === 'monthly' ? (plan === 'starter' ? 999 : plan === 'growth' ? 2499 : 4999) : (plan === 'starter' ? 9999 : plan === 'growth' ? 24999 : 49999) }}<span>/{{ selectedCycle === 'monthly' ? 'mo' : 'yr' }}</span></div>
+              }
+              <div class="plan-option-limits">{{ PLAN_LIMITS[plan]?.label }}</div>
+            </div>
+          }
+        }
+      </div>
+
+      <div class="upgrade-summary">
+        <span>You will pay: <strong>₹{{ selectedPlan === 'pro_max' ? '1,00,000' : selectedPrice }}</strong> for {{ selectedPlan === 'pro_max' || selectedCycle === 'annual' ? '1 year' : '1 month' }}</span>
+        <button class="btn btn-primary" (click)="startPayment()" [disabled]="paymentLoading()">
+          @if (paymentLoading()) { Processing... } @else { Pay ₹{{ selectedPlan === 'pro_max' ? '1,00,000' : selectedPrice }} with Razorpay }
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (history().length > 1) {
+    <div class="card">
+      <div class="sub-section-title" style="margin-bottom:12px">Subscription History</div>
+      <table class="table">
+        <thead>
+          <tr><th>Plan</th><th>Status</th><th>Started</th><th>Expires</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+          @for (s of history(); track s.id) {
+            <tr>
+              <td>{{ s.plan | uppercase }}</td>
+              <td><span class="badge" [class]="statusBadge(s.status)">{{ s.status }}</span></td>
+              <td>{{ s.started_at | date:'mediumDate' }}</td>
+              <td>{{ s.expires_at ? (s.expires_at | date:'mediumDate') : '—' }}</td>
+              <td>{{ s.amount ? '₹' + s.amount : 'Free' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}

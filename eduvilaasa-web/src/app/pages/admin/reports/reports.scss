@@ -1,0 +1,13 @@
+.report-controls { margin-bottom:16px; }
+.filters { display:flex; gap:16px; margin-bottom:16px; }
+.filters .field { flex:1; }
+.tab-btns { display:flex; gap:10px; }
+select { width:100%;padding:10px 12px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:14px; }
+.print-title { display:none; font-size:20px; font-weight:700; margin-bottom:16px; }
+@media print {
+  .no-print { display:none !important; }
+  .print-title { display:block; }
+  body, .app-shell { background:#fff !important; color:#000 !important; }
+  .card { border:1px solid #ccc !important; background:#fff !important; }
+  .table th, .table td { color:#000 !important; border-color:#ccc !important; }
+}

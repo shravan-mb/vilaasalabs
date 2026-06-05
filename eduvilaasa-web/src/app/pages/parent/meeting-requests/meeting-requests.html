@@ -1,0 +1,62 @@
+<div class="page-header">
+  <div><h1>Meeting Requests</h1><p>Request a meeting with your child's proctor teacher</p></div>
+  <button class="btn btn-primary" (click)="showForm.set(!showForm())">
+    @if (showForm()) { Cancel } @else { + New Request }
+  </button>
+</div>
+
+@if (showForm()) {
+  <div class="card" style="margin-bottom:20px">
+    <div style="font-size:14px;font-weight:600;color:#e5e5e5;margin-bottom:16px">Request a Meeting</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Child *</label>
+        <select [(ngModel)]="form.student_id">
+          <option value="">Select child...</option>
+          @for (c of children(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Preferred Date (optional)</label>
+        <input type="date" [(ngModel)]="form.proposed_date" />
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Message to Proctor *</label>
+        <textarea [(ngModel)]="form.message" rows="3" placeholder="Describe the reason for the meeting..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" (click)="showForm.set(false)">Cancel</button>
+      <button class="btn btn-primary" (click)="submitRequest()" [disabled]="saving()">
+        {{ saving() ? 'Sending...' : 'Send Request' }}
+      </button>
+    </div>
+  </div>
+}
+
+@if (loading()) {
+  <div class="card"><p class="loading-text">Loading requests...</p></div>
+} @else if (requests().length === 0) {
+  <div class="card"><div class="empty-state">No meeting requests yet. Use "+ New Request" to contact your child's proctor.</div></div>
+} @else {
+  <div class="card">
+    <table class="table">
+      <thead>
+        <tr><th>Child</th><th>Message</th><th>Proposed Date</th><th>Status</th><th>Proctor Response</th></tr>
+      </thead>
+      <tbody>
+        @for (req of requests(); track req.id) {
+          <tr>
+            <td>{{ req.student?.name || '—' }}</td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ req.message }}</td>
+            <td>{{ req.proposed_date || '—' }}</td>
+            <td><span class="badge" [class]="statusClass(req.status)">{{ req.status }}</span></td>
+            <td style="color:#888;font-size:13px">{{ req.response_note || '—' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

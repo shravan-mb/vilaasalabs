@@ -1,0 +1,38 @@
+.form-card { margin-bottom: 20px; h3 { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 16px; } }
+.form-actions { margin-top: 16px; }
+.loading-text { color: #555; }
+.classes-list { display: flex; flex-direction: column; gap: 12px; }
+
+.class-card { padding: 16px 20px; }
+
+.class-header {
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; user-select: none;
+}
+
+.class-name { font-size: 15px; font-weight: 600; color: #e5e5e5; }
+.year { font-size: 12px; color: #555; margin-left: 8px; }
+.class-meta { display: flex; align-items: center; gap: 12px; }
+.expand-icon { color: #555; font-size: 12px; }
+
+.subjects-area { margin-top: 16px; padding-top: 16px; border-top: 1px solid #2a2a2a; }
+
+.subjects-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
+.subject-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: #1e0a3c; color: #a78bfa; border: 1px solid #3b1a6e;
+  padding: 4px 12px; border-radius: 999px; font-size: 12px;
+  .code { color: #7c3aed; }
+}
+
+.chip-del {
+  background: none; border: none; color: #a78bfa; cursor: pointer;
+  font-size: 14px; line-height: 1; padding: 0; opacity: 0.6;
+  &:hover { opacity: 1; color: #f87171; }
+}
+
+.add-subject-form {
+  display: flex; align-items: center; gap: 8px; margin-top: 12px;
+  input { width: 200px; padding: 8px 12px; background: #111; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 13px; &:focus { outline: none; border-color: #7c3aed; } }
+}

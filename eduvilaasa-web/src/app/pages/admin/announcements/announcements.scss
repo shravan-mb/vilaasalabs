@@ -1,0 +1,12 @@
+.notice-card { margin-bottom:12px; }
+.notice-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:8px; }
+.notice-header h3 { font-size:15px;font-weight:600;color:#fff; }
+.notice-body { color:#ccc;font-size:14px;line-height:1.6;margin-bottom:8px; }
+.notice-by { font-size:11px;color:#666; }
+.modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center; }
+.modal { background:#111;border:1px solid #2a2a2a;border-radius:12px;padding:28px;width:100%;max-width:520px; }
+.modal h3 { font-size:16px;font-weight:600;color:#fff;margin-bottom:20px; }
+.field { margin-bottom:14px; }
+.field textarea { width:100%;padding:10px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:14px;resize:vertical; }
+.modal-actions { display:flex;gap:10px;justify-content:flex-end;margin-top:20px; }
+.btn-sm { padding:6px 12px;font-size:12px; }
