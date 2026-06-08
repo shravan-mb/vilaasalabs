@@ -9,6 +9,7 @@ export class UpdateInstitutionDto {
   @IsOptional() @IsString() phone?: string;
   @IsOptional() @IsEmail() email?: string;
   @IsOptional() @IsString() principal_name?: string;
+  @IsOptional() @IsString() registration_number?: string;
 }
 
 export class AdminSubscriptionDto {

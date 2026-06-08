@@ -18,7 +18,7 @@ export class OnboardSchool {
   form = {
     name: '', type: 'school', subdomain: '', email: '',
     phone: '', city: '', state: '', address: '', pincode: '',
-    principal_name: '', admin_name: '', admin_password: ''
+    principal_name: '', registration_number: '', admin_name: '', admin_password: ''
   };
 
   // tracks which fields the user has interacted with
@@ -77,7 +77,7 @@ export class OnboardSchool {
 
     this.api.onboardInstitution(this.form).subscribe({
       next: () => {
-        this.success.set(`${this.form.name} has been onboarded successfully with a 7-day trial!`);
+        this.success.set(`${this.form.name} has been onboarded successfully with a 30-day trial!`);
         this.loading.set(false);
         setTimeout(() => this.router.navigate(['/admin/schools']), 2000);
       },

@@ -2,7 +2,7 @@
   <div class="page-header">
     <div>
       <h2>Onboard New Institution</h2>
-      <p>Creates institution + admin account + 7-day trial automatically</p>
+      <p>Creates institution + admin account + 30-day trial automatically</p>
     </div>
     <a routerLink="/admin/schools" class="btn-back">← Back to Schools</a>
   </div>
@@ -70,6 +70,11 @@
         <div class="field">
           <label>Principal Name</label>
           <input [(ngModel)]="form.principal_name" name="principal_name" placeholder="Dr. John Smith" />
+        </div>
+
+        <div class="field">
+          <label>Registration / UDISE Number <span class="hint">optional</span></label>
+          <input [(ngModel)]="form.registration_number" name="registration_number" placeholder="e.g. 29140108303 or KA/SCH/2024/001" />
         </div>
 
         <div class="field">

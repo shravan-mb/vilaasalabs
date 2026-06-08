@@ -1,4 +1,4 @@
-import { DatePipe, UpperCasePipe } from '@angular/common';
+import { DatePipe, DecimalPipe, UpperCasePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -9,16 +9,16 @@ import { AuthService } from '../../../core/services/auth.service';
 declare var Razorpay: any;
 
 const PLAN_PRICES: Record<string, Record<string, number>> = {
-  starter: { monthly: 999,    annual: 9999 },
-  growth:  { monthly: 2499,   annual: 24999 },
-  pro:     { monthly: 4999,   annual: 49999 },
-  pro_max: { monthly: 0,      annual: 99999 },
+  starter: { monthly: 799,   annual: 7990  },
+  growth:  { monthly: 1999,  annual: 19990 },
+  pro:     { monthly: 4499,  annual: 44990 },
+  pro_max: { monthly: 8999,  annual: 89990 },
 };
 
 @Component({
   selector: 'app-subscription',
   standalone: true,
-  imports: [DatePipe, UpperCasePipe, FormsModule],
+  imports: [DatePipe, DecimalPipe, UpperCasePipe, FormsModule],
   templateUrl: './subscription.html',
   styleUrl: './subscription.scss',
 })
@@ -42,11 +42,15 @@ export class SubscriptionPage implements OnInit {
   cycles = ['monthly', 'annual'];
 
   readonly PLAN_LIMITS: Record<string, { students: number | string; teachers: number | string; label: string }> = {
-    starter: { students: 50,   teachers: 3,   label: 'Up to 50 students, 3 teachers' },
-    growth:  { students: 200,  teachers: 10,  label: 'Up to 200 students, 10 teachers' },
-    pro:     { students: 9999, teachers: 999, label: 'Up to 9999 students, unlimited teachers' },
-    pro_max: { students: '∞',  teachers: '∞', label: 'Unlimited students, teachers & staff — Annual only' },
+    starter: { students: 150,  teachers: 5,   label: 'Up to 150 students, 5 teachers'   },
+    growth:  { students: 500,  teachers: 15,  label: 'Up to 500 students, 15 teachers'  },
+    pro:     { students: 1500, teachers: 50,  label: 'Up to 1,500 students, 50 teachers' },
+    pro_max: { students: 5000, teachers: 200, label: 'Up to 5,000 students, 200 teachers · Need more? Enterprise plan available' },
   };
+
+  planPrice(plan: string): number {
+    return PLAN_PRICES[plan]?.[this.selectedCycle] ?? 0;
+  }
 
   ngOnInit() {
     this.loadData();

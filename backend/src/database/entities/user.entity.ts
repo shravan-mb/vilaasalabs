@@ -38,7 +38,7 @@ export class User {
   @JoinColumn({ name: 'proctor_id' })
   proctor: User | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   registration_number: string | null;
 
   @Column()

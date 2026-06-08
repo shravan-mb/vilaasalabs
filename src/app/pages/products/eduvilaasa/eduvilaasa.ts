@@ -50,11 +50,11 @@ export class EduVilaasaPage {
   ];
 
   plans = [
-    { name: 'Trial',   price: 0,    period: 'Free for 7 days', color: '#555', features: ['Up to 50 students', 'All core modules', 'Email support'], popular: false },
-    { name: 'Starter', price: 999,  period: '/month',          color: '#2563eb', features: ['Up to 200 students', 'All core modules', 'Fee management', 'Priority support'], popular: false },
-    { name: 'Growth',  price: 2499, period: '/month',          color: '#7c3aed', features: ['Up to 600 students', 'All modules', 'Advanced reports', 'Dedicated support'], popular: true },
-    { name: 'Pro',     price: 4999, period: '/month',          color: '#7c3aed', features: ['Up to 1,500 students', 'All modules', 'Custom branding', 'Priority onboarding'], popular: false },
-    { name: 'Pro Max', price: 9999, period: '/month',          color: '#f59e0b', features: ['Unlimited students', 'All modules', 'White-label option', 'Dedicated account manager'], popular: false },
+    { name: 'Trial',   price: 0,    period: 'Free for 30 days', color: '#555',    features: ['Up to 50 students', 'All core modules', 'Email support'], popular: false },
+    { name: 'Starter', price: 799,  period: '/month',           color: '#2563eb', features: ['Up to 150 students', 'All core modules', 'Fee management', 'Priority support'], popular: false },
+    { name: 'Growth',  price: 1999, period: '/month',           color: '#7c3aed', features: ['Up to 500 students', 'All modules', 'Advanced reports', 'Dedicated support'], popular: true },
+    { name: 'Pro',     price: 4499, period: '/month',           color: '#7c3aed', features: ['Up to 1,500 students', 'All modules', 'Custom branding', 'Priority onboarding'], popular: false },
+    { name: 'Pro Max', price: 8999, period: '/month',           color: '#f59e0b', features: ['Up to 5,000 students', 'Up to 200 teachers', 'All modules', 'White-label option', 'Dedicated account manager', '5,000+ students? Contact us for Enterprise'], popular: false },
   ];
 
   steps = [

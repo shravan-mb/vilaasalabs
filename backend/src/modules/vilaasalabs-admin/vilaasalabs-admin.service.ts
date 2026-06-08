@@ -9,11 +9,11 @@ import { MailService } from '../mail/mail.service';
 import { AdminSubscriptionDto, BroadcastDto, UpdateInstitutionDto } from './dto/admin-actions.dto';
 
 const PLAN_PRICES: Record<string, Record<string, number>> = {
-  trial:   { monthly: 0,     annual: 0 },
-  starter: { monthly: 999,   annual: 9990 },
-  growth:  { monthly: 2499,  annual: 24990 },
-  pro:     { monthly: 4999,  annual: 49990 },
-  pro_max: { monthly: 9999,  annual: 99990 },
+  trial:   { monthly: 0,     annual: 0     },
+  starter: { monthly: 799,   annual: 7990  },
+  growth:  { monthly: 1999,  annual: 19990 },
+  pro:     { monthly: 4499,  annual: 44990 },
+  pro_max: { monthly: 8999,  annual: 89990 },
 };
 
 @Injectable()
@@ -90,6 +90,12 @@ export class VilaasalabsAdminService {
 
     await this.institutionRepo.update(institutionId, { subscription_plan: dto.plan, subscription_expires_at: expiresAt, is_active: true });
     return saved;
+  }
+
+  async deleteInstitution(institutionId: string): Promise<void> {
+    const institution = await this.institutionRepo.findOne({ where: { id: institutionId } });
+    if (!institution) throw new NotFoundException('Institution not found');
+    await this.institutionRepo.remove(institution);
   }
 
   async suspend(institutionId: string): Promise<void> {

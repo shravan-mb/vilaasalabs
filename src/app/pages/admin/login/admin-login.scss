@@ -64,12 +64,18 @@
 
     .pw-wrapper {
       position: relative;
-      input { padding-right: 44px; }
+      input {
+        padding-right: 44px;
+        &::-ms-reveal,
+        &::-ms-clear { display: none; }
+        &::-webkit-credentials-auto-fill-button { display: none !important; }
+      }
       .pw-eye {
         position: absolute;
         right: 12px;
         top: 50%;
         transform: translateY(-50%);
+        width: auto;
         background: none;
         border: none;
         color: #555;

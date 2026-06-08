@@ -10,11 +10,11 @@ import { Subscription } from '../../database/entities/subscription.entity';
 import { MailService } from '../mail/mail.service';
 
 export const PLAN_PRICES: Record<SubscriptionPlan, Record<BillingCycle, number>> = {
-  [SubscriptionPlan.TRIAL]:   { monthly: 0,      annual: 0 },
-  [SubscriptionPlan.STARTER]: { monthly: 999,    annual: 9999 },
-  [SubscriptionPlan.GROWTH]:  { monthly: 2499,   annual: 24999 },
-  [SubscriptionPlan.PRO]:     { monthly: 4999,   annual: 49999 },
-  [SubscriptionPlan.PRO_MAX]: { monthly: 0,      annual: 99999 },
+  [SubscriptionPlan.TRIAL]:   { monthly: 0,     annual: 0     },
+  [SubscriptionPlan.STARTER]: { monthly: 799,   annual: 7990  },
+  [SubscriptionPlan.GROWTH]:  { monthly: 1999,  annual: 19990 },
+  [SubscriptionPlan.PRO]:     { monthly: 4499,  annual: 44990 },
+  [SubscriptionPlan.PRO_MAX]: { monthly: 8999,  annual: 89990 },
 };
 
 @Injectable()

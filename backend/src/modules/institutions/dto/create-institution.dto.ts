@@ -52,6 +52,11 @@ export class CreateInstitutionDto {
   @IsString()
   principal_name?: string;
 
+  @ApiPropertyOptional({ example: 'UDISE123456', description: 'Government registration / UDISE / license number' })
+  @IsOptional()
+  @IsString()
+  registration_number?: string;
+
   @ApiProperty({ description: 'Password for the institution admin account' })
   @IsString()
   @MinLength(8)

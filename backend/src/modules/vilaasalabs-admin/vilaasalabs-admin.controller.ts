@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, HttpCode } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, HttpCode } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -48,6 +48,11 @@ export class VilaasalabsAdminController {
   changeSubscription(@Param('id') id: string, @Body() dto: AdminSubscriptionDto) {
     return this.service.changeSubscription(id, dto);
   }
+
+  @Delete('institutions/:id')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Permanently delete an institution and all its data' })
+  deleteInstitution(@Param('id') id: string) { return this.service.deleteInstitution(id); }
 
   @Post('institutions/:id/suspend')
   @ApiOperation({ summary: 'Suspend an institution' })

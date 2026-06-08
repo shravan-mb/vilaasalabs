@@ -15,7 +15,7 @@ export interface BusinessOverview {
 export interface Institution {
   id: string; name: string; type: string; subdomain: string;
   email: string; phone: string; city: string; state: string;
-  address: string; principal_name: string;
+  address: string; principal_name: string; registration_number: string;
   subscription_plan: string; subscription_status: string;
   subscription_expires_at: string; is_active: boolean; created_at: string;
   user_counts?: Record<string, number>;
@@ -29,7 +29,7 @@ export interface PaginatedInstitutions {
 export interface OnboardDto {
   name: string; type: string; subdomain: string; email: string;
   phone?: string; city?: string; state?: string; address?: string;
-  pincode?: string; principal_name?: string;
+  pincode?: string; principal_name?: string; registration_number?: string;
   admin_name: string; admin_password: string;
 }
 
@@ -62,6 +62,8 @@ export class AdminApiService {
   changeSubscription(id: string, dto: { plan: string; billing_cycle: string; duration_months: number; amount?: number }) {
     return this.http.post(`${API}/vilaasalabs-admin/institutions/${id}/subscription`, dto);
   }
+
+  deleteInstitution(id: string) { return this.http.delete(`${API}/vilaasalabs-admin/institutions/${id}`); }
 
   suspendInstitution(id: string) { return this.http.post(`${API}/vilaasalabs-admin/institutions/${id}/suspend`, {}); }
 

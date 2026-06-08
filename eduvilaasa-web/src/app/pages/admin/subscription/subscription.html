@@ -63,25 +63,18 @@
 
       <div class="plan-cards">
         @for (plan of plans; track plan) {
-          @if (plan !== 'pro_max' || selectedCycle === 'annual') {
-            <div class="plan-option" [class.selected]="selectedPlan === plan" (click)="selectedPlan = plan">
-              <div class="plan-option-name">{{ plan === 'pro_max' ? 'PRO MAX' : (plan | uppercase) }}</div>
-              @if (plan === 'pro_max') {
-                <div class="plan-option-price">₹99,999<span>/yr</span></div>
-                <div class="plan-option-badge" style="font-size:10px;color:#f59e0b;margin-bottom:4px">Annual only</div>
-              } @else {
-                <div class="plan-option-price">₹{{ selectedCycle === 'monthly' ? (plan === 'starter' ? 999 : plan === 'growth' ? 2499 : 4999) : (plan === 'starter' ? 9999 : plan === 'growth' ? 24999 : 49999) }}<span>/{{ selectedCycle === 'monthly' ? 'mo' : 'yr' }}</span></div>
-              }
-              <div class="plan-option-limits">{{ PLAN_LIMITS[plan]?.label }}</div>
-            </div>
-          }
+          <div class="plan-option" [class.selected]="selectedPlan === plan" (click)="selectedPlan = plan">
+            <div class="plan-option-name">{{ plan === 'pro_max' ? 'PRO MAX' : (plan | uppercase) }}</div>
+            <div class="plan-option-price">₹{{ planPrice(plan) | number }}<span>/{{ selectedCycle === 'monthly' ? 'mo' : 'yr' }}</span></div>
+            <div class="plan-option-limits">{{ PLAN_LIMITS[plan]?.label }}</div>
+          </div>
         }
       </div>
 
       <div class="upgrade-summary">
-        <span>You will pay: <strong>₹{{ selectedPlan === 'pro_max' ? '1,00,000' : selectedPrice }}</strong> for {{ selectedPlan === 'pro_max' || selectedCycle === 'annual' ? '1 year' : '1 month' }}</span>
+        <span>You will pay: <strong>₹{{ selectedPrice | number }}</strong> for {{ selectedCycle === 'annual' ? '1 year' : '1 month' }}</span>
         <button class="btn btn-primary" (click)="startPayment()" [disabled]="paymentLoading()">
-          @if (paymentLoading()) { Processing... } @else { Pay ₹{{ selectedPlan === 'pro_max' ? '1,00,000' : selectedPrice }} with Razorpay }
+          @if (paymentLoading()) { Processing... } @else { Pay ₹{{ selectedPrice | number }} with Razorpay }
         </button>
       </div>
     </div>

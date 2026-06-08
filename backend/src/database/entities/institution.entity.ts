@@ -9,8 +9,11 @@ export class Institution {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
+  @Column()
   name: string;
+
+  @Column({ nullable: true })
+  registration_number: string;
 
   @Column({ type: 'enum', enum: InstitutionType, default: InstitutionType.SCHOOL })
   type: InstitutionType;

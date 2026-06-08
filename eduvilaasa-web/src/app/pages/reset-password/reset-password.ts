@@ -65,7 +65,7 @@ const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
     .field input:focus { outline:none; border-color:#7c3aed; }
     .pw-wrapper { position:relative; }
     .pw-wrapper input { padding-right:44px; }
-    .pw-eye { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#555; cursor:pointer; padding:0; display:flex; align-items:center; }
+    .pw-eye { position:absolute; right:12px; top:50%; transform:translateY(-50%); width:auto; background:none; border:none; color:#555; cursor:pointer; padding:0; display:flex; align-items:center; }
     .pw-eye:hover { color:#aaa; }
   `],
 })

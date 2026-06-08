@@ -1,23 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminApiService, Institution } from '../../../../core/services/admin-api.service';
 
 const PLAN_PRICES: Record<string, Record<string, number>> = {
   trial:   { monthly: 0,     annual: 0     },
-  starter: { monthly: 999,   annual: 9990  },
-  growth:  { monthly: 2499,  annual: 24990 },
-  pro:     { monthly: 4999,  annual: 49990 },
-  pro_max: { monthly: 9999,  annual: 99990 },
+  starter: { monthly: 799,   annual: 7990  },
+  growth:  { monthly: 1999,  annual: 19990 },
+  pro:     { monthly: 4499,  annual: 44990 },
+  pro_max: { monthly: 8999,  annual: 89990 },
 };
 
 export const PLANS = [
   { value: 'trial',   label: 'Trial',    monthly: 0,     annual: 0     },
-  { value: 'starter', label: 'Starter',  monthly: 999,   annual: 9990  },
-  { value: 'growth',  label: 'Growth',   monthly: 2499,  annual: 24990 },
-  { value: 'pro',     label: 'Pro',      monthly: 4999,  annual: 49990 },
-  { value: 'pro_max', label: 'Pro Max',  monthly: 9999,  annual: 99990 },
+  { value: 'starter', label: 'Starter',  monthly: 799,   annual: 7990  },
+  { value: 'growth',  label: 'Growth',   monthly: 1999,  annual: 19990 },
+  { value: 'pro',     label: 'Pro',      monthly: 4499,  annual: 44990 },
+  { value: 'pro_max', label: 'Pro Max (up to 5,000 students)',  monthly: 8999,  annual: 89990 },
 ];
 
 const FLAG_DEFINITIONS: { key: string; label: string; description: string }[] = [
@@ -40,6 +40,9 @@ export class SchoolDetail implements OnInit {
   loading = signal(true);
   saving = signal(false);
   flagSaving = signal(false);
+  deleting = signal(false);
+  showDeleteModal = signal(false);
+  deleteConfirmInput = '';
   msg = signal('');
   err = signal('');
   activeTab = signal<'info' | 'subscription' | 'users' | 'settings'>('info');
@@ -51,7 +54,7 @@ export class SchoolDetail implements OnInit {
   subForm = { plan: 'starter', billing_cycle: 'monthly', duration_months: 1, amount: 999 };
   featureFlags: Record<string, boolean> = { show_subscription_tab: true };
 
-  constructor(private api: AdminApiService, private route: ActivatedRoute) {}
+  constructor(private api: AdminApiService, private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit() { this.load(); }
 
@@ -60,7 +63,7 @@ export class SchoolDetail implements OnInit {
     this.api.getInstitution(id).subscribe({
       next: (s) => {
         this.school.set(s);
-        this.editForm = { name: s.name, email: s.email, phone: s.phone, city: s.city, state: s.state, address: s.address, principal_name: s.principal_name };
+        this.editForm = { name: s.name, email: s.email, phone: s.phone, city: s.city, state: s.state, address: s.address, principal_name: s.principal_name, registration_number: s.registration_number };
         this.subForm.plan = s.subscription_plan ?? 'starter';
         this.subForm.billing_cycle = 'monthly';
         this.subForm.duration_months = 1;
@@ -115,6 +118,15 @@ export class SchoolDetail implements OnInit {
 
   suspend() { this.api.suspendInstitution(this.school()!.id).subscribe({ next: () => this.load() }); }
   reactivate() { this.api.reactivateInstitution(this.school()!.id).subscribe({ next: () => this.load() }); }
+
+  confirmDelete() {
+    if (this.deleteConfirmInput !== this.school()!.name) return;
+    this.deleting.set(true);
+    this.api.deleteInstitution(this.school()!.id).subscribe({
+      next: () => this.router.navigate(['/admin/schools']),
+      error: () => { this.err.set('Failed to delete institution'); this.deleting.set(false); this.showDeleteModal.set(false); },
+    });
+  }
 
   userEntries() {
     const counts = (this.school() as any)?.user_counts ?? {};

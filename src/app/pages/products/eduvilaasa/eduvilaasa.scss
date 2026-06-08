@@ -103,6 +103,14 @@
   &.btn-outline { border-color: var(--border); color: var(--text-secondary); &:hover{border-color:#7c3aed;color:#a78bfa;} }
 }
 .pricing-note { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 24px; }
+.ev-enterprise-card {
+  border-color: #f59e0b !important;
+  background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, var(--bg-card) 100%);
+  .ev-plan-name { color: #f59e0b; }
+  .price-val { font-size: 28px; font-weight: 800; color: #f59e0b; }
+  li i { color: #f59e0b !important; }
+  &:hover { border-color: #d97706 !important; transform: translateY(-4px); }
+}
 
 // ── Enroll Steps ──────────────────────────────────────────────────────────────
 .ev-enroll-section { background: rgba(255,255,255,0.02); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }

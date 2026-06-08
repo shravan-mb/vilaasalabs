@@ -46,6 +46,7 @@ export class InstitutionsService {
       state: dto.state,
       pincode: dto.pincode,
       principal_name: dto.principal_name,
+      registration_number: dto.registration_number,
       subscription_plan: SubscriptionPlan.TRIAL,
       subscription_status: SubscriptionStatus.TRIAL,
       subscription_expires_at: trialExpiry,

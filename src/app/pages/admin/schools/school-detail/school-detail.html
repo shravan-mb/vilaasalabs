@@ -13,6 +13,7 @@
         } @else {
           <button class="btn-success" (click)="reactivate()">Reactivate</button>
         }
+        <button class="btn-delete" (click)="showDeleteModal.set(true); deleteConfirmInput = ''">Delete Institution</button>
       </div>
     </div>
 
@@ -37,6 +38,7 @@
           <div class="field"><label>City</label><input [(ngModel)]="editForm.city" /></div>
           <div class="field"><label>State</label><input [(ngModel)]="editForm.state" /></div>
           <div class="field"><label>Principal Name</label><input [(ngModel)]="editForm.principal_name" /></div>
+          <div class="field"><label>Registration / UDISE No.</label><input [(ngModel)]="editForm.registration_number" placeholder="e.g. 29140108303" /></div>
         </div>
         <div class="field" style="margin-top:8px"><label>Address</label><input [(ngModel)]="editForm.address" /></div>
         <button class="btn-primary" style="margin-top:16px" (click)="saveInfo()" [disabled]="saving()">
@@ -141,5 +143,29 @@
         </button>
       </div>
     }
+  }
+
+  <!-- ── Delete Confirmation Modal ────────────────────────────────────────── -->
+  @if (showDeleteModal()) {
+    <div class="modal-backdrop" (click)="showDeleteModal.set(false)">
+      <div class="modal-box danger-modal" (click)="$event.stopPropagation()">
+        <div class="modal-icon">⚠</div>
+        <h3>Delete Institution Permanently</h3>
+        <p>This will <strong>permanently delete</strong> <em>{{ school()!.name }}</em> and all its data — students, teachers, fees, tests, attendance records. This cannot be undone.</p>
+        <p class="confirm-label">Type the institution name to confirm:</p>
+        <input
+          class="confirm-input"
+          [(ngModel)]="deleteConfirmInput"
+          placeholder="{{ school()!.name }}"
+          autocomplete="off"
+        />
+        <div class="modal-actions">
+          <button class="btn-cancel" (click)="showDeleteModal.set(false)" [disabled]="deleting()">Cancel</button>
+          <button class="btn-delete-confirm" (click)="confirmDelete()" [disabled]="deleteConfirmInput !== school()!.name || deleting()">
+            {{ deleting() ? 'Deleting...' : 'Yes, Delete Forever' }}
+          </button>
+        </div>
+      </div>
+    </div>
   }
 </div>
