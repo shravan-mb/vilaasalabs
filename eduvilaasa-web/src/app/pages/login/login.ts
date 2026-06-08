@@ -26,7 +26,7 @@ export class LoginPage {
 
   onSubmit() {
     if (!this.identifier || !this.password) {
-      this.error.set('Phone number (or email) and password are required');
+      this.error.set('Username and password are required');
       return;
     }
     this.loading.set(true);

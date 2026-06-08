@@ -13,7 +13,7 @@ import { environment } from '../../../environments/environment';
       <div class="auth-card">
         <div class="auth-logo">EduVilaasa</div>
         <h2>Forgot Password</h2>
-        <p class="auth-sub">Enter your email and we'll send a reset link.</p>
+        <p class="auth-sub">Enter your registered email to receive a reset link. Students without email should ask their school admin to reset their password.</p>
 
         @if (sent()) {
           <div class="alert alert-success" style="margin-bottom:16px">

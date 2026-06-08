@@ -11,8 +11,9 @@
 
     <form (ngSubmit)="onSubmit()" class="login-form">
       <div class="field">
-        <label>Phone Number or Email</label>
-        <input [(ngModel)]="identifier" name="identifier" type="text" placeholder="9876543210 or you@school.edu" autocomplete="username" />
+        <label>Username</label>
+        <input [(ngModel)]="identifier" name="identifier" type="text" placeholder="Phone / Email / Admission no." autocomplete="username" />
+        <span class="field-hint">Students: admission no. &nbsp;·&nbsp; Teachers &amp; Parents: phone &nbsp;·&nbsp; Admin: email</span>
       </div>
 
       <div class="field">
@@ -36,6 +37,7 @@
 
     <div style="text-align:center;margin-top:16px">
       <a routerLink="/forgot-password" style="color:#7c3aed;font-size:13px">Forgot password?</a>
+      <p style="color:#555;font-size:11px;margin-top:6px">Students: ask your admin to reset your password</p>
     </div>
 
     <p class="footer-note">Powered by <a href="https://vilaasalabs.com" target="_blank">Vilaasalabs</a></p>

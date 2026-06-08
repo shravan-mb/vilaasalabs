@@ -24,10 +24,23 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<LoginResponseDto> {
     const id = dto.identifier.trim();
-    const user = await this.userRepo.findOne({
-      where: [{ email: id }, { phone: id }],
-      relations: { institution: true },
-    });
+    const idNorm = id.replace(/[\s\-]/g, ''); // strip spaces/dashes for phone matching
+
+    let user: User | null = null;
+
+    if (id.includes('@')) {
+      // Email → institution admin (or any email-based user)
+      user = await this.userRepo.findOne({ where: { email: id }, relations: { institution: true } });
+    } else if (/^\+?[\d]{6,15}$/.test(idNorm)) {
+      // Pure digits (6–15) with optional leading + → phone number (teacher / parent)
+      user = await this.userRepo.findOne({
+        where: [{ phone: id }, { phone: idNorm }],
+        relations: { institution: true },
+      });
+    } else {
+      // Alphanumeric → student registration / admission number
+      user = await this.userRepo.findOne({ where: { registration_number: id }, relations: { institution: true } });
+    }
 
     if (!user) throw new UnauthorizedException('Invalid credentials');
     if (!user.is_active) throw new UnauthorizedException('Account is inactive');
