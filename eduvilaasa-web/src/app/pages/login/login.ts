@@ -18,6 +18,7 @@ export class LoginPage {
   password = '';
   loading = signal(false);
   error = signal('');
+  showPwd = signal(false);
 
   ngOnInit() {
     if (this.auth.isLoggedIn) this.auth.redirectByRole();

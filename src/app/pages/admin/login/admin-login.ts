@@ -16,6 +16,7 @@ export class AdminLogin {
   password = '';
   loading = signal(false);
   error = signal('');
+  showPwd = signal(false);
 
   constructor(private auth: AuthService, private router: Router) {
     if (this.auth.isLoggedIn() && this.auth.isInternalAdmin()) {

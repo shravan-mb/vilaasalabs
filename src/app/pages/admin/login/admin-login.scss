@@ -61,6 +61,26 @@
       &:focus { outline: none; border-color: #7c3aed; }
       &::placeholder { color: #555; }
     }
+
+    .pw-wrapper {
+      position: relative;
+      input { padding-right: 44px; }
+      .pw-eye {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #555;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        line-height: 1;
+        &:hover { color: #aaa; }
+      }
+    }
   }
 
   .error-msg {
