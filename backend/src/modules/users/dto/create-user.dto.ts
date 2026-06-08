@@ -27,6 +27,10 @@ export class CreateUserDto {
   @IsUUID()
   proctor_id?: string;
 
+  @IsOptional()
+  @IsString()
+  registration_number?: string;
+
   @IsNotEmpty()
   @Matches(PASSWORD_REGEX, {
     message: 'Password must be 8+ chars with uppercase, lowercase, number and special character',

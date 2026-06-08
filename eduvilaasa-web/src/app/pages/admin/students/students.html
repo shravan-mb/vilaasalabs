@@ -69,6 +69,10 @@
         </select>
       </div>
       <div class="field">
+        <label>Registration / Admission No. <span style="color:#888;font-weight:400">(optional)</span></label>
+        <input [(ngModel)]="form.registration_number" placeholder="e.g. STU2024001 or 2024/KA/001" />
+      </div>
+      <div class="field">
         <label>Phone</label>
         <input [(ngModel)]="form.phone" placeholder="+91 9876543210" />
       </div>
@@ -117,12 +121,13 @@
         @if (isExpanded(cls.id)) {
           <table class="table">
             <thead>
-              <tr><th>Name</th><th>Proctor</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+              <tr><th>Name</th><th>Reg #</th><th>Proctor</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr>
             </thead>
             <tbody>
               @for (s of clsStudents; track s.id) {
                 <tr>
                   <td>{{ s.name }}</td>
+                  <td>{{ s.registration_number || '—' }}</td>
                   <td>{{ s.proctor?.name ?? teacherName(s.proctor_id) }}</td>
                   <td>{{ s.phone || '—' }}</td>
                   <td>{{ s.email || '—' }}</td>
@@ -158,12 +163,13 @@
       @if (isExpanded('__unassigned__')) {
         <table class="table">
           <thead>
-            <tr><th>Name</th><th>Proctor</th><th>Phone</th><th>Email</th><th>Status</th>@if (isAdmin) { <th>Actions</th> }</tr>
+            <tr><th>Name</th><th>Reg #</th><th>Proctor</th><th>Phone</th><th>Email</th><th>Status</th>@if (isAdmin) { <th>Actions</th> }</tr>
           </thead>
           <tbody>
             @for (s of unassigned; track s.id) {
               <tr>
                 <td>{{ s.name }}</td>
+                <td>{{ s.registration_number || '—' }}</td>
                 <td>{{ s.proctor?.name ?? teacherName(s.proctor_id) }}</td>
                 <td>{{ s.phone || '—' }}</td>
                 <td>{{ s.email || '—' }}</td>
@@ -214,6 +220,7 @@
       </div>
       <div class="field"><label>Phone</label><input [(ngModel)]="editForm.phone" placeholder="+91 9876543210" /></div>
       <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="editForm.email" type="email" placeholder="student@school.edu" /></div>
+      <div class="field"><label>Registration / Admission No. <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="editForm.registration_number" placeholder="e.g. STU2024001" /></div>
       <div class="modal-actions">
         <button class="btn btn-secondary" (click)="editTarget.set(null)">Cancel</button>
         <button class="btn btn-primary" (click)="saveEdit()" [disabled]="editSaving()">{{ editSaving() ? 'Saving...' : 'Save Changes' }}</button>

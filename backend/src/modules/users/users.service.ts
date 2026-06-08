@@ -100,6 +100,7 @@ export class UsersService {
       phone: dto.phone,
       class_id: dto.class_id,
       proctor_id: dto.proctor_id ?? null,
+      registration_number: dto.registration_number ?? null,
       teaching_subjects: dto.teaching_subjects ?? [],
       password_hash,
     });

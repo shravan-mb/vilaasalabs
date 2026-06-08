@@ -26,11 +26,11 @@ export class StudentsPage implements OnInit {
   saving = signal(false);
   error = signal('');
 
-  form = { name: '', email: '', phone: '', password: '', role: 'student', class_id: '', proctor_id: '' };
+  form = { name: '', email: '', phone: '', password: '', role: 'student', class_id: '', proctor_id: '', registration_number: '' };
   touched: Record<string, boolean> = {};
 
   editTarget = signal<any>(null);
-  editForm = { name: '', email: '', phone: '', class_id: '', proctor_id: '' };
+  editForm = { name: '', email: '', phone: '', class_id: '', proctor_id: '', registration_number: '' };
   editSaving = signal(false);
 
   passwordTarget = signal<any>(null);
@@ -77,12 +77,13 @@ export class StudentsPage implements OnInit {
     if (this.form.email) payload.email = this.form.email;
     if (this.form.class_id) payload.class_id = this.form.class_id;
     if (this.form.proctor_id) payload.proctor_id = this.form.proctor_id;
+    if (this.form.registration_number) payload.registration_number = this.form.registration_number;
     this.api.post('users', payload).subscribe({
       next: () => {
         this.toast.success('Student added successfully');
         this.saving.set(false);
         this.showForm.set(false);
-        this.form = { name: '', email: '', phone: '', password: '', role: 'student', class_id: '', proctor_id: '' };
+        this.form = { name: '', email: '', phone: '', password: '', role: 'student', class_id: '', proctor_id: '', registration_number: '' };
         this.touched = {};
         this.loadStudents();
       },
@@ -98,6 +99,7 @@ export class StudentsPage implements OnInit {
     this.editForm = {
       name: s.name, email: s.email ?? '', phone: s.phone ?? '',
       class_id: s.class_id ?? '', proctor_id: s.proctor_id ?? '',
+      registration_number: s.registration_number ?? '',
     };
     this.editTarget.set(s);
   }
@@ -109,6 +111,7 @@ export class StudentsPage implements OnInit {
     if (this.editForm.email) payload.email = this.editForm.email;
     if (this.editForm.class_id) payload.class_id = this.editForm.class_id;
     payload.proctor_id = this.editForm.proctor_id || null;
+    payload.registration_number = this.editForm.registration_number || null;
     this.api.patch(`users/${this.editTarget().id}`, payload).subscribe({
       next: () => {
         this.toast.success('Student updated');

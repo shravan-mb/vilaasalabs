@@ -30,6 +30,10 @@ export class UpdateUserDto {
   is_active?: boolean;
 
   @IsOptional()
+  @IsString()
+  registration_number?: string;
+
+  @IsOptional()
   @IsArray()
   teaching_subjects?: Array<{ class_id: string; class_name: string; subject_id: string; subject_name: string }>;
 }

@@ -38,6 +38,9 @@ export class User {
   @JoinColumn({ name: 'proctor_id' })
   proctor: User | null;
 
+  @Column({ nullable: true })
+  registration_number: string | null;
+
   @Column()
   password_hash: string;
 
