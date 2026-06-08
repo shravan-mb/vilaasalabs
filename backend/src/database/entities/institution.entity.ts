@@ -54,6 +54,9 @@ export class Institution {
   @Column({ default: true })
   is_active: boolean;
 
+  @Column({ type: 'jsonb', nullable: true, default: () => "'{\"show_subscription_tab\": true}'" })
+  feature_flags: Record<string, boolean>;
+
   @OneToMany(() => User, (user) => user.institution)
   users: User[];
 

@@ -2,6 +2,37 @@
    VILAASA LABS – Global Styles
    ======================================== */
 
+/* ── Admin theme variables (dark default) ── */
+:root {
+  --vl-bg:        #0f0f0f;
+  --vl-card:      #1a1a1a;
+  --vl-card-2:    #141414;
+  --vl-border:    #222;
+  --vl-border-2:  #2a2a2a;
+  --vl-text:      #e5e5e5;
+  --vl-text-2:    #ccc;
+  --vl-muted:     #666;
+  --vl-dim:       #555;
+  --vl-hover:     #1f1f1f;
+  --vl-sidebar:   #141414;
+  --vl-input-bg:  #0d0d0d;
+}
+
+body.light-mode {
+  --vl-bg:        #f5f6f7;
+  --vl-card:      #ffffff;
+  --vl-card-2:    #f9fafb;
+  --vl-border:    #e5e7eb;
+  --vl-border-2:  #d1d5db;
+  --vl-text:      #111827;
+  --vl-text-2:    #374151;
+  --vl-muted:     #6b7280;
+  --vl-dim:       #9ca3af;
+  --vl-hover:     #f3f4f6;
+  --vl-sidebar:   #1e1529;
+  --vl-input-bg:  #ffffff;
+}
+
 :root {
   --primary:       #7C3AED;
   --primary-light: #9D5CF6;
@@ -48,7 +79,12 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.2s, color 0.2s;
 }
+
+/* Admin area background responds to theme */
+.admin-shell { background: var(--vl-bg) !important; color: var(--vl-text) !important; }
+.content { background: var(--vl-bg) !important; color: var(--vl-text) !important; }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; }

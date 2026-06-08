@@ -20,11 +20,13 @@
     @if (err()) { <div class="alert-error">{{ err() }}</div> }
 
     <div class="tabs">
-      <button [class.active]="activeTab()==='info'" (click)="activeTab.set('info')">Info</button>
+      <button [class.active]="activeTab()==='info'"         (click)="activeTab.set('info')">Info</button>
       <button [class.active]="activeTab()==='subscription'" (click)="activeTab.set('subscription')">Subscription</button>
-      <button [class.active]="activeTab()==='users'" (click)="activeTab.set('users')">Users</button>
+      <button [class.active]="activeTab()==='users'"        (click)="activeTab.set('users')">Users</button>
+      <button [class.active]="activeTab()==='settings'"     (click)="activeTab.set('settings')">⚙ Settings</button>
     </div>
 
+    <!-- ── Info tab ──────────────────────────────────────────────────────── -->
     @if (activeTab() === 'info') {
       <div class="card">
         <h3>Edit Institution Info</h3>
@@ -37,10 +39,13 @@
           <div class="field"><label>Principal Name</label><input [(ngModel)]="editForm.principal_name" /></div>
         </div>
         <div class="field" style="margin-top:8px"><label>Address</label><input [(ngModel)]="editForm.address" /></div>
-        <button class="btn-primary" style="margin-top:16px" (click)="saveInfo()" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Save Changes' }}</button>
+        <button class="btn-primary" style="margin-top:16px" (click)="saveInfo()" [disabled]="saving()">
+          {{ saving() ? 'Saving...' : 'Save Changes' }}
+        </button>
       </div>
     }
 
+    <!-- ── Subscription tab ──────────────────────────────────────────────── -->
     @if (activeTab() === 'subscription') {
       <div class="card">
         <h3>Current Subscription</h3>
@@ -50,40 +55,90 @@
           <div class="sub-item"><span>Expires</span><strong>{{ school()!.subscription_expires_at ? (school()!.subscription_expires_at | date:'mediumDate') : '—' }}</strong></div>
         </div>
 
-        <h3 style="margin-top:24px">Change Subscription</h3>
+        <div class="divider"></div>
+
+        <h3>Change Subscription</h3>
         <div class="form-grid">
           <div class="field">
             <label>Plan</label>
-            <select [(ngModel)]="subForm.plan">
-              <option value="trial">Trial</option>
-              <option value="starter">Starter</option>
-              <option value="growth">Growth</option>
-              <option value="pro">Pro</option>
+            <select [(ngModel)]="subForm.plan" (ngModelChange)="onPlanOrBillingChange()">
+              @for (p of plans; track p.value) {
+                <option [value]="p.value">{{ p.label }}</option>
+              }
             </select>
           </div>
           <div class="field">
-            <label>Billing</label>
-            <select [(ngModel)]="subForm.billing_cycle">
+            <label>Billing Cycle</label>
+            <select [(ngModel)]="subForm.billing_cycle" (ngModelChange)="onPlanOrBillingChange()">
               <option value="monthly">Monthly</option>
-              <option value="annual">Annual</option>
+              <option value="annual">Annual (12 months)</option>
             </select>
           </div>
-          <div class="field"><label>Duration (months)</label><input type="number" [(ngModel)]="subForm.duration_months" min="1" max="36" /></div>
-          <div class="field"><label>Amount (₹, 0=auto)</label><input type="number" [(ngModel)]="subForm.amount" min="0" /></div>
+          <div class="field">
+            <label>Duration (months)</label>
+            <input type="number" [(ngModel)]="subForm.duration_months" min="1" max="36" />
+          </div>
+          <div class="field">
+            <label>Amount (₹)</label>
+            <input type="number" [(ngModel)]="subForm.amount" min="0" />
+          </div>
         </div>
-        <button class="btn-primary" style="margin-top:16px" (click)="changeSub()" [disabled]="saving()">{{ saving() ? 'Updating...' : 'Update Subscription' }}</button>
+
+        <div class="price-preview">
+          <span class="price-label">{{ priceLabel() }}</span>
+          <span class="price-selected">
+            Selected: <strong>{{ subForm.billing_cycle === 'annual' ? 'Annual' : 'Monthly' }}</strong> ·
+            <strong>{{ subForm.duration_months }} month{{ subForm.duration_months !== 1 ? 's' : '' }}</strong> ·
+            <strong>₹{{ subForm.amount | number }}</strong>
+          </span>
+        </div>
+
+        <button class="btn-primary" style="margin-top:16px" (click)="changeSub()" [disabled]="saving()">
+          {{ saving() ? 'Updating...' : 'Update Subscription' }}
+        </button>
       </div>
     }
 
+    <!-- ── Users tab ─────────────────────────────────────────────────────── -->
     @if (activeTab() === 'users') {
       <div class="card">
         <h3>User Counts</h3>
         <div class="user-grid">
           @for (entry of userEntries(); track entry.role) {
-            <div class="user-stat"><div class="user-count">{{ entry.count }}</div><div class="user-role">{{ entry.role }}</div></div>
+            <div class="user-stat">
+              <div class="user-count">{{ entry.count }}</div>
+              <div class="user-role">{{ entry.role }}</div>
+            </div>
           }
           @empty { <p style="color:#666">No users yet.</p> }
         </div>
+      </div>
+    }
+
+    <!-- ── Settings tab ──────────────────────────────────────────────────── -->
+    @if (activeTab() === 'settings') {
+      <div class="card">
+        <h3>Feature Flags</h3>
+        <p class="settings-desc">Control which features are visible to the school admin in EduVilaasa. Changes take effect immediately after saving.</p>
+
+        <div class="flag-list">
+          @for (flag of flagDefs; track flag.key) {
+            <div class="flag-row">
+              <div class="flag-info">
+                <span class="flag-label">{{ flag.label }}</span>
+                <span class="flag-desc">{{ flag.description }}</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" [(ngModel)]="featureFlags[flag.key]" />
+                <span class="slider"></span>
+              </label>
+            </div>
+          }
+        </div>
+
+        <button class="btn-primary" style="margin-top:20px" (click)="saveFlags()" [disabled]="flagSaving()">
+          {{ flagSaving() ? 'Saving...' : 'Save Settings' }}
+        </button>
       </div>
     }
   }

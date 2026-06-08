@@ -1,0 +1,181 @@
+<!-- ══ HERO ══════════════════════════════════════════════════════════════════ -->
+<section class="ev-hero">
+  <div class="ev-hero-bg">
+    <div class="orb orb-purple" style="width:700px;height:700px;top:-200px;left:-200px;opacity:0.3"></div>
+    <div class="orb orb-cyan"   style="width:500px;height:500px;bottom:-100px;right:-100px;opacity:0.2"></div>
+    <div class="grid-pattern"></div>
+  </div>
+  <div class="container ev-hero-inner">
+    <div class="section-badge"><i class="fas fa-school"></i> Product by Vilaasa Labs</div>
+    <h1>School Management,<br><span class="gradient-text">Finally Done Right.</span></h1>
+    <p class="ev-hero-desc">
+      EduVilaasa is a complete school management platform built for Indian schools —
+      attendance, fees, tests, reports, and more. All in one place. No spreadsheets. No chaos.
+    </p>
+    <div class="ev-hero-chips">
+      <span><i class="fas fa-check-circle"></i> Attendance</span>
+      <span><i class="fas fa-check-circle"></i> Fee Management</span>
+      <span><i class="fas fa-check-circle"></i> Tests & Results</span>
+      <span><i class="fas fa-check-circle"></i> Parent Portal</span>
+      <span><i class="fas fa-check-circle"></i> Timetable</span>
+      <span><i class="fas fa-check-circle"></i> Reports</span>
+    </div>
+    <div class="ev-hero-actions">
+      <a routerLink="/contact" class="btn btn-primary"><i class="fas fa-rocket"></i> Get Free Trial</a>
+      <a href="#features" class="btn btn-outline"><i class="fas fa-list"></i> See Features</a>
+    </div>
+    <p class="ev-hero-note">7-day free trial · No credit card required · Onboarded in 24 hrs</p>
+  </div>
+</section>
+
+<!-- ══ WHAT IS EDUVILAASA ════════════════════════════════════════════════════ -->
+<section class="section ev-intro-section">
+  <div class="container ev-intro-inner">
+    <div class="ev-intro-text">
+      <div class="section-badge"><i class="fas fa-info-circle"></i> What is EduVilaasa?</div>
+      <h2 class="section-title">One platform for your<br>entire school.</h2>
+      <p class="section-subtitle">
+        EduVilaasa is a SaaS school management system designed for schools, coaching centres,
+        and educational institutions across India. It replaces outdated registers, spreadsheets,
+        and disconnected tools with a single, easy-to-use platform.
+      </p>
+      <div class="ev-stat-row">
+        <div class="ev-stat"><span class="ev-stat-val">5</span><span class="ev-stat-lbl">User Roles</span></div>
+        <div class="ev-stat"><span class="ev-stat-val">15+</span><span class="ev-stat-lbl">Modules</span></div>
+        <div class="ev-stat"><span class="ev-stat-val">24hr</span><span class="ev-stat-lbl">Onboarding</span></div>
+        <div class="ev-stat"><span class="ev-stat-val">100%</span><span class="ev-stat-lbl">Cloud-Based</span></div>
+      </div>
+    </div>
+    <div class="ev-intro-visual">
+      <div class="ev-screen-mock">
+        <div class="ev-screen-bar"><span></span><span></span><span></span></div>
+        <div class="ev-screen-body">
+          <div class="ev-mock-row header-row"><span class="ev-mock-label">EduVilaasa</span><span class="ev-mock-badge admin">ADMIN</span></div>
+          <div class="ev-mock-stats">
+            <div class="ev-mock-stat"><div class="ev-mock-num">124</div><div class="ev-mock-lbl">Students</div></div>
+            <div class="ev-mock-stat"><div class="ev-mock-num">18</div><div class="ev-mock-lbl">Teachers</div></div>
+            <div class="ev-mock-stat green"><div class="ev-mock-num">92%</div><div class="ev-mock-lbl">Attendance</div></div>
+          </div>
+          <div class="ev-mock-list">
+            <div class="ev-mock-item"><i class="fas fa-check-circle green-ic"></i> Attendance marked — Class 10A</div>
+            <div class="ev-mock-item"><i class="fas fa-file-alt purple-ic"></i> Test published — Mathematics</div>
+            <div class="ev-mock-item"><i class="fas fa-rupee-sign cyan-ic"></i> Fee collected — ₹12,500</div>
+            <div class="ev-mock-item"><i class="fas fa-bell yellow-ic"></i> Notice sent to all parents</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ══════════════════════════════════════════════════════════════ -->
+<section class="section ev-features-section" id="features">
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-badge"><i class="fas fa-th-large"></i> Features</div>
+      <h2 class="section-title">Everything your school needs.</h2>
+      <p class="section-subtitle">Built with feedback from real school admins and teachers. Every feature solves a real problem.</p>
+    </div>
+    <div class="ev-features-grid">
+      @for (f of features; track f.title) {
+        <div class="ev-feature-card">
+          <div class="ev-feature-icon"><i [class]="f.icon"></i></div>
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ══ WHO IS IT FOR ═════════════════════════════════════════════════════════ -->
+<section class="section ev-roles-section">
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-badge"><i class="fas fa-users"></i> Built for Everyone</div>
+      <h2 class="section-title">One app. Four experiences.</h2>
+      <p class="section-subtitle">Every role in your school gets a tailored experience — no clutter, just what they need.</p>
+    </div>
+    <div class="ev-roles-grid">
+      @for (r of roles; track r.role) {
+        <div class="ev-role-card" [style.--role-color]="r.color">
+          <div class="ev-role-icon"><i [class]="r.icon"></i></div>
+          <h3>{{ r.role }}</h3>
+          <ul>
+            @for (p of r.points; track p) { <li><i class="fas fa-check"></i> {{ p }}</li> }
+          </ul>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRICING ═══════════════════════════════════════════════════════════════ -->
+<section class="section ev-pricing-section">
+  <div class="ev-pricing-bg">
+    <div class="orb orb-purple" style="width:600px;height:600px;top:0;left:50%;transform:translateX(-50%);opacity:0.1"></div>
+  </div>
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-badge"><i class="fas fa-tag"></i> Transparent Pricing</div>
+      <h2 class="section-title">Plans for every school size.</h2>
+      <p class="section-subtitle">Start free, upgrade when you're ready. All plans include full access to core features.</p>
+    </div>
+    <div class="ev-plans-grid">
+      @for (p of plans; track p.name) {
+        <div class="ev-plan-card" [class.popular]="p.popular">
+          @if (p.popular) { <div class="popular-tag">Most Popular</div> }
+          <div class="ev-plan-name">{{ p.name }}</div>
+          <div class="ev-plan-price">
+            @if (p.price === 0) {
+              <span class="price-val">Free</span>
+            } @else {
+              <span class="price-rs">₹</span><span class="price-val">{{ p.price | number }}</span><span class="price-period">{{ p.period }}</span>
+            }
+          </div>
+          <ul class="ev-plan-features">
+            @for (f of p.features; track f) { <li><i class="fas fa-check"></i> {{ f }}</li> }
+          </ul>
+          <a routerLink="/contact" class="ev-plan-btn" [class.btn-primary]="p.popular" [class.btn-outline]="!p.popular">
+            {{ p.price === 0 ? 'Start Free Trial' : 'Get Started' }}
+          </a>
+        </div>
+      }
+    </div>
+    <p class="pricing-note">Annual billing available — save up to 2 months. GST applicable. Contact us for custom pricing for large institutions.</p>
+  </div>
+</section>
+
+<!-- ══ HOW TO ENROLL ═════════════════════════════════════════════════════════ -->
+<section class="section ev-enroll-section">
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-badge"><i class="fas fa-flag-checkered"></i> How to Get Started</div>
+      <h2 class="section-title">Up and running in 24 hours.</h2>
+      <p class="section-subtitle">No lengthy contracts. No IT setup required. We handle everything.</p>
+    </div>
+    <div class="ev-steps">
+      @for (s of steps; track s.step) {
+        <div class="ev-step">
+          <div class="ev-step-num">{{ s.step }}</div>
+          <div class="ev-step-line"></div>
+          <h3>{{ s.title }}</h3>
+          <p>{{ s.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ════════════════════════════════════════════════════════════════════ -->
+<section class="ev-cta-section">
+  <div class="ev-cta-bg"></div>
+  <div class="container ev-cta-inner">
+    <h2>Ready to transform how your school works?</h2>
+    <p>Join schools already using EduVilaasa. Get started with a free 7-day trial — no credit card, no setup fee.</p>
+    <div class="ev-cta-actions">
+      <a routerLink="/contact" class="btn btn-primary"><i class="fas fa-school"></i> Enroll Your School</a>
+      <a href="mailto:hello@vilaasalabs.com" class="btn btn-outline"><i class="fas fa-envelope"></i> hello&#64;vilaasalabs.com</a>
+    </div>
+  </div>
+</section>

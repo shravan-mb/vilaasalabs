@@ -1,0 +1,183 @@
+<!-- Loading -->
+@if (loading()) {
+  <div class="loading-wrap"><p class="loading-text">Loading test...</p></div>
+}
+
+<!-- Error -->
+@else if (error() && !submitted()) {
+  <div class="error-wrap">
+    <div class="error-card">
+      <div class="error-icon">⚠️</div>
+      <h2>{{ error() }}</h2>
+      <button class="btn btn-outline" (click)="goBack()">← Back to Tests</button>
+    </div>
+  </div>
+}
+
+<!-- Already submitted (before loading the test) -->
+@else if (testData()?.already_submitted && !submitted()) {
+  <div class="already-wrap">
+    <div class="already-card">
+      <div class="already-icon">✅</div>
+      <h2>Already Submitted</h2>
+      <p>You have already submitted this test. Check your results in <strong>My Results</strong>.</p>
+      <button class="btn btn-outline" (click)="goBack()">← Back to Tests</button>
+    </div>
+  </div>
+}
+
+<!-- Result screen (after submission) -->
+@else if (submitted() && result()) {
+  <div class="result-screen">
+    <div class="result-card">
+      <div class="result-grade" [class.grade-pass]="scorePercent >= 50" [class.grade-fail]="scorePercent < 50">
+        {{ scoreGrade }}
+      </div>
+      <h2 class="result-title">Test Submitted!</h2>
+      <p class="result-test-name">{{ testData()?.test?.title }}</p>
+
+      <div class="result-score-row">
+        <div class="score-big">
+          <span class="score-num">{{ result()!.score }}</span>
+          <span class="score-sep">/</span>
+          <span class="score-total">{{ result()!.total_marks }}</span>
+        </div>
+        <div class="score-pct">{{ scorePercent }}%</div>
+      </div>
+
+      <div class="result-stats">
+        <div class="r-stat">
+          <span class="r-num green">{{ result()!.correct }}</span>
+          <span class="r-lbl">Correct</span>
+        </div>
+        <div class="r-stat">
+          <span class="r-num red">{{ result()!.total_questions - result()!.correct - result()!.short_answer_count }}</span>
+          <span class="r-lbl">Wrong</span>
+        </div>
+        <div class="r-stat">
+          <span class="r-num purple">{{ result()!.total_questions }}</span>
+          <span class="r-lbl">Total Q</span>
+        </div>
+      </div>
+
+      @if (result()!.short_answer_count > 0) {
+        <div class="short-answer-notice">
+          📝 {{ result()!.short_answer_count }} short answer question(s) will be graded by your teacher.
+          Your score may increase after review.
+        </div>
+      }
+
+      <button class="btn btn-primary result-back-btn" (click)="goBack()">Back to Tests</button>
+    </div>
+  </div>
+}
+
+<!-- Test taking screen -->
+@else if (testData()) {
+  @let test = testData()!.test;
+  @let questions = testData()!.questions;
+
+  <!-- Header -->
+  <div class="test-header">
+    <div class="test-header-left">
+      <button class="btn-back" (click)="goBack()">← Tests</button>
+      <div>
+        <h1 class="test-title">{{ test.title }}</h1>
+        <div class="test-meta">
+          @if (test.subject) { <span class="meta-chip">{{ test.subject }}</span> }
+          <span class="meta-chip">{{ test.total_marks }} marks</span>
+          @if (test.duration_minutes) { <span class="meta-chip">{{ test.duration_minutes }} min</span> }
+        </div>
+      </div>
+    </div>
+
+    <div class="test-header-right">
+      <div class="progress-pill">
+        {{ answeredCount }}/{{ totalQuestions }} answered
+      </div>
+      @if (test.duration_minutes) {
+        <div class="timer" [class.timer-warn]="timerWarning">
+          ⏱ {{ timerLabel() }}
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (test.description) {
+    <div class="test-desc">{{ test.description }}</div>
+  }
+
+  <!-- Questions -->
+  <div class="questions-list">
+    @for (q of questions; track q.id; let i = $index) {
+      <div class="question-card" [class.answered]="getAnswer(q.id) !== ''">
+        <div class="q-number">Q{{ i + 1 }}</div>
+        <div class="q-body">
+          <p class="q-text">{{ q.question_text }}</p>
+
+          <!-- MCQ -->
+          @if (q.type === 'mcq' && q.options) {
+            <div class="options-list">
+              @for (opt of q.options; track opt) {
+                <label class="option-label" [class.selected]="getAnswer(q.id) === opt">
+                  <input
+                    type="radio"
+                    [name]="'q_' + q.id"
+                    [value]="opt"
+                    [checked]="getAnswer(q.id) === opt"
+                    (change)="setAnswer(q.id, opt)"
+                  />
+                  <span class="option-bubble"></span>
+                  <span class="option-text">{{ opt }}</span>
+                </label>
+              }
+            </div>
+          }
+
+          <!-- True / False -->
+          @if (q.type === 'true_false') {
+            <div class="tf-options">
+              <label class="tf-label" [class.selected]="getAnswer(q.id) === 'true'">
+                <input type="radio" [name]="'q_' + q.id" value="true" [checked]="getAnswer(q.id) === 'true'" (change)="setAnswer(q.id, 'true')" />
+                <span class="tf-bubble tf-true">✓ True</span>
+              </label>
+              <label class="tf-label" [class.selected]="getAnswer(q.id) === 'false'">
+                <input type="radio" [name]="'q_' + q.id" value="false" [checked]="getAnswer(q.id) === 'false'" (change)="setAnswer(q.id, 'false')" />
+                <span class="tf-bubble tf-false">✗ False</span>
+              </label>
+            </div>
+          }
+
+          <!-- Short Answer -->
+          @if (q.type === 'short_answer') {
+            <textarea
+              class="short-answer"
+              rows="3"
+              placeholder="Type your answer here..."
+              [value]="getAnswer(q.id)"
+              (input)="setAnswer(q.id, $any($event.target).value)"
+            ></textarea>
+            <p class="short-note">Short answers will be reviewed by your teacher.</p>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Submit bar -->
+  <div class="submit-bar">
+    <div class="submit-info">
+      <span class="answered-label">{{ answeredCount }} of {{ totalQuestions }} questions answered</span>
+      @if (answeredCount < totalQuestions) {
+        <span class="unanswered-warn">⚠ {{ totalQuestions - answeredCount }} unanswered</span>
+      }
+    </div>
+    <button
+      class="btn btn-primary submit-btn"
+      (click)="submitAnswers()"
+      [disabled]="submitting()"
+    >
+      @if (submitting()) { Submitting... } @else { Submit Test }
+    </button>
+  </div>
+}

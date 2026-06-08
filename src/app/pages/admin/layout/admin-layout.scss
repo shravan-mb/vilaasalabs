@@ -1,26 +1,42 @@
 .admin-shell {
   display: flex;
   min-height: 100vh;
-  background: #0f0f0f;
-  color: #e5e5e5;
+  background: var(--vl-bg);
+  color: var(--vl-text);
+}
+
+// ── Mobile topbar (hidden on desktop) ────────────────────────────────────────
+.mobile-topbar {
+  display: none;
+}
+
+// ── Sidebar overlay (mobile only) ────────────────────────────────────────────
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 98;
 }
 
 .sidebar {
   width: 240px;
-  min-height: 100vh;
-  background: #141414;
-  border-right: 1px solid #222;
+  background: var(--vl-sidebar);
+  border-right: 1px solid var(--vl-border);
   display: flex;
   flex-direction: column;
   position: fixed;
   top: 0; left: 0; bottom: 0;
+  overflow: hidden;
+  z-index: 99;
+  transition: transform 0.25s ease;
 
   &-brand {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 24px 20px;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 
     .logo {
       width: 36px; height: 36px;
@@ -28,22 +44,31 @@
       border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 16px; color: white;
+      flex-shrink: 0;
     }
     .brand-name { font-size: 14px; font-weight: 700; color: #fff; margin: 0; }
-    .brand-sub  { font-size: 11px; color: #555; margin: 0; }
+    .brand-sub  { font-size: 11px; color: #888; margin: 0; }
   }
 
   &-nav {
     flex: 1;
+    min-height: 0;
     padding: 16px 12px;
     display: flex;
     flex-direction: column;
     gap: 4px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #2a2a2a transparent;
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 4px; }
   }
 
   &-footer {
     padding: 16px 20px;
-    border-top: 1px solid #222;
+    border-top: 1px solid rgba(255,255,255,0.08);
 
     .user-info {
       display: flex;
@@ -57,25 +82,48 @@
         border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
         font-weight: 700; font-size: 14px; color: white;
+        flex-shrink: 0;
       }
       .user-name { font-size: 13px; font-weight: 600; color: #ddd; margin: 0; }
-      .user-role { font-size: 11px; color: #555; margin: 0; }
-    }
-
-    .logout-btn {
-      width: 100%;
-      padding: 8px;
-      background: transparent;
-      border: 1px solid #333;
-      border-radius: 6px;
-      color: #888;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s;
-
-      &:hover { background: #1f1f1f; color: #fff; border-color: #555; }
+      .user-role { font-size: 11px; color: #888; margin: 0; }
     }
   }
+}
+
+.footer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.theme-toggle {
+  width: 100%;
+  padding: 8px;
+  background: rgba(124,58,237,0.12);
+  border: 1px solid rgba(124,58,237,0.3);
+  border-radius: 6px;
+  color: #a78bfa;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  &:hover { background: rgba(124,58,237,0.22); }
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #888;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover { background: #1f1f1f; color: #fff; border-color: #555; }
 }
 
 .nav-item {
@@ -91,7 +139,7 @@
 
   .icon { font-size: 16px; }
 
-  &:hover { background: #1f1f1f; color: #ddd; }
+  &:hover { background: rgba(255,255,255,0.06); color: #ddd; }
   &.active { background: #1e1529; color: #a78bfa; font-weight: 600; }
 }
 
@@ -100,4 +148,97 @@
   flex: 1;
   padding: 32px;
   overflow-y: auto;
+  min-height: 100vh;
+  background: var(--vl-bg);
+  color: var(--vl-text);
+}
+
+// ── Responsive ───────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  // Show mobile topbar
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 52px;
+    padding: 0 16px;
+    background: var(--vl-sidebar);
+    border-bottom: 1px solid var(--vl-border);
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 101;
+    flex-shrink: 0;
+  }
+
+  .hamburger-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    &:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  }
+
+  .mobile-brand {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+
+  .mobile-accent {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  // Sidebar: hidden by default, slides in when .open
+  .sidebar {
+    top: 52px;
+    transform: translateX(-100%);
+
+    &.open {
+      transform: translateX(0);
+    }
+  }
+
+  // Overlay shows when sidebar is open
+  .sidebar-overlay.visible {
+    display: block;
+    top: 52px;
+  }
+
+  // Content takes full width, padded below mobile topbar
+  .content {
+    margin-left: 0;
+    padding: 16px;
+    padding-top: 68px; // 52px topbar + 16px spacing
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .content {
+    padding: 20px;
+  }
+}
+
+// ── Responsive utilities for admin pages ─────────────────────────────────────
+
+@media (max-width: 768px) {
+  // Tables scroll
+  .table-card, .card { overflow-x: auto; }
+
+  // Page headers stack
+  .page-header {
+    flex-direction: column !important;
+    gap: 12px !important;
+
+    a, button { width: 100%; text-align: center; justify-content: center; }
+  }
+
+  // Search bars stack
+  .search-bar { flex-direction: column; }
 }

@@ -3,10 +3,12 @@
     <h1>Parents</h1>
     <p>Manage parent accounts and student links</p>
   </div>
-  <div style="display:flex;gap:10px">
-    <button class="btn btn-secondary" (click)="showLink.set(true)">Link Parent → Student</button>
-    <button class="btn btn-primary" (click)="showForm.set(true)">+ Add Parent</button>
-  </div>
+  @if (isAdmin) {
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" (click)="showLink.set(true)">Link Parent → Student</button>
+      <button class="btn btn-primary" (click)="showForm.set(true)">+ Add Parent</button>
+    </div>
+  }
 </div>
 
 @if (loading()) {
@@ -25,9 +27,11 @@
               <td>{{ p.phone || '—' }}</td>
               <td>{{ p.email || '—' }}</td>
               <td style="display:flex;gap:6px;flex-wrap:wrap">
-                <button class="btn btn-outline btn-sm" (click)="openEdit(p)">Edit</button>
-                <button class="btn btn-outline btn-sm" (click)="openResetPassword(p)">Reset PW</button>
-                <button class="btn btn-danger btn-sm" (click)="confirmDelete(p)">Delete</button>
+                @if (isAdmin) {
+                  <button class="btn btn-outline btn-sm" (click)="openEdit(p)">Edit</button>
+                  <button class="btn btn-outline btn-sm" (click)="openResetPassword(p)">Reset PW</button>
+                  <button class="btn btn-danger btn-sm" (click)="confirmDelete(p)">Delete</button>
+                }
               </td>
             </tr>
           }

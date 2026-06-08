@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AdminApiService, BusinessOverview } from '../../../core/services/admin-api.service';
 
 @Component({
@@ -15,7 +15,7 @@ export class AdminDashboard implements OnInit {
   loading = signal(true);
   error = signal('');
 
-  constructor(private api: AdminApiService) {}
+  constructor(private api: AdminApiService, private router: Router) {}
 
   ngOnInit() {
     this.api.getOverview().subscribe({
@@ -27,5 +27,9 @@ export class AdminDashboard implements OnInit {
   getPlanCount(plan: string): number {
     const found = this.overview()?.subscription_breakdown.find(b => b.plan === plan);
     return found ? +found.count : 0;
+  }
+
+  goToSchool(id: string) {
+    this.router.navigate(['/admin/schools', id]);
   }
 }

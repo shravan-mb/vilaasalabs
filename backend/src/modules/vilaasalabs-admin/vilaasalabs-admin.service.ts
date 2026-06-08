@@ -9,9 +9,11 @@ import { MailService } from '../mail/mail.service';
 import { AdminSubscriptionDto, BroadcastDto, UpdateInstitutionDto } from './dto/admin-actions.dto';
 
 const PLAN_PRICES: Record<string, Record<string, number>> = {
-  starter: { monthly: 999, annual: 9999 },
-  growth:  { monthly: 2499, annual: 24999 },
-  pro:     { monthly: 4999, annual: 49999 },
+  trial:   { monthly: 0,     annual: 0 },
+  starter: { monthly: 999,   annual: 9990 },
+  growth:  { monthly: 2499,  annual: 24990 },
+  pro:     { monthly: 4999,  annual: 49990 },
+  pro_max: { monthly: 9999,  annual: 99990 },
 };
 
 @Injectable()
@@ -130,6 +132,13 @@ export class VilaasalabsAdminService {
     });
 
     return { mrr, active_subscriptions: activeCount, trial_subscriptions: trialCount, expired_subscriptions: expiredCount, plan_breakdown: planBreakdown, recent_payments: recentPayments };
+  }
+
+  async updateFeatureFlags(institutionId: string, flags: Record<string, boolean>): Promise<void> {
+    const inst = await this.institutionRepo.findOne({ where: { id: institutionId } });
+    if (!inst) throw new NotFoundException('Institution not found');
+    inst.feature_flags = { ...(inst.feature_flags ?? {}), ...flags };
+    await this.institutionRepo.save(inst);
   }
 
   async broadcast(dto: BroadcastDto): Promise<{ sent: number }> {

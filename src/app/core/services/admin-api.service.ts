@@ -74,4 +74,8 @@ export class AdminApiService {
   onboardInstitution(data: OnboardDto) { return this.http.post(`${API}/institutions/onboard`, data); }
 
   toggleInstitutionActive(id: string) { return this.http.patch(`${API}/institutions/${id}/toggle-active`, {}); }
+
+  updateFeatureFlags(id: string, flags: Record<string, boolean>) {
+    return this.http.patch(`${API}/vilaasalabs-admin/institutions/${id}/feature-flags`, { feature_flags: flags });
+  }
 }

@@ -36,18 +36,19 @@
 
 .slot-class {
   font-size: 11px;
-  color: #666;
+  color: #a78bfa;
+  opacity: 0.7;
   margin-top: 2px;
 }
 
 .slot-empty {
-  color: #333;
+  color: var(--ev-dim);
   font-size: 12px;
   text-align: center;
   padding: 8px;
 }
 
-.loading-text { color: #555; font-size: 14px; }
+.loading-text { color: var(--ev-dim); font-size: 14px; }
 
 @media (max-width: 900px) { .week-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 500px) { .week-grid { grid-template-columns: 1fr; } }

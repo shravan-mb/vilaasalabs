@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { featureFlagGuard } from './core/guards/feature-flag.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -29,8 +30,9 @@ export const routes: Routes = [
       { path: 'reports', loadComponent: () => import('./pages/admin/reports/reports').then((m) => m.ReportsPage) },
       { path: 'announcements', loadComponent: () => import('./pages/admin/announcements/announcements').then((m) => m.AnnouncementsPage) },
       { path: 'academic-years', loadComponent: () => import('./pages/admin/academic-years/academic-years').then((m) => m.AcademicYearsPage) },
-      { path: 'subscription', loadComponent: () => import('./pages/admin/subscription/subscription').then((m) => m.SubscriptionPage) },
+      { path: 'subscription', canActivate: [featureFlagGuard], data: { flagKey: 'show_subscription_tab' }, loadComponent: () => import('./pages/admin/subscription/subscription').then((m) => m.SubscriptionPage) },
       { path: 'timetable', loadComponent: () => import('./pages/admin/timetable/timetable').then((m) => m.AdminTimetablePage) },
+      { path: 'fees',     loadComponent: () => import('./pages/admin/fees/fees').then((m) => m.FeesPage) },
     ],
   },
 
@@ -53,6 +55,7 @@ export const routes: Routes = [
       { path: 'timetable', loadComponent: () => import('./pages/teacher/timetable/timetable').then((m) => m.TeacherTimetablePage) },
       { path: 'proctor-performance', loadComponent: () => import('./pages/teacher/proctor-performance/proctor-performance').then((m) => m.ProctorPerformancePage) },
       { path: 'meeting-requests', loadComponent: () => import('./pages/teacher/meeting-requests/meeting-requests').then((m) => m.TeacherMeetingRequestsPage) },
+      { path: 'notices', loadComponent: () => import('./pages/teacher/notices/notices').then((m) => m.TeacherNoticesPage) },
     ],
   },
 
@@ -67,6 +70,7 @@ export const routes: Routes = [
       { path: 'dashboard', loadComponent: () => import('./pages/student/dashboard/dashboard').then((m) => m.StudentDashboard) },
       { path: 'attendance', loadComponent: () => import('./pages/student/attendance/my-attendance').then((m) => m.MyAttendance) },
       { path: 'tests', loadComponent: () => import('./pages/student/tests/my-tests').then((m) => m.MyTests) },
+      { path: 'tests/take/:testId', loadComponent: () => import('./pages/student/tests/take-test').then((m) => m.TakeTestPage) },
       { path: 'results', loadComponent: () => import('./pages/student/results/results').then((m) => m.StudentResultsPage) },
       { path: 'notices', loadComponent: () => import('./pages/student/notices/notices').then((m) => m.StudentNoticesPage) },
       { path: 'timetable', loadComponent: () => import('./pages/student/timetable/timetable').then((m) => m.StudentTimetablePage) },

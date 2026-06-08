@@ -37,8 +37,10 @@
               <td><span class="badge plan">{{ school.subscription_plan }}</span></td>
               <td><span class="badge" [class]="statusClass(school.subscription_status)">{{ school.subscription_status }}</span></td>
               <td>{{ school.subscription_expires_at ? (school.subscription_expires_at | date:'mediumDate') : '—' }}</td>
-              <td class="actions-cell">
-                <a [routerLink]="['/admin/schools', school.id]" class="action-btn view">View</a>
+              <td>
+                <div class="actions-cell">
+                  <a [routerLink]="['/admin/schools', school.id]" class="action-btn view">View</a>
+                </div>
               </td>
             </tr>
           }

@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { User } from '../../database/entities/user.entity';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { CreateInstitutionDto } from './dto/create-institution.dto';
@@ -37,6 +39,17 @@ export class InstitutionsController {
   @ApiOperation({ summary: 'Get institution by ID' })
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
+  }
+
+  @Get(':id/settings')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get institution feature flags — accessible to institution users' })
+  getSettings(@Param('id') id: string, @CurrentUser() user: User) {
+    const isOwn = user.institution_id === id;
+    const isInternal = user.role === Role.VILAASALABS_SUPER_ADMIN || user.role === Role.VILAASALABS_DEV;
+    if (!isOwn && !isInternal) throw new ForbiddenException();
+    return this.service.getSettings(id);
   }
 
   @Patch(':id/toggle-active')

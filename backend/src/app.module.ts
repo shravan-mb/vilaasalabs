@@ -4,6 +4,10 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AcademicYear } from './database/entities/academic-year.entity';
+import { ClassFeeStructure } from './database/entities/class-fee-structure.entity';
+import { FeeCategory } from './database/entities/fee-category.entity';
+import { FeePayment } from './database/entities/fee-payment.entity';
+import { StudentFeeDiscount } from './database/entities/student-fee-discount.entity';
 import { Announcement } from './database/entities/announcement.entity';
 import { Attendance } from './database/entities/attendance.entity';
 import { Class } from './database/entities/class.entity';
@@ -20,6 +24,7 @@ import { TestResult } from './database/entities/test-result.entity';
 import { TimetableSlot } from './database/entities/timetable-slot.entity';
 import { User } from './database/entities/user.entity';
 import { AcademicYearsModule } from './modules/academic-years/academic-years.module';
+import { FeesModule } from './modules/fees/fees.module';
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -56,6 +61,7 @@ import { VilaasalabsAdminModule } from './modules/vilaasalabs-admin/vilaasalabs-
           Class, Subject, StudentParent, Test,
           PasswordResetToken, TestResult, Announcement, TimetableSlot, AcademicYear,
           ProctorNote, MeetingRequest,
+          FeeCategory, ClassFeeStructure, StudentFeeDiscount, FeePayment,
         ],
         synchronize: config.get('NODE_ENV') !== 'production' || config.get('DB_SYNC') === 'true',
         logging: config.get('NODE_ENV') === 'development',
@@ -78,6 +84,7 @@ import { VilaasalabsAdminModule } from './modules/vilaasalabs-admin/vilaasalabs-
     AnnouncementsModule,
     TimetableModule,
     AcademicYearsModule,
+    FeesModule,
   ],
 })
 export class AppModule {}

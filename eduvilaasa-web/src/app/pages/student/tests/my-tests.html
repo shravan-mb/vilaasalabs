@@ -4,12 +4,21 @@
 </div>
 <div class="card">
   @if (loading()) {
-    <p style="color:#555">Loading...</p>
+    <p class="loading-text">Loading...</p>
   } @else if (tests().length === 0) {
     <div class="empty-state"><p>No published tests available right now.</p></div>
   } @else {
     <table class="table">
-      <thead><tr><th>Title</th><th>Subject</th><th>Marks</th><th>Duration</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Subject</th>
+          <th>Marks</th>
+          <th>Duration</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
       <tbody>
         @for (t of tests(); track t.id) {
           <tr>
@@ -17,9 +26,32 @@
             <td>{{ t.subject || '—' }}</td>
             <td>{{ t.total_marks }}</td>
             <td>{{ t.duration_minutes ? t.duration_minutes + ' min' : '—' }}</td>
+            <td>
+              @if (t.is_submitted) {
+                <span class="badge badge-green">Submitted</span>
+              } @else {
+                <span class="badge badge-yellow">Pending</span>
+              }
+            </td>
+            <td>
+              <div class="action-cell">
+                @if (t.is_submitted) {
+                  <span class="attempted-text">Attempted</span>
+                } @else {
+                  <button class="btn btn-primary start-btn" (click)="startTest(t.id)">Start Test</button>
+                }
+              </div>
+            </td>
           </tr>
         }
       </tbody>
     </table>
   }
 </div>
+
+<style>
+  .loading-text { color: var(--ev-dim); }
+  .start-btn { padding: 6px 16px !important; font-size: 12px !important; }
+  .attempted-text { font-size: 13px; color: var(--ev-muted); }
+  .action-cell { display: flex; }
+</style>

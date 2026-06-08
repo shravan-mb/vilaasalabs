@@ -15,6 +15,7 @@ export class Navbar {
   navLinks = [
     { label: 'Home',      path: '/' },
     { label: 'Services',  path: '/services' },
+    { label: 'Products',  path: '/products/eduvilaasa' },
     { label: 'About',     path: '/about' },
     { label: 'Portfolio', path: '/portfolio' },
     { label: 'Contact',   path: '/contact' },

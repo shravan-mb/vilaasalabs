@@ -1,6 +1,7 @@
 .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center; }
-.modal { background:#111;border:1px solid #2a2a2a;border-radius:12px;padding:28px;width:100%;max-width:480px; }
-.modal h3 { font-size:16px;font-weight:600;color:#fff;margin-bottom:20px; }
+.modal { background:var(--ev-modal);border:1px solid var(--ev-modal-border);border-radius:12px;padding:28px;width:100%;max-width:480px; }
+.modal h3 { font-size:16px;font-weight:600;color:var(--ev-white);margin-bottom:20px; }
 .field { margin-bottom:14px; }
 .modal-actions { display:flex;gap:10px;justify-content:flex-end;margin-top:20px; }
 .btn-sm { padding:6px 12px;font-size:12px; }
+select { width:100%;padding:10px 12px;background:var(--ev-input-bg);border:1px solid var(--ev-border);border-radius:8px;color:var(--ev-text);font-size:14px; }

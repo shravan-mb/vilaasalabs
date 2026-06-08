@@ -1,5 +1,15 @@
-<div class="admin-shell">
-  <aside class="sidebar">
+<div class="admin-shell" [class.sidebar-open]="sidebarOpen()">
+
+  <!-- Mobile top bar -->
+  <div class="mobile-topbar">
+    <button class="hamburger-btn" (click)="toggleSidebar()">☰</button>
+    <span class="mobile-brand">Vilaasa<span class="mobile-accent">Labs</span></span>
+  </div>
+
+  <!-- Overlay (mobile only) -->
+  <div class="sidebar-overlay" [class.visible]="sidebarOpen()" (click)="closeSidebar()"></div>
+
+  <aside class="sidebar" [class.open]="sidebarOpen()">
     <div class="sidebar-brand">
       <span class="logo">V</span>
       <div>
@@ -14,6 +24,7 @@
           [routerLink]="item.path"
           routerLinkActive="active"
           class="nav-item"
+          (click)="closeSidebar()"
         >
           <span class="icon">{{ item.icon }}</span>
           {{ item.label }}
@@ -29,7 +40,13 @@
           <p class="user-role">{{ auth.currentUser()?.role }}</p>
         </div>
       </div>
-      <button class="logout-btn" (click)="auth.logout()">Logout</button>
+      <div class="footer-actions">
+        <button class="theme-toggle" (click)="theme.toggle()" [title]="theme.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+          {{ theme.isDark() ? '☀️' : '🌙' }}
+          <span>{{ theme.isDark() ? 'Light' : 'Dark' }}</span>
+        </button>
+        <button class="logout-btn" (click)="auth.logout()">Logout</button>
+      </div>
     </div>
   </aside>
 

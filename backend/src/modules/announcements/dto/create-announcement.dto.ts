@@ -15,4 +15,8 @@ export class CreateAnnouncementDto {
   @IsOptional()
   @IsIn(['all', 'student', 'teacher', 'parent', 'institution_staff'])
   target_role?: string;
+
+  @IsOptional()
+  @IsString()
+  image_url?: string;
 }

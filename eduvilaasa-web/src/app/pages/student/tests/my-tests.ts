@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
@@ -7,8 +8,10 @@ import { ApiService } from '../../../core/services/api.service';
   templateUrl: './my-tests.html',
 })
 export class MyTests implements OnInit {
-  private api = inject(ApiService);
-  tests = signal<any[]>([]);
+  private api    = inject(ApiService);
+  private router = inject(Router);
+
+  tests   = signal<any[]>([]);
   loading = signal(true);
 
   ngOnInit() {
@@ -16,5 +19,9 @@ export class MyTests implements OnInit {
       next: (data) => { this.tests.set(data ?? []); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
+  }
+
+  startTest(testId: string) {
+    this.router.navigate(['/student/tests/take', testId]);
   }
 }

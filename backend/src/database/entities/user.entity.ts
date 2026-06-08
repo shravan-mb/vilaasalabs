@@ -50,6 +50,9 @@ export class User {
   @Column({ nullable: true })
   last_login_at: Date;
 
+  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'" })
+  teaching_subjects: Array<{ class_id: string; class_name: string; subject_id: string; subject_name: string }>;
+
   @CreateDateColumn()
   created_at: Date;
 

@@ -1,48 +1,58 @@
 <div class="page-header">
   <h1>Child's Attendance</h1>
+  <p>Track daily attendance for your children</p>
 </div>
 
-<div class="card" style="margin-bottom:20px">
-  <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
-    <div class="field">
-      <label>Student</label>
-      <select [(ngModel)]="selectedStudentId">
-        <option value="">Select student</option>
-        @for (s of links(); track s.id) {
-          <option [value]="s.id">{{ s.name }}</option>
-        }
-      </select>
+@if (loadingChildren()) {
+  <div class="card"><p class="loading-text">Loading children...</p></div>
+} @else if (children().length === 0) {
+  <div class="card"><div class="empty-state">No children linked to your account yet.</div></div>
+} @else {
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
+      <div class="field">
+        <label>Child</label>
+        <select [value]="selectedStudentId()" (change)="selectedStudentId.set($any($event.target).value)">
+          <option value="">Select child</option>
+          @for (c of children(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="field"><label>From</label><input type="date" [(ngModel)]="from" /></div>
+      <div class="field"><label>To</label><input type="date" [(ngModel)]="to" /></div>
+      <button class="btn btn-primary" (click)="load()" [disabled]="!selectedStudentId() || loading()">
+        @if (loading()) { Loading... } @else { View }
+      </button>
     </div>
-    <div class="field"><label>From</label><input type="date" [(ngModel)]="from" /></div>
-    <div class="field"><label>To</label><input type="date" [(ngModel)]="to" /></div>
-    <button class="btn btn-primary" (click)="load()" [disabled]="!selectedStudentId() || loading()">View</button>
   </div>
-</div>
 
-@if (summary()) {
-  <div class="grid-stats" style="margin-bottom:24px">
-    <div class="stat-card"><div class="label">Total Days</div><div class="value">{{ summary().total }}</div></div>
-    <div class="stat-card"><div class="label">Present</div><div class="value" style="color:#4ade80">{{ summary().present }}</div></div>
-    <div class="stat-card"><div class="label">Absent</div><div class="value" style="color:#f87171">{{ summary().absent }}</div></div>
-    <div class="stat-card"><div class="label">Attendance %</div><div class="value">{{ summary().percentage }}%</div></div>
+  @if (summary()) {
+    <div class="grid-stats" style="margin-bottom:24px">
+      <div class="stat-card"><div class="label">Total Days</div><div class="value">{{ summary().total }}</div></div>
+      <div class="stat-card"><div class="label">Present</div><div class="value" style="color:#4ade80">{{ summary().present }}</div></div>
+      <div class="stat-card"><div class="label">Absent</div><div class="value" style="color:#f87171">{{ summary().absent }}</div></div>
+      <div class="stat-card"><div class="label">Late</div><div class="value" style="color:#fbbf24">{{ summary().late ?? 0 }}</div></div>
+      <div class="stat-card"><div class="label">Attendance %</div><div class="value">{{ summary().percentage }}%</div></div>
+    </div>
+  }
+
+  <div class="card">
+    @if (records().length === 0) {
+      <div class="empty-state"><p>Select a child and date range, then click View.</p></div>
+    } @else {
+      <table class="table">
+        <thead><tr><th>Date</th><th>Status</th><th>Remarks</th></tr></thead>
+        <tbody>
+          @for (r of records(); track r.id) {
+            <tr>
+              <td>{{ r.date }}</td>
+              <td><span class="badge" [class]="statusClass(r.status)">{{ r.status }}</span></td>
+              <td>{{ r.remarks || '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
   </div>
 }
-
-<div class="card">
-  @if (records().length === 0) {
-    <div class="empty-state"><p>Select a student and date range then click View.</p></div>
-  } @else {
-    <table class="table">
-      <thead><tr><th>Date</th><th>Status</th><th>Remarks</th></tr></thead>
-      <tbody>
-        @for (r of records(); track r.id) {
-          <tr>
-            <td>{{ r.date }}</td>
-            <td><span class="badge" [class]="statusClass(r.status)">{{ r.status }}</span></td>
-            <td>{{ r.remarks || '—' }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  }
-</div>

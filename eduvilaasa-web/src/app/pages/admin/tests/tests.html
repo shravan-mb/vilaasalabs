@@ -23,11 +23,13 @@
             <td>{{ t.duration_minutes ? t.duration_minutes + ' min' : '—' }}</td>
             <td><span class="badge" [class]="statusClass(t.status)">{{ t.status }}</span></td>
             <td class="actions">
-              @if (t.status === 'draft') {
-                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="changeStatus(t.id, 'published')">Publish</button>
-              }
-              @if (t.status === 'published') {
-                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="changeStatus(t.id, 'closed')">Close</button>
+              @if (isAdmin) {
+                @if (t.status === 'draft') {
+                  <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="changeStatus(t.id, 'published')">Publish</button>
+                }
+                @if (t.status === 'published') {
+                  <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="changeStatus(t.id, 'closed')">Close</button>
+                }
               }
             </td>
           </tr>

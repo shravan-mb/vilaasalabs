@@ -100,6 +100,7 @@ export class UsersService {
       phone: dto.phone,
       class_id: dto.class_id,
       proctor_id: dto.proctor_id ?? null,
+      teaching_subjects: dto.teaching_subjects ?? [],
       password_hash,
     });
 
@@ -108,7 +109,9 @@ export class UsersService {
 
   async update(institutionId: string, userId: string, dto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(institutionId, userId);
-    Object.assign(user, dto);
+    for (const key of Object.keys(dto) as (keyof UpdateUserDto)[]) {
+      if (dto[key] !== undefined) (user as any)[key] = dto[key];
+    }
     return this.userRepo.save(user);
   }
 

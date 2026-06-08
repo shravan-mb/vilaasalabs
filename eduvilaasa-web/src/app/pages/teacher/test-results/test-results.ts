@@ -79,7 +79,7 @@ export class TeacherTestResultsPage implements OnInit {
   scores: Record<string, { score: number | null; remarks: string }> = {};
 
   ngOnInit() {
-    this.http.get<any[]>(`${environment.apiUrl}/question-bank/tests`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/institutions/${this.auth.institutionId}/tests`).subscribe({
       next: (res) => this.tests.set(res.filter((t: any) => t.status === 'published' || t.status === 'closed')),
     });
   }

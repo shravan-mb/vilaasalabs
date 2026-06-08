@@ -110,4 +110,18 @@ export class InstitutionsService {
     const institution = await this.findOne(id);
     await this.institutionRepo.remove(institution);
   }
+
+  async getSettings(id: string): Promise<{ feature_flags: Record<string, boolean> }> {
+    const inst = await this.institutionRepo.findOne({ where: { id }, select: { feature_flags: true } });
+    if (!inst) throw new NotFoundException('Institution not found');
+    const defaults: Record<string, boolean> = { show_subscription_tab: true };
+    return { feature_flags: { ...defaults, ...(inst.feature_flags ?? {}) } };
+  }
+
+  async updateFeatureFlags(id: string, flags: Record<string, boolean>): Promise<void> {
+    const inst = await this.institutionRepo.findOne({ where: { id } });
+    if (!inst) throw new NotFoundException('Institution not found');
+    inst.feature_flags = { ...(inst.feature_flags ?? {}), ...flags };
+    await this.institutionRepo.save(inst);
+  }
 }

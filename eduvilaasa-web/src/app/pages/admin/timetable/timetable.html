@@ -10,7 +10,7 @@
       <div class="form-grid">
         <div class="form-group">
           <label>Class *</label>
-          <select [(ngModel)]="form.class_id">
+          <select [(ngModel)]="form.class_id" (ngModelChange)="onClassChange()">
             <option value="">Select class...</option>
             @for (c of classes(); track c.id) {
               <option [value]="c.id">{{ c.name }}{{ c.section ? ' – ' + c.section : '' }}</option>
@@ -19,7 +19,16 @@
         </div>
         <div class="form-group">
           <label>Subject *</label>
-          <input [(ngModel)]="form.subject_name" placeholder="e.g. Mathematics" />
+          @if (subjectsForForm().length > 0) {
+            <select [(ngModel)]="form.subject_name">
+              <option value="">Select subject...</option>
+              @for (sub of subjectsForForm(); track sub.id) {
+                <option [value]="sub.name">{{ sub.name }}</option>
+              }
+            </select>
+          } @else {
+            <input [(ngModel)]="form.subject_name" placeholder="Select a class first" [disabled]="!form.class_id" />
+          }
         </div>
         <div class="form-group">
           <label>Teacher</label>

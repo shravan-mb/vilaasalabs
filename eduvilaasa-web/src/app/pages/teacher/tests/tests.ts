@@ -95,4 +95,11 @@ export class TeacherTestsPage implements OnInit {
     const cls = this.classes().find((c) => c.id === classId);
     return cls ? `${cls.name}${cls.section ? ' — ' + cls.section : ''}` : classId;
   }
+
+  changeStatus(id: string, status: string) {
+    this.api.patch(`tests/${id}/status`, { status }).subscribe({
+      next: () => this.tests.update((arr) => arr.map((t) => t.id === id ? { ...t, status } : t)),
+      error: (err) => this.error.set(err.error?.message || 'Failed to update status'),
+    });
+  }
 }

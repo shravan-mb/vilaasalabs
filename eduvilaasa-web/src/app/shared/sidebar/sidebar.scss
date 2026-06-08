@@ -6,8 +6,9 @@
   border-right: 1px solid #1f1f1f;
   display: flex;
   flex-direction: column;
-  transition: width 0.2s ease;
-  overflow: hidden;
+  transition: width 0.2s ease, transform 0.25s ease;
+  overflow-x: hidden;
+  overflow-y: hidden;
   z-index: 100;
 
   &.open { width: 220px; }
@@ -46,6 +47,14 @@
   flex-direction: column;
   gap: 2px;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a2a transparent;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 4px; }
 }
 
 .nav-item {
@@ -77,3 +86,16 @@
 }
 
 .nav-label { overflow: hidden; }
+
+// ── Mobile: sidebar becomes full overlay drawer ────────────────────────────
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 220px;
+    transform: translateX(-100%);
+
+    &.open {
+      transform: translateX(0);
+    }
+  }
+}

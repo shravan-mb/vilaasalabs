@@ -61,8 +61,42 @@ export class AttendanceController {
     return this.service.getClassAttendanceOnDate(institutionId, classId, date);
   }
 
+  @Get('class-report')
+  @Roles(Role.INSTITUTION_ADMIN, Role.INSTITUTION_STAFF, Role.TEACHER)
+  @ApiOperation({ summary: 'Class-wide attendance summary per student (for reports)' })
+  classReport(
+    @Param('institutionId') institutionId: string,
+    @Query('class_id') classId: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    return this.service.getClassReport(institutionId, classId, from, to);
+  }
+
+  @Get('child/:studentId')
+  @Roles(Role.PARENT)
+  @ApiOperation({ summary: 'Get attendance records for a parent\'s child' })
+  getChildAttendance(
+    @Param('institutionId') institutionId: string,
+    @Param('studentId') studentId: string,
+    @Query() queryDto: AttendanceQueryDto,
+  ) {
+    return this.service.query(institutionId, { ...queryDto, student_id: studentId });
+  }
+
+  @Get('my')
+  @Roles(Role.STUDENT)
+  @ApiOperation({ summary: 'Get the logged-in student\'s own attendance records' })
+  getMyAttendance(
+    @Param('institutionId') institutionId: string,
+    @CurrentUser() user: User,
+    @Query() queryDto: AttendanceQueryDto,
+  ) {
+    return this.service.query(institutionId, { ...queryDto, student_id: user.id });
+  }
+
   @Get('student/:studentId/summary')
-  @Roles(Role.TEACHER, Role.INSTITUTION_ADMIN, Role.INSTITUTION_STAFF, Role.PARENT)
+  @Roles(Role.TEACHER, Role.INSTITUTION_ADMIN, Role.INSTITUTION_STAFF, Role.STUDENT, Role.PARENT)
   @ApiOperation({ summary: 'Get attendance summary % for a student in a date range' })
   summary(
     @Param('institutionId') institutionId: string,

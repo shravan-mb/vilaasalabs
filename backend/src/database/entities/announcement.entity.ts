@@ -26,6 +26,9 @@ export class Announcement {
   @Column({ nullable: true })
   created_by_name: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  image_url: string | null;
+
   @CreateDateColumn()
   created_at: Date;
 }

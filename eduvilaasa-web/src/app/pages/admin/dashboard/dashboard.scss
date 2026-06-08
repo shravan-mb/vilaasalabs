@@ -1,7 +1,7 @@
-.loading-text { color: #555; }
+.loading-text { color: var(--ev-dim); }
 
 .subscription-card {
-  h3 { font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; }
+  h3 { font-size: 13px; font-weight: 600; color: var(--ev-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; }
 }
 
 .sub-grid {
@@ -10,5 +10,5 @@
   flex-wrap: wrap;
 }
 
-.sub-label { display: block; font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-.sub-value { font-size: 16px; font-weight: 600; color: #e5e5e5; &.warning { color: #fbbf24; } }
+.sub-label { display: block; font-size: 11px; color: var(--ev-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.sub-value { font-size: 16px; font-weight: 600; color: var(--ev-white); &.warning { color: #fbbf24; } }

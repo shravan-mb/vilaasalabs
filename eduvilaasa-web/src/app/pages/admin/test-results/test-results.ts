@@ -26,20 +26,14 @@ export class AdminTestResultsPage implements OnInit {
   saving = signal(false);
   scores: Record<string, { score: number | null; remarks: string }> = {};
 
-  ngOnInit() { this.loadTests(); this.loadStudents(); }
+  ngOnInit() { this.loadTests(); }
 
   private get iid() { return this.auth.institutionId; }
 
   loadTests() {
-    this.http.get<any[]>(`${environment.apiUrl}/question-bank/tests?institution_id=${this.iid}`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/institutions/${this.iid}/tests`).subscribe({
       next: (tests) => this.tests.set(tests.filter((t) => t.status === 'published' || t.status === 'closed')),
       error: () => this.toast.error('Failed to load tests'),
-    });
-  }
-
-  loadStudents() {
-    this.http.get<any>(`${environment.apiUrl}/institutions/${this.iid}/users?role=student&limit=200`).subscribe({
-      next: (res) => this.students.set(res.data ?? res),
     });
   }
 
@@ -47,10 +41,21 @@ export class AdminTestResultsPage implements OnInit {
     this.selectedTest.set(test);
     this.scores = {};
     this.loading.set(true);
-    this.http.get<any>(`${environment.apiUrl}/test-results/test/${test.id}`).subscribe({
+
+    const studentsUrl = test.class_id
+      ? `${environment.apiUrl}/institutions/${this.iid}/users/class/${test.class_id}`
+      : `${environment.apiUrl}/institutions/${this.iid}/users?role=student&limit=200`;
+
+    this.http.get<any>(studentsUrl).subscribe({
       next: (res) => {
-        res.results.forEach((r: any) => { this.scores[r.student_id] = { score: r.score, remarks: r.remarks ?? '' }; });
-        this.loading.set(false);
+        this.students.set(Array.isArray(res) ? res : (res.data ?? []));
+        this.http.get<any>(`${environment.apiUrl}/test-results/test/${test.id}`).subscribe({
+          next: (r) => {
+            r.results?.forEach((entry: any) => { this.scores[entry.student_id] = { score: entry.score, remarks: entry.remarks ?? '' }; });
+            this.loading.set(false);
+          },
+          error: () => { this.loading.set(false); },
+        });
       },
       error: () => { this.loading.set(false); },
     });

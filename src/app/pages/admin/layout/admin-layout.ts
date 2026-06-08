@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -19,5 +20,10 @@ export class AdminLayout {
     { label: 'Onboard',    path: '/admin/schools/onboard', icon: '➕' },
   ];
 
-  constructor(public auth: AuthService) {}
+  sidebarOpen = signal(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
+
+  constructor(public auth: AuthService, public theme: ThemeService) {}
+
+  toggleSidebar() { this.sidebarOpen.update(v => !v); }
+  closeSidebar()  { this.sidebarOpen.set(false); }
 }

@@ -1,10 +1,10 @@
 .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-.card h3 { font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px; }
+.card h3 { font-size: 13px; font-weight: 600; color: var(--ev-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px; }
 
 .avatar {
   display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
-  padding-bottom: 20px; border-bottom: 1px solid #1f1f1f;
+  padding-bottom: 20px; border-bottom: 1px solid var(--ev-border);
 }
 
 .avatar-circle {
@@ -14,8 +14,8 @@
   font-size: 20px; font-weight: 700; color: #fff; flex-shrink: 0;
 }
 
-.avatar-name { font-size: 15px; font-weight: 600; color: #fff; }
-.avatar-role { font-size: 12px; color: #666; margin-top: 2px; }
+.avatar-name { font-size: 15px; font-weight: 600; color: var(--ev-white); }
+.avatar-role { font-size: 12px; color: var(--ev-dim); margin-top: 2px; }
 
 @media (max-width: 768px) {
   .settings-grid { grid-template-columns: 1fr; }

@@ -1,6 +1,6 @@
 <div class="page-header">
   <div><h1>Academic Years</h1><p>Manage academic year periods</p></div>
-  <button class="btn btn-primary" (click)="showForm.set(true)">+ New Year</button>
+  @if (isAdmin) { <button class="btn btn-primary" (click)="showForm.set(true)">+ New Year</button> }
 </div>
 
 @if (loading()) {
@@ -22,11 +22,16 @@
                 @if (y.is_current) { <span class="badge badge-success">Current</span> }
                 @else { <span class="badge badge-neutral">Inactive</span> }
               </td>
-              <td style="display:flex;gap:8px">
-                @if (!y.is_current) {
-                  <button class="btn btn-secondary btn-sm" (click)="activate(y)">Set Current</button>
-                  <button class="btn btn-danger btn-sm" (click)="deleteTarget.set(y)">Delete</button>
-                }
+              <td>
+                @if (isAdmin) {
+                  <div class="action-btns">
+                    <button class="btn btn-secondary btn-sm" (click)="openEdit(y)">Edit</button>
+                    @if (!y.is_current) {
+                      <button class="btn btn-secondary btn-sm" (click)="activate(y)">Set Current</button>
+                      <button class="btn btn-danger btn-sm" (click)="deleteTarget.set(y)">Delete</button>
+                    }
+                  </div>
+                } @else { <span class="no-action">—</span> }
               </td>
             </tr>
           }
@@ -46,6 +51,21 @@
       <div class="modal-actions">
         <button class="btn btn-secondary" (click)="showForm.set(false)">Cancel</button>
         <button class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Creating...' : 'Create' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (editTarget()) {
+  <div class="modal-overlay" (click)="editTarget.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Edit Academic Year</h3>
+      <div class="field"><label>Name</label><input [(ngModel)]="editForm.name" placeholder="2024-25" /></div>
+      <div class="field"><label>Start Date</label><input [(ngModel)]="editForm.start_date" type="date" /></div>
+      <div class="field"><label>End Date</label><input [(ngModel)]="editForm.end_date" type="date" /></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="editTarget.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="saveEdit()" [disabled]="editSaving()">{{ editSaving() ? 'Saving...' : 'Save' }}</button>
       </div>
     </div>
   </div>

@@ -105,4 +105,33 @@ export class AttendanceService {
 
     return { total, present, absent, late, percentage };
   }
+
+  async getClassReport(institutionId: string, classId: string, from?: string, to?: string) {
+    const where: any = { institution_id: institutionId, class_id: classId };
+    if (from && to) where.date = Between(from, to);
+
+    const records = await this.attendanceRepo.find({ where, relations: { student: true } });
+
+    const map = new Map<string, { name: string; present: number; absent: number; late: number; total: number }>();
+    for (const r of records) {
+      if (!map.has(r.student_id)) {
+        map.set(r.student_id, { name: r.student?.name ?? 'Unknown', present: 0, absent: 0, late: 0, total: 0 });
+      }
+      const s = map.get(r.student_id)!;
+      s.total++;
+      if (r.status === AttendanceStatus.PRESENT) s.present++;
+      else if (r.status === AttendanceStatus.ABSENT) s.absent++;
+      else if (r.status === AttendanceStatus.LATE) s.late++;
+    }
+
+    return Array.from(map.entries()).map(([student_id, st]) => ({
+      student_id,
+      student_name: st.name,
+      present: st.present,
+      absent: st.absent,
+      late: st.late,
+      total: st.total,
+      percentage: st.total > 0 ? Math.round(((st.present + st.late) / st.total) * 100) : 0,
+    })).sort((a, b) => a.student_name.localeCompare(b.student_name));
+  }
 }

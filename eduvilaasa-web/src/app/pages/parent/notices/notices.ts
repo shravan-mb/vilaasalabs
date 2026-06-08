@@ -20,6 +20,12 @@ import { environment } from '../../../../environments/environment';
             <span class="badge badge-info" style="font-size:11px">{{ dateStr(item.created_at) }}</span>
           </div>
           <p style="color:#ccc;font-size:14px;line-height:1.6">{{ item.body }}</p>
+          @if (item.image_url) {
+            <div style="margin:10px 0 4px">
+              <img [src]="item.image_url" alt="Attachment" style="max-width:100%;max-height:320px;border-radius:8px;border:1px solid #2a2a2a;cursor:zoom-in" (click)="openImage(item.image_url)" />
+            </div>
+          }
+          <div style="font-size:11px;color:#666;margin-top:6px">By {{ item.created_by_name || 'Admin' }}</div>
         </div>
       }
     }
@@ -31,6 +37,7 @@ export class ParentNoticesPage implements OnInit {
   items = signal<any[]>([]);
   loading = signal(true);
   dateStr(val: string) { return val ? val.substring(0, 10) : ''; }
+  openImage(url: string) { window.open(url, '_blank'); }
   ngOnInit() {
     this.http.get<any[]>(`${environment.apiUrl}/announcements`).subscribe({
       next: (res) => { this.items.set(res); this.loading.set(false); },

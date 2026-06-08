@@ -1,0 +1,420 @@
+<div class="page-header">
+  <div>
+    <h1>Fee Management</h1>
+    <p>Configure fee structure, collect payments and track dues</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <button [class.active]="activeTab()==='categories'" (click)="activeTab.set('categories')">Fee Categories</button>
+  <button [class.active]="activeTab()==='structure'"  (click)="activeTab.set('structure')">Class Fee Structure</button>
+  <button [class.active]="activeTab()==='collect'"    (click)="activeTab.set('collect')">Collect Payment</button>
+</div>
+
+<!-- ── Fee Categories ──────────────────────────────────────────────────────────── -->
+@if (activeTab() === 'categories') {
+  @if (isAdmin) {
+    <div class="card">
+      <h3>Add Fee Category</h3>
+      <div class="form-row">
+        <div class="field"><label>Category Name *</label><input [(ngModel)]="catForm.name" placeholder="e.g. Tuition Fee" /></div>
+        <div class="field"><label>Description</label><input [(ngModel)]="catForm.description" placeholder="Optional" /></div>
+        <div class="field">
+          <label>Frequency *</label>
+          <select [(ngModel)]="catForm.frequency">
+            @for (f of frequencies; track f.value) { <option [value]="f.value">{{ f.label }}</option> }
+          </select>
+        </div>
+        <button class="btn btn-primary" style="align-self:flex-end" (click)="addCategory()" [disabled]="catSaving() || !catForm.name.trim()">
+          {{ catSaving() ? 'Adding...' : '+ Add' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="card">
+    <h3>Existing Categories</h3>
+    @if (categories().length === 0) {
+      <p class="empty">No fee categories yet. Add one above.</p>
+    } @else {
+      <table class="table">
+        <thead><tr><th>Name</th><th>Description</th><th>Frequency</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          @for (cat of categories(); track cat.id) {
+            <tr>
+              <td><strong>{{ cat.name }}</strong></td>
+              <td>{{ cat.description || '—' }}</td>
+              <td><span class="badge badge-neutral">{{ freqLabel(cat.frequency) }}</span></td>
+              <td><span class="badge" [class]="cat.is_active ? 'badge-green' : 'badge-red'">{{ cat.is_active ? 'Active' : 'Inactive' }}</span></td>
+              <td class="action-cell">
+                @if (isAdmin) {
+                  <button class="btn btn-outline btn-sm" (click)="openEditCat(cat)">Edit</button>
+                  <button class="btn btn-outline btn-sm danger" (click)="deleteCat(cat.id)">Delete</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+
+<!-- ── Class Fee Structure ─────────────────────────────────────────────────────── -->
+@if (activeTab() === 'structure') {
+  <div class="card">
+    <h3>Select Class</h3>
+    <div class="field" style="max-width:320px">
+      <!-- Use plain [(ngModel)] — selClassId is a plain string, not a signal -->
+      <select [(ngModel)]="selClassId" (ngModelChange)="onClassSelect()">
+        <option value="">— Choose a class —</option>
+        @for (c of classes(); track c.id) {
+          <option [value]="c.id">{{ c.name }}{{ c.section ? ' — ' + c.section : '' }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (selClassId) {
+    <div class="card">
+      <div class="card-header-row">
+        <h3>Fee Amounts for Selected Class</h3>
+        @if (structures().length > 0 && isAdmin) {
+          <button class="btn btn-outline btn-sm" (click)="openCopyModal()">Copy to Other Classes →</button>
+        }
+      </div>
+
+      @if (categories().length === 0) {
+        <p class="empty">Create fee categories first (go to "Fee Categories" tab).</p>
+      } @else if (structLoading()) {
+        <p class="loading-text">Loading structure...</p>
+      } @else {
+        <table class="table">
+          <thead><tr><th>Category</th><th>Frequency</th><th>Amount (₹)</th><th>Due Date</th><th>Actions</th></tr></thead>
+          <tbody>
+            @for (cat of categories(); track cat.id) {
+              @let entry = structureAmounts[cat.id];
+              <tr>
+                <td><strong>{{ cat.name }}</strong></td>
+                <td><span class="badge badge-neutral">{{ freqLabel(cat.frequency) }}</span></td>
+                <td>
+                  @if (entry) {
+                    <input class="amount-input" type="number" min="0"
+                      [(ngModel)]="entry.amount"
+                      placeholder="Enter amount" />
+                  }
+                </td>
+                <td>
+                  @if (entry) {
+                    <input class="date-input" type="date" [(ngModel)]="entry.due_date" />
+                  }
+                </td>
+                <td class="action-cell">
+                  @if (isAdmin) {
+                    <button class="btn btn-primary btn-sm"
+                      (click)="saveStructureRow(cat.id)"
+                      [disabled]="structSaving()[cat.id] || !entry?.amount">
+                      {{ structSaving()[cat.id] ? 'Saving...' : structExists(cat.id) ? 'Update' : 'Set' }}
+                    </button>
+                    @if (structExists(cat.id)) {
+                      <button class="btn btn-outline btn-sm danger" (click)="deleteStructureRow(cat.id)">Clear</button>
+                    }
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <p class="help-text">Enter an amount and click <strong>Set</strong> to save. Click <strong>Update</strong> to change an existing amount.</p>
+      }
+    </div>
+  }
+}
+
+<!-- ── Collect Payment ────────────────────────────────────────────────────────── -->
+@if (activeTab() === 'collect') {
+  @if (!selStudent()) {
+    <div class="card">
+      <h3>Search Student</h3>
+      <!-- Fix: use [ngModel] + (ngModelChange) — studentSearch is a signal, [(ngModel)] would corrupt it -->
+      <input class="search-input"
+        [ngModel]="studentSearch()"
+        (ngModelChange)="studentSearch.set($event)"
+        placeholder="Type student name or email..." />
+      @if (studentSearch().length >= 1) {
+        <div class="student-dropdown">
+          @for (s of filteredStudents(); track s.id) {
+            <div class="student-option" (click)="selectStudent(s)">
+              <span class="student-name">{{ s.name }}</span>
+              <span class="student-meta">{{ s.email || s.phone || '—' }}</span>
+            </div>
+          }
+          @empty { <div class="student-option empty-opt">No students found</div> }
+        </div>
+      }
+    </div>
+  }
+
+  @if (selStudent()) {
+    <div class="student-header">
+      <div>
+        <h2>{{ selStudent().name }}</h2>
+        <span class="student-class">{{ selStudent().class_name ?? 'No class assigned' }}</span>
+      </div>
+      <button class="btn btn-outline btn-sm" (click)="clearStudent()">← Change Student</button>
+    </div>
+
+    @if (lastReceipt()) {
+      <div class="alert-success">
+        ✓ Payment recorded · Receipt No: <strong>{{ lastReceipt() }}</strong>
+      </div>
+    }
+
+    @if (!selStudent().class_id) {
+      <div class="alert-warn">This student has no class assigned. Assign a class first to view fee structure and collect payments.</div>
+    }
+
+    @if (summaryLoading()) { <p class="loading-text">Loading fee summary...</p> }
+
+    @if (feeSummary() && !summaryLoading()) {
+
+      <!-- Fee Summary Table -->
+      <div class="card">
+        <div class="card-header-row">
+          <h3>Fee Summary</h3>
+          @if ((feeSummary().rows ?? []).length > 0) {
+            @if (isAdmin) {
+              <button class="btn btn-outline btn-sm" (click)="showDiscountModal.set(true)">+ Add Discount</button>
+            }
+          }
+        </div>
+
+        @if ((feeSummary().rows ?? []).length === 0) {
+          <div class="alert-warn" style="margin:0">
+            No fee structure set for this student's class. Go to <strong>Class Fee Structure</strong> tab and set amounts first.
+          </div>
+        } @else {
+          <table class="table">
+            <thead>
+              <tr><th>Category</th><th>Standard Fee</th><th>Discount</th><th>Net Due</th><th>Paid</th><th>Balance</th></tr>
+            </thead>
+            <tbody>
+              @for (row of feeSummary().rows; track row.fee_category_id) {
+                <tr>
+                  <td>{{ row.category_name }}<br/><small class="muted">{{ freqLabel(row.frequency) }}</small></td>
+                  <td>₹{{ row.standard_amount | number }}</td>
+                  <td>{{ row.discount_amount > 0 ? ('₹' + (row.discount_amount | number)) : '—' }}</td>
+                  <td>₹{{ row.net_due | number }}</td>
+                  <td>₹{{ row.paid | number }}</td>
+                  <td><span class="badge" [class]="balanceClass(row.balance)">{{ row.balance === 0 ? '✓ Paid' : '₹' + (row.balance | number) }}</span></td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr class="totals-row">
+                <td><strong>Total</strong></td>
+                <td><strong>₹{{ feeSummary().totals.total_due | number }}</strong></td>
+                <td><strong>₹{{ feeSummary().totals.total_discount | number }}</strong></td>
+                <td><strong>₹{{ feeSummary().totals.net_payable | number }}</strong></td>
+                <td><strong>₹{{ feeSummary().totals.total_paid | number }}</strong></td>
+                <td><strong class="balance-total">₹{{ feeSummary().totals.total_balance | number }}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        }
+      </div>
+
+      <!-- Collect Payment Form -->
+      @if ((feeSummary().rows ?? []).length > 0 && feeSummary().totals.total_balance > 0) {
+        <div class="card">
+          <h3>Record Payment</h3>
+          <div class="form-row">
+            <div class="field">
+              <label>Fee Category *</label>
+              <select [(ngModel)]="payForm.fee_category_id">
+                <option value="">— Select category —</option>
+                @for (row of feeSummary().rows; track row.fee_category_id) {
+                  @if (row.balance > 0) {
+                    <option [value]="row.fee_category_id">{{ row.category_name }} (₹{{ row.balance | number }} due)</option>
+                  }
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Amount (₹) *</label>
+              <input type="number" [(ngModel)]="payForm.amount_paid" min="1" placeholder="0" />
+            </div>
+            <div class="field">
+              <label>Date *</label>
+              <input type="date" [(ngModel)]="payForm.payment_date" />
+            </div>
+            <div class="field">
+              <label>Remarks</label>
+              <input [(ngModel)]="payForm.remarks" placeholder="Optional note" />
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:12px"
+            (click)="recordPayment()"
+            [disabled]="paySaving() || !payForm.fee_category_id || !payForm.amount_paid">
+            {{ paySaving() ? 'Recording...' : '💾 Record Cash Payment' }}
+          </button>
+        </div>
+      }
+    }
+
+    <!-- Active Discounts -->
+    @if (discounts().length > 0) {
+      <div class="card">
+        <h3>Active Discounts</h3>
+        <table class="table">
+          <thead><tr><th>Category</th><th>Discount</th><th>Reason</th><th>Action</th></tr></thead>
+          <tbody>
+            @for (d of discounts(); track d.id) {
+              <tr>
+                <td>{{ d.fee_category?.name }}</td>
+                <td>₹{{ d.discount_amount | number }}</td>
+                <td>{{ d.reason || '—' }}</td>
+                <td>@if (isAdmin) { <button class="btn btn-outline btn-sm danger" (click)="deleteDiscount(d.id)">Remove</button> }</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- Payment History -->
+    @if (paymentHistory().length > 0) {
+      <div class="card">
+        <h3>Payment History</h3>
+        <table class="table">
+          <thead><tr><th>Receipt No</th><th>Category</th><th>Amount</th><th>Date</th><th>Mode</th><th>Remarks</th><th></th></tr></thead>
+          <tbody>
+            @for (p of paymentHistory(); track p.id) {
+              <tr>
+                <td><span class="receipt-no">{{ p.receipt_number }}</span></td>
+                <td>{{ p.fee_category?.name }}</td>
+                <td>₹{{ p.amount_paid | number }}</td>
+                <td>{{ p.payment_date | date:'d MMM y' }}</td>
+                <td><span class="badge badge-neutral">{{ p.payment_mode | uppercase }}</span></td>
+                <td>{{ p.remarks || '—' }}</td>
+                <td>@if (isAdmin) { <button class="btn btn-outline btn-sm danger" (click)="deletePayment(p.id)">Delete</button> }</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+}
+
+<!-- ── Edit Category Modal ────────────────────────────────────────────────────── -->
+@if (editCat()) {
+  <div class="modal-overlay" (click)="editCat.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Edit Category</h3>
+      <div class="field"><label>Name *</label><input [(ngModel)]="editCatForm.name" /></div>
+      <div class="field"><label>Description</label><input [(ngModel)]="editCatForm.description" /></div>
+      <div class="field">
+        <label>Frequency</label>
+        <select [(ngModel)]="editCatForm.frequency">
+          @for (f of frequencies; track f.value) { <option [value]="f.value">{{ f.label }}</option> }
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" (click)="editCat.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="saveEditCat()" [disabled]="catSaving()">{{ catSaving() ? 'Saving...' : 'Save' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Add Discount Modal ─────────────────────────────────────────────────────── -->
+@if (showDiscountModal()) {
+  <div class="modal-overlay" (click)="showDiscountModal.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Add / Update Discount — {{ selStudent()?.name }}</h3>
+      <p class="modal-sub">Discount reduces the net amount this student needs to pay.</p>
+      <div class="field">
+        <label>Fee Category *</label>
+        <select [(ngModel)]="discountForm.fee_category_id">
+          <option value="">— Select category —</option>
+          @for (row of feeSummary()?.rows ?? []; track row.fee_category_id) {
+            <option [value]="row.fee_category_id">{{ row.category_name }} (Standard: ₹{{ row.standard_amount | number }})</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Discount Amount (₹) *</label>
+        <input type="number" [(ngModel)]="discountForm.discount_amount" min="0" placeholder="0" />
+      </div>
+      <div class="field">
+        <label>Reason</label>
+        <input [(ngModel)]="discountForm.reason" placeholder="e.g. Sibling concession, management approval..." />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" (click)="showDiscountModal.set(false)">Cancel</button>
+        <button class="btn btn-primary" (click)="saveDiscount()"
+          [disabled]="discSaving() || !discountForm.fee_category_id || !discountForm.discount_amount">
+          {{ discSaving() ? 'Saving...' : 'Apply Discount' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Copy Fee Structure Modal ───────────────────────────────────────────────── -->
+@if (showCopyModal()) {
+  <div class="modal-overlay" (click)="showCopyModal.set(false)">
+    <div class="modal modal-lg" (click)="$event.stopPropagation()">
+      <h3>Copy Fee Structure to Other Classes</h3>
+      <p class="modal-sub">Select the classes you want to apply this fee structure to.</p>
+
+      @if (copyResult()) {
+        <div class="alert-success" style="margin-bottom:16px">
+          ✓ Done — <strong>{{ copyResult()!.copied }}</strong> structure(s) copied
+          @if (copyResult()!.skipped > 0) {
+            , <strong>{{ copyResult()!.skipped }}</strong> skipped (already existed — enable overwrite to replace them)
+          }
+        </div>
+      }
+
+      @if (otherClasses().length === 0) {
+        <p class="empty">No other classes available.</p>
+      } @else {
+        <div class="copy-class-list">
+          @for (c of otherClasses(); track c.id) {
+            <label class="copy-class-row" [class.selected]="isCopyTarget(c.id)">
+              <input type="checkbox"
+                [checked]="isCopyTarget(c.id)"
+                (change)="toggleCopyTarget(c.id)" />
+              <span>{{ c.name }}{{ c.section ? ' — ' + c.section : '' }}</span>
+            </label>
+          }
+        </div>
+
+        <label class="overwrite-row">
+          <input type="checkbox" [(ngModel)]="overwriteExisting" />
+          <span>Overwrite existing fee amounts for selected classes</span>
+        </label>
+
+        <p class="copy-hint">
+          @if (!overwriteExisting) {
+            Classes that already have a fee amount for a category will be skipped. Enable overwrite to replace them.
+          } @else {
+            Existing fee amounts for selected classes will be replaced with amounts from the current class.
+          }
+        </p>
+      }
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" (click)="showCopyModal.set(false)">Close</button>
+        @if (otherClasses().length > 0) {
+          <button class="btn btn-primary" (click)="copyStructuresToClasses()"
+            [disabled]="copySaving() || copyTargetIds.length === 0">
+            {{ copySaving() ? 'Copying...' : 'Copy to ' + copyTargetIds.length + ' Class(es)' }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}

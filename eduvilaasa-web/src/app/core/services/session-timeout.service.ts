@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 
-const WARNING_BEFORE_MS = 2 * 60 * 1000; // warn 2 min before expiry
+const WARNING_BEFORE_MS = 5 * 60 * 1000; // warn 5 min before expiry
 
 function getTokenExpiry(token: string): number | null {
   try {

@@ -1,6 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
@@ -12,7 +13,10 @@ import { ToastService } from '../../../core/services/toast.service';
 })
 export class StudentsPage implements OnInit {
   private api = inject(ApiService);
+  private auth = inject(AuthService);
   private toast = inject(ToastService);
+
+  get isAdmin() { return this.auth.hasRole('institution_admin'); }
 
   students = signal<any[]>([]);
   classes = signal<any[]>([]);
@@ -162,6 +166,35 @@ export class StudentsPage implements OnInit {
     if (!teacherId) return '—';
     const t = this.teachers().find((t) => t.id === teacherId);
     return t ? t.name : '—';
+  }
+
+  // Class-wise grouping
+  expandedClasses = signal<Set<string>>(new Set());
+
+  studentsByClass = computed(() => {
+    const map = new Map<string | null, any[]>();
+    for (const s of this.students()) {
+      const key = s.class_id || null;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(s);
+    }
+    return map;
+  });
+
+  studentsForClass(classId: string | null): any[] {
+    return this.studentsByClass().get(classId) ?? [];
+  }
+
+  isExpanded(classId: string): boolean {
+    return this.expandedClasses().has(classId);
+  }
+
+  toggleClass(classId: string) {
+    this.expandedClasses.update(prev => {
+      const next = new Set(prev);
+      if (next.has(classId)) next.delete(classId); else next.add(classId);
+      return next;
+    });
   }
 
   // Bulk proctor assignment

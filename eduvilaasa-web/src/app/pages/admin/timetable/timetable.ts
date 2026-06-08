@@ -81,6 +81,16 @@ export class AdminTimetablePage implements OnInit {
     return [...new Set(this.filteredSlots().map((s: any) => s.class_id as string))];
   }
 
+  subjectsForForm(): any[] {
+    if (!this.form.class_id) return [];
+    const cls = this.classes().find((c) => c.id === this.form.class_id);
+    return cls?.subjects ?? [];
+  }
+
+  onClassChange() {
+    this.form.subject_name = '';
+  }
+
   openForm() {
     this.form = { class_id: '', subject_name: '', teacher_id: '', day_of_week: 0, start_time: '', end_time: '' };
     this.showForm.set(true);

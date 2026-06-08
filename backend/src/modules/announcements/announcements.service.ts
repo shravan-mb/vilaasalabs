@@ -19,6 +19,7 @@ export class AnnouncementsService {
       target_role: dto.target_role ?? 'all',
       created_by: userId,
       created_by_name: userName,
+      image_url: dto.image_url ?? null,
     });
     return this.repo.save(announcement);
   }
@@ -28,7 +29,8 @@ export class AnnouncementsService {
     if (classId) {
       qb.andWhere('(a.target_class_id = :classId OR a.target_class_id IS NULL)', { classId });
     }
-    if (role) {
+    const isAdminOrStaff = role === 'institution_admin' || role === 'institution_staff';
+    if (role && !isAdminOrStaff) {
       qb.andWhere('(a.target_role = :role OR a.target_role = :all OR a.target_role IS NULL)', { role, all: 'all' });
     }
     return qb.orderBy('a.created_at', 'DESC').getMany();

@@ -14,17 +14,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((err: HttpErrorResponse) => {
-      if (err.status === 401 && auth.refreshToken) {
-        return auth.refreshAccessToken().pipe(
-          switchMap((res) => {
-            const retried = req.clone({ setHeaders: { Authorization: `Bearer ${res.access_token}` } });
-            return next(retried);
-          }),
-          catchError(() => {
-            auth.logout();
-            return throwError(() => err);
-          }),
-        );
+      if (err.status === 401) {
+        if (auth.refreshToken) {
+          return auth.refreshAccessToken().pipe(
+            switchMap((res) => {
+              const retried = req.clone({ setHeaders: { Authorization: `Bearer ${res.access_token}` } });
+              return next(retried);
+            }),
+            catchError(() => {
+              auth.logout();
+              return throwError(() => err);
+            }),
+          );
+        }
+        auth.logout();
       }
       return throwError(() => err);
     }),

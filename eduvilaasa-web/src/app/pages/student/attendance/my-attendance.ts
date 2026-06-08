@@ -26,7 +26,7 @@ export class MyAttendance implements OnInit {
     const userId = this.auth.currentUser()?.id;
     if (!userId) return;
     this.loading.set(true);
-    this.api.get<any[]>('attendance', { student_id: userId, from_date: this.from, to_date: this.to }).subscribe({
+    this.api.get<any[]>('attendance/my', { from_date: this.from, to_date: this.to }).subscribe({
       next: (data) => { this.records.set(data); this.loading.set(false); },
       error: () => this.loading.set(false),
     });

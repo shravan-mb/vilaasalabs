@@ -1,6 +1,6 @@
-.form-card { margin-bottom: 20px; h3 { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 16px; } }
+.form-card { margin-bottom: 20px; h3 { font-size: 13px; color: var(--ev-muted); text-transform: uppercase; margin-bottom: 16px; } }
 .form-actions { margin-top: 16px; }
-.loading-text { color: #555; }
+.loading-text { color: var(--ev-dim); }
 .classes-list { display: flex; flex-direction: column; gap: 12px; }
 
 .class-card { padding: 16px 20px; }
@@ -10,12 +10,12 @@
   cursor: pointer; user-select: none;
 }
 
-.class-name { font-size: 15px; font-weight: 600; color: #e5e5e5; }
-.year { font-size: 12px; color: #555; margin-left: 8px; }
+.class-name { font-size: 15px; font-weight: 600; color: var(--ev-text); }
+.year { font-size: 12px; color: var(--ev-dim); margin-left: 8px; }
 .class-meta { display: flex; align-items: center; gap: 12px; }
-.expand-icon { color: #555; font-size: 12px; }
+.expand-icon { color: var(--ev-dim); font-size: 12px; }
 
-.subjects-area { margin-top: 16px; padding-top: 16px; border-top: 1px solid #2a2a2a; }
+.subjects-area { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--ev-border); }
 
 .subjects-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 
@@ -34,5 +34,10 @@
 
 .add-subject-form {
   display: flex; align-items: center; gap: 8px; margin-top: 12px;
-  input { width: 200px; padding: 8px 12px; background: #111; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 13px; &:focus { outline: none; border-color: #7c3aed; } }
+  input { width: 200px; padding: 8px 12px; background: var(--ev-input-bg); border: 1px solid var(--ev-border-2); border-radius: 8px; color: var(--ev-text); font-size: 13px; &:focus { outline: none; border-color: #7c3aed; } }
+}
+
+@media (max-width: 640px) {
+  .class-header { flex-wrap: wrap; gap: 8px; }
+  .add-subject-form { flex-wrap: wrap; input { width: 100%; } }
 }

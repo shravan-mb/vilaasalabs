@@ -3,7 +3,7 @@
     <h1>Staff Management</h1>
     <p>Manage institution staff accounts</p>
   </div>
-  <button class="btn btn-primary" (click)="openForm()">+ Add Staff</button>
+  @if (isAdmin) { <button class="btn btn-primary" (click)="openForm()">+ Add Staff</button> }
 </div>
 
 @if (loading()) {
@@ -24,9 +24,11 @@
               <td>{{ m.email || '—' }}</td>
               <td><span class="badge" [class.badge-success]="m.is_active" [class.badge-error]="!m.is_active">{{ m.is_active ? 'Active' : 'Inactive' }}</span></td>
               <td style="display:flex;gap:6px;flex-wrap:wrap">
-                <button class="btn btn-outline btn-sm" (click)="openEdit(m)">Edit</button>
-                <button class="btn btn-outline btn-sm" (click)="openResetPassword(m)">Reset PW</button>
-                <button class="btn btn-danger btn-sm" (click)="confirmDelete(m)">Delete</button>
+                @if (isAdmin) {
+                  <button class="btn btn-outline btn-sm" (click)="openEdit(m)">Edit</button>
+                  <button class="btn btn-outline btn-sm" (click)="openResetPassword(m)">Reset PW</button>
+                  <button class="btn btn-danger btn-sm" (click)="confirmDelete(m)">Delete</button>
+                }
               </td>
             </tr>
           }

@@ -10,25 +10,35 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './child-attendance.html',
 })
 export class ChildAttendance implements OnInit {
-  private api = inject(ApiService);
+  private api  = inject(ApiService);
   private auth = inject(AuthService);
 
-  links = signal<any[]>([]);
+  children  = signal<any[]>([]);
   selectedStudentId = signal('');
-  records = signal<any[]>([]);
-  summary = signal<any>(null);
-  loading = signal(false);
+  records   = signal<any[]>([]);
+  summary   = signal<any>(null);
+  loading   = signal(false);
+  loadingChildren = signal(true);
 
   from = this.monthStart();
-  to = this.today();
+  to   = this.today();
 
   ngOnInit() {
     const userId = this.auth.currentUser()?.id;
     if (!userId) return;
-    // The backend StudentParent service stores parent→student links
-    // We query students linked to this parent by querying their linked students list
-    this.api.get<any[]>('users', { role: 'student' }).subscribe({
-      next: (data) => { this.links.set(data); },
+
+    // Load only THIS parent's linked children (not all institution students)
+    this.api.get<any[]>(`users/${userId}/children`).subscribe({
+      next: (data) => {
+        this.children.set(data ?? []);
+        this.loadingChildren.set(false);
+        if (data?.length === 1) {
+          // Auto-select and auto-load if only one child
+          this.selectedStudentId.set(data[0].id);
+          this.load();
+        }
+      },
+      error: () => this.loadingChildren.set(false),
     });
   }
 
@@ -36,10 +46,14 @@ export class ChildAttendance implements OnInit {
     const sid = this.selectedStudentId();
     if (!sid) return;
     this.loading.set(true);
-    this.api.get<any[]>('attendance', { student_id: sid, from_date: this.from, to_date: this.to }).subscribe({
-      next: (data) => { this.records.set(data); this.loading.set(false); },
+    this.summary.set(null);
+    this.records.set([]);
+
+    this.api.get<any[]>(`attendance/child/${sid}`, { from_date: this.from, to_date: this.to }).subscribe({
+      next: (data) => { this.records.set(data ?? []); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
+
     this.api.get<any>(`attendance/student/${sid}/summary`, { from: this.from, to: this.to }).subscribe({
       next: (data) => this.summary.set(data),
     });

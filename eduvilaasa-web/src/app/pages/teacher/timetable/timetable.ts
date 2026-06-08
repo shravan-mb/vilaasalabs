@@ -19,12 +19,21 @@ export class TeacherTimetablePage implements OnInit {
   private toast = inject(ToastService);
 
   slots = signal<any[]>([]);
+  classes = signal<any[]>([]);
   loading = signal(true);
   days = DAYS;
 
   slotsForDay(day: number): any[] { return this.slots().filter((s) => s.day_of_week === day); }
 
+  className(classId: string): string {
+    const c = this.classes().find((x) => x.id === classId);
+    return c ? `${c.name}${c.section ? ' – ' + c.section : ''}` : '—';
+  }
+
   ngOnInit() {
+    this.http.get<any[]>(`${environment.apiUrl}/institutions/${this.auth.institutionId}/classes`).subscribe({
+      next: (res) => this.classes.set(res ?? []),
+    });
     this.http.get<any[]>(`${environment.apiUrl}/timetable/teacher`).subscribe({
       next: (res) => { this.slots.set(res ?? []); this.loading.set(false); },
       error: () => { this.toast.error('Failed to load schedule'); this.loading.set(false); },

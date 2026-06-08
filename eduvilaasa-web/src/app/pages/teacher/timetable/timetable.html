@@ -20,7 +20,7 @@
           <div class="slot-card">
             <div class="slot-subject">{{ slot.subject_name }}</div>
             <div class="slot-time">{{ slot.start_time }} – {{ slot.end_time }}</div>
-            <div class="slot-class">Class: {{ slot.class_id }}</div>
+            <div class="slot-class">{{ className(slot.class_id) }}</div>
           </div>
         }
         @if (!slotsForDay(d).length) {

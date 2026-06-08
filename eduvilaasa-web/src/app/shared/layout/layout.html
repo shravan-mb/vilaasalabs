@@ -1,10 +1,14 @@
 <div class="app-shell" [class.sidebar-collapsed]="!sidebarOpen()">
   <app-sidebar [open]="sidebarOpen()" />
+  <div class="sidebar-overlay" [class.visible]="sidebarOpen()" (click)="toggleSidebar()"></div>
 
   <div class="main-area">
     <header class="topbar">
       <button class="toggle-btn" (click)="toggleSidebar()">☰</button>
       <div class="topbar-right">
+        <button class="theme-toggle-btn" (click)="theme.toggle()" [title]="theme.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+          {{ theme.isDark() ? '☀️' : '🌙' }}
+        </button>
         <span class="user-name">{{ user()?.name }}</span>
         <span class="role-badge">{{ roleLabel() }}</span>
         <button class="logout-btn" (click)="logout()">Sign out</button>

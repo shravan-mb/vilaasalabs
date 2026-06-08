@@ -85,6 +85,16 @@ export class QuestionBankController {
     return this.service.findAllTests(institutionId);
   }
 
+  @Get('parent-tests')
+  @Roles(Role.PARENT)
+  @ApiOperation({ summary: 'Get published tests for the logged-in parent (based on children\'s classes)' })
+  getParentTests(
+    @Param('institutionId') institutionId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.service.findTestsForParent(institutionId, user.id);
+  }
+
   @Get('my-tests')
   @Roles(Role.STUDENT)
   @ApiOperation({ summary: 'Get published tests for the logged-in student (filtered by class)' })
@@ -93,6 +103,29 @@ export class QuestionBankController {
     @CurrentUser() user: User,
   ) {
     return this.service.findTestsForStudent(institutionId, user.id);
+  }
+
+  @Get('my-tests/:testId')
+  @Roles(Role.STUDENT)
+  @ApiOperation({ summary: 'Get a test with questions (correct_answer stripped) for a student to take' })
+  getTestForTake(
+    @Param('institutionId') institutionId: string,
+    @Param('testId') testId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.service.getTestForStudentTake(institutionId, user.id, testId);
+  }
+
+  @Post('my-tests/:testId/submit')
+  @Roles(Role.STUDENT)
+  @ApiOperation({ summary: 'Submit answers for a test — auto-graded for MCQ and True/False' })
+  submitTest(
+    @Param('institutionId') institutionId: string,
+    @Param('testId') testId: string,
+    @CurrentUser() user: User,
+    @Body() body: { answers: Record<string, string> },
+  ) {
+    return this.service.submitTestAnswers(institutionId, user.id, testId, body.answers ?? {});
   }
 
   @Get('tests/:testId')

@@ -88,6 +88,33 @@ export class TestResultsService {
     };
   }
 
+  async getClassReport(institutionId: string, classId: string) {
+    const tests = await this.testRepo.find({
+      where: { institution_id: institutionId, class_id: classId },
+      order: { created_at: 'DESC' },
+    });
+    if (!tests.length) return [];
+
+    const rows: { test_id: string; test_title: string; subject: string; total_marks: number; avg_score: number; highest: number; lowest: number; submissions: number }[] = [];
+    for (const test of tests) {
+      const results = await this.resultRepo.find({ where: { test_id: test.id } });
+      if (!results.length) continue;
+      const scores = results.map((r) => Number(r.score)).filter((s) => !isNaN(s));
+      const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+      rows.push({
+        test_id:     test.id,
+        test_title:  test.title,
+        subject:     test.subject ?? '',
+        total_marks: test.total_marks,
+        avg_score:   Math.round(avg * 10) / 10,
+        highest:     scores.length ? Math.max(...scores) : 0,
+        lowest:      scores.length ? Math.min(...scores) : 0,
+        submissions: results.length,
+      });
+    }
+    return rows;
+  }
+
   async deleteResult(institutionId: string, resultId: string): Promise<void> {
     const result = await this.resultRepo.findOne({ where: { id: resultId, institution_id: institutionId } });
     if (!result) throw new NotFoundException('Result not found');

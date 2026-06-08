@@ -45,7 +45,7 @@ export class AuthService {
     };
 
     return {
-      access_token: this.jwtService.sign(payload, { expiresIn: '15m' }),
+      access_token: this.jwtService.sign(payload, { expiresIn: '1h' }),
       refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
       user: {
         id: user.id,
@@ -69,7 +69,7 @@ export class AuthService {
         role: user.role,
         institution_id: user.institution_id,
       };
-      return { access_token: this.jwtService.sign(newPayload, { expiresIn: '15m' }) };
+      return { access_token: this.jwtService.sign(newPayload, { expiresIn: '1h' }) };
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }

@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-tests',
@@ -9,6 +10,9 @@ import { ApiService } from '../../../core/services/api.service';
 })
 export class TestsPage implements OnInit {
   private api = inject(ApiService);
+  private auth = inject(AuthService);
+
+  get isAdmin() { return this.auth.hasRole('institution_admin'); }
 
   tests = signal<any[]>([]);
   classes = signal<any[]>([]);

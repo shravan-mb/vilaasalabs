@@ -1,7 +1,10 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+
+type SubjectEntry = { class_id: string; class_name: string; subject_id: string; subject_name: string };
 
 @Component({
   selector: 'app-teachers',
@@ -12,9 +15,13 @@ import { ToastService } from '../../../core/services/toast.service';
 })
 export class TeachersPage implements OnInit {
   private api = inject(ApiService);
+  private auth = inject(AuthService);
   private toast = inject(ToastService);
 
+  get isAdmin() { return this.auth.hasRole('institution_admin'); }
+
   teachers = signal<any[]>([]);
+  classes = signal<any[]>([]);
   loading = signal(true);
   showForm = signal(false);
   saving = signal(false);
@@ -22,16 +29,18 @@ export class TeachersPage implements OnInit {
 
   form = { name: '', email: '', phone: '', password: '', role: 'teacher' };
   touched: Record<string, boolean> = {};
+  teachingSubjectSelections: SubjectEntry[] = [];
 
   editTarget = signal<any>(null);
   editForm = { name: '', email: '', phone: '' };
+  editTeachingSubjectSelections: SubjectEntry[] = [];
   editSaving = signal(false);
 
   passwordTarget = signal<any>(null);
   newPassword = '';
   passwordSaving = signal(false);
 
-  ngOnInit() { this.load(); }
+  ngOnInit() { this.load(); this.loadClasses(); }
 
   load() {
     this.loading.set(true);
@@ -39,6 +48,10 @@ export class TeachersPage implements OnInit {
       next: (res: any) => { this.teachers.set(res.data ?? res); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
+  }
+
+  loadClasses() {
+    this.api.get<any[]>('classes').subscribe({ next: (data) => this.classes.set(data ?? []) });
   }
 
   touch(f: string) { this.touched[f] = true; }
@@ -50,13 +63,60 @@ export class TeachersPage implements OnInit {
     return false;
   }
 
+  isSubjectSelected(subjectId: string): boolean {
+    return this.teachingSubjectSelections.some(s => s.subject_id === subjectId);
+  }
+
+  toggleSubject(cls: any, sub: any): void {
+    const idx = this.teachingSubjectSelections.findIndex(s => s.subject_id === sub.id);
+    if (idx >= 0) {
+      this.teachingSubjectSelections.splice(idx, 1);
+    } else {
+      this.teachingSubjectSelections.push({
+        class_id: cls.id,
+        class_name: `${cls.name}${cls.section ? ' — ' + cls.section : ''}`,
+        subject_id: sub.id,
+        subject_name: sub.name,
+      });
+    }
+  }
+
+  isEditSubjectSelected(subjectId: string): boolean {
+    return this.editTeachingSubjectSelections.some(s => s.subject_id === subjectId);
+  }
+
+  toggleEditSubject(cls: any, sub: any): void {
+    const idx = this.editTeachingSubjectSelections.findIndex(s => s.subject_id === sub.id);
+    if (idx >= 0) {
+      this.editTeachingSubjectSelections.splice(idx, 1);
+    } else {
+      this.editTeachingSubjectSelections.push({
+        class_id: cls.id,
+        class_name: `${cls.name}${cls.section ? ' — ' + cls.section : ''}`,
+        subject_id: sub.id,
+        subject_name: sub.name,
+      });
+    }
+  }
+
+  subjectSummary(subjects: SubjectEntry[] | undefined): string {
+    if (!subjects || subjects.length === 0) return '—';
+    const names = subjects.map(s => s.subject_name);
+    if (names.length <= 2) return names.join(', ');
+    return `${names[0]}, ${names[1]} +${names.length - 2} more`;
+  }
+
   onSubmit() {
     ['name', 'password'].forEach((f) => this.touch(f));
     if (['name', 'password'].some((f) => this.isInvalid(f))) return;
     if (this.form.email) { this.touch('email'); if (this.isInvalid('email')) return; }
     this.saving.set(true);
     this.error.set('');
-    const payload: any = { name: this.form.name, phone: this.form.phone, password: this.form.password, role: 'teacher' };
+    const payload: any = {
+      name: this.form.name, phone: this.form.phone,
+      password: this.form.password, role: 'teacher',
+      teaching_subjects: this.teachingSubjectSelections,
+    };
     if (this.form.email) payload.email = this.form.email;
     this.api.post('users', payload).subscribe({
       next: () => {
@@ -65,6 +125,7 @@ export class TeachersPage implements OnInit {
         this.showForm.set(false);
         this.form = { name: '', email: '', phone: '', password: '', role: 'teacher' };
         this.touched = {};
+        this.teachingSubjectSelections = [];
         this.load();
       },
       error: (err) => {
@@ -77,13 +138,17 @@ export class TeachersPage implements OnInit {
 
   openEdit(t: any) {
     this.editForm = { name: t.name, email: t.email ?? '', phone: t.phone ?? '' };
+    this.editTeachingSubjectSelections = [...(t.teaching_subjects ?? [])];
     this.editTarget.set(t);
   }
 
   saveEdit() {
     if (!this.editForm.name.trim()) { this.toast.error('Name is required'); return; }
     this.editSaving.set(true);
-    const payload: any = { name: this.editForm.name, phone: this.editForm.phone };
+    const payload: any = {
+      name: this.editForm.name, phone: this.editForm.phone,
+      teaching_subjects: this.editTeachingSubjectSelections,
+    };
     if (this.editForm.email) payload.email = this.editForm.email;
     this.api.patch(`users/${this.editTarget().id}`, payload).subscribe({
       next: () => {

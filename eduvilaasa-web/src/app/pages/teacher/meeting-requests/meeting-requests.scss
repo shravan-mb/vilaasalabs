@@ -1,12 +1,12 @@
 .message-box {
-  background: #111;
-  border: 1px solid #2a2a2a;
+  background: var(--ev-card-2);
+  border: 1px solid var(--ev-border);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 13px;
-  color: #ccc;
+  color: var(--ev-text-2);
   line-height: 1.5;
   margin-top: 6px;
 }
 
-.loading-text { color: #555; font-size: 14px; }
+.loading-text { color: var(--ev-dim); font-size: 14px; }

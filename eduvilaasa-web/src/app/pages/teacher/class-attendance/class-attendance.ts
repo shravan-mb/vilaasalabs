@@ -64,7 +64,7 @@ export class ClassAttendancePage implements OnInit {
   dateTo = '';
 
   ngOnInit() {
-    this.http.get<any[]>(`${environment.apiUrl}/classes`).subscribe({ next: (res) => this.classes.set(res) });
+    this.http.get<any[]>(`${environment.apiUrl}/institutions/${this.auth.institutionId}/classes`).subscribe({ next: (res) => this.classes.set(res) });
   }
 
   run() {
@@ -73,8 +73,8 @@ export class ClassAttendancePage implements OnInit {
     const p = new URLSearchParams({ class_id: this.classId });
     if (this.dateFrom) p.set('from', this.dateFrom);
     if (this.dateTo) p.set('to', this.dateTo);
-    this.http.get<any>(`${environment.apiUrl}/attendance/summary?${p}`).subscribe({
-      next: (res) => { this.data.set(Array.isArray(res) ? res : res.students ?? []); this.loading.set(false); this.ran.set(true); },
+    this.http.get<any[]>(`${environment.apiUrl}/institutions/${this.auth.institutionId}/attendance/class-report?${p}`).subscribe({
+      next: (res) => { this.data.set(Array.isArray(res) ? res : []); this.loading.set(false); this.ran.set(true); },
       error: () => { this.toast.error('Failed to load data'); this.loading.set(false); },
     });
   }

@@ -86,7 +86,7 @@
     <div class="empty-state"><p>No tests yet. Create your first test above.</p></div>
   } @else {
     <table class="table">
-      <thead><tr><th>Title</th><th>Class</th><th>Subject</th><th>Questions</th><th>Total Marks</th><th>Duration</th><th>Status</th></tr></thead>
+      <thead><tr><th>Title</th><th>Class</th><th>Subject</th><th>Questions</th><th>Total Marks</th><th>Duration</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>
         @for (t of tests(); track t.id) {
           <tr>
@@ -97,6 +97,14 @@
             <td>{{ t.total_marks }}</td>
             <td>{{ t.duration_minutes ? t.duration_minutes + ' min' : '—' }}</td>
             <td><span class="badge" [class]="statusClass(t.status)">{{ t.status }}</span></td>
+            <td style="display:flex;gap:6px">
+              @if (t.status === 'draft') {
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="changeStatus(t.id, 'published')">Publish</button>
+              }
+              @if (t.status === 'published') {
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#f59e0b;border-color:#f59e0b" (click)="changeStatus(t.id, 'closed')">Close</button>
+              }
+            </td>
           </tr>
         }
       </tbody>

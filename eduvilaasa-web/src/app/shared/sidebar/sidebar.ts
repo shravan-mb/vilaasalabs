@@ -1,6 +1,7 @@
 import { Component, computed, inject, Input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { InstitutionSettingsService } from '../../core/services/institution-settings.service';
 
 interface NavItem { label: string; icon: string; route: string; }
 
@@ -14,6 +15,7 @@ interface NavItem { label: string; icon: string; route: string; }
 export class Sidebar {
   @Input() open = true;
   private auth = inject(AuthService);
+  private instSettings = inject(InstitutionSettingsService);
   role = computed(() => this.auth.currentUser()?.role ?? '');
 
   navItems = computed<NavItem[]>(() => {
@@ -21,7 +23,7 @@ export class Sidebar {
     const settings: NavItem = { label: 'Settings', icon: '⚙', route: '/settings' };
 
     if (r === 'institution_admin' || r === 'institution_staff') {
-      return [
+      const items: NavItem[] = [
         { label: 'Dashboard',      icon: '⊞',  route: '/admin/dashboard' },
         { label: 'Students',       icon: '🎓', route: '/admin/students' },
         { label: 'Teachers',       icon: '👨‍🏫', route: '/admin/teachers' },
@@ -35,9 +37,13 @@ export class Sidebar {
         { label: 'Reports',        icon: '📈', route: '/admin/reports' },
         { label: 'Announcements',  icon: '📢', route: '/admin/announcements' },
         { label: 'Academic Years', icon: '📅', route: '/admin/academic-years' },
-        { label: 'Subscription',   icon: '💳', route: '/admin/subscription' },
-        settings,
+        { label: 'Fees',           icon: '💰', route: '/admin/fees' },
       ];
+      if (this.instSettings.showSubscriptionTab) {
+        items.push({ label: 'Subscription', icon: '💳', route: '/admin/subscription' });
+      }
+      items.push(settings);
+      return items;
     }
 
     if (r === 'teacher') {
@@ -53,6 +59,7 @@ export class Sidebar {
         { label: 'Gradebook',         icon: '📈', route: '/teacher/gradebook' },
         { label: 'Proctor Dashboard', icon: '📉', route: '/teacher/proctor-performance' },
         { label: 'Meeting Requests',  icon: '🤝', route: '/teacher/meeting-requests' },
+        { label: 'Notices',           icon: '📢', route: '/teacher/notices' },
         settings,
       ];
     }

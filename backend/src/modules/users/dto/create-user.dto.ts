@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Matches } from 'class-validator';
+import { IsArray, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Matches } from 'class-validator';
 import { Role } from '../../../common/enums/role.enum';
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
@@ -32,4 +32,8 @@ export class CreateUserDto {
     message: 'Password must be 8+ chars with uppercase, lowercase, number and special character',
   })
   password: string;
+
+  @IsOptional()
+  @IsArray()
+  teaching_subjects?: Array<{ class_id: string; class_name: string; subject_id: string; subject_name: string }>;
 }

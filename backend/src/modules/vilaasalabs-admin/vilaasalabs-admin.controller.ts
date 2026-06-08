@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, HttpCode } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -56,6 +56,13 @@ export class VilaasalabsAdminController {
   @Post('institutions/:id/reactivate')
   @ApiOperation({ summary: 'Reactivate a suspended institution' })
   reactivate(@Param('id') id: string) { return this.service.reactivate(id); }
+
+  @Patch('institutions/:id/feature-flags')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Update feature flags for an institution' })
+  updateFeatureFlags(@Param('id') id: string, @Body() body: { feature_flags: Record<string, boolean> }) {
+    return this.service.updateFeatureFlags(id, body.feature_flags);
+  }
 
   @Post('broadcast')
   @ApiOperation({ summary: 'Send broadcast email to all or selected institutions' })

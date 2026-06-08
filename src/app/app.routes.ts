@@ -7,6 +7,7 @@ export const routes: Routes = [
   { path: 'about',     loadComponent: () => import('./pages/about/about').then(m => m.About) },
   { path: 'portfolio', loadComponent: () => import('./pages/portfolio/portfolio').then(m => m.Portfolio) },
   { path: 'contact',   loadComponent: () => import('./pages/contact/contact').then(m => m.Contact) },
+  { path: 'products/eduvilaasa', loadComponent: () => import('./pages/products/eduvilaasa/eduvilaasa').then(m => m.EduVilaasaPage) },
 
   { path: 'admin/login', loadComponent: () => import('./pages/admin/login/admin-login').then(m => m.AdminLogin) },
   { path: 'admin/forgot-password', loadComponent: () => import('./pages/admin/login/forgot-password').then(m => m.AdminForgotPassword) },

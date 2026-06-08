@@ -9,24 +9,37 @@
 <div class="report-controls card no-print">
   <div class="filters">
     <div class="field">
-      <label>Class</label>
-      <select [(ngModel)]="selectedClass" (ngModelChange)="selectedClass.set($event)">
+      <label>Class *</label>
+      <!-- Plain string — no signal, [(ngModel)] works correctly -->
+      <select [(ngModel)]="selectedClass">
         <option value="">All Classes</option>
-        @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }} {{ c.section }}</option> }
+        @for (c of classes(); track c.id) {
+          <option [value]="c.id">{{ c.name }}{{ c.section ? ' — ' + c.section : '' }}</option>
+        }
       </select>
     </div>
     <div class="field">
       <label>From</label>
-      <input type="date" [value]="dateFrom()" (change)="dateFrom.set($any($event.target).value)" />
+      <input type="date" [(ngModel)]="dateFrom" />
     </div>
     <div class="field">
       <label>To</label>
-      <input type="date" [value]="dateTo()" (change)="dateTo.set($any($event.target).value)" />
+      <input type="date" [(ngModel)]="dateTo" />
     </div>
   </div>
   <div class="tab-btns">
-    <button class="btn" [class.btn-primary]="activeTab()==='attendance'" [class.btn-secondary]="activeTab()!=='attendance'" (click)="activeTab.set('attendance');runAttendanceReport()">Attendance Report</button>
-    <button class="btn" [class.btn-primary]="activeTab()==='tests'" [class.btn-secondary]="activeTab()!=='tests'" (click)="activeTab.set('tests');runTestReport()">Test Scores Report</button>
+    <button class="btn"
+      [class.btn-primary]="activeTab()==='attendance'"
+      [class.btn-secondary]="activeTab()!=='attendance'"
+      (click)="activeTab.set('attendance'); runAttendanceReport()">
+      Attendance Report
+    </button>
+    <button class="btn"
+      [class.btn-primary]="activeTab()==='tests'"
+      [class.btn-secondary]="activeTab()!=='tests'"
+      (click)="activeTab.set('tests'); runTestReport()">
+      Test Scores Report
+    </button>
   </div>
 </div>
 
@@ -36,19 +49,35 @@
   <div class="card print-area">
     <h2 class="print-title">Attendance Report</h2>
     @if (!attendanceData().length) {
-      <div class="empty-state">Run the report to see attendance data.</div>
+      <div class="empty-state">
+        @if (!selectedClass) {
+          Select a class and click <strong>Attendance Report</strong> to view data.
+        } @else {
+          No attendance records found for the selected class and date range.
+        }
+      </div>
     } @else {
+      <p style="font-size:12px;color:var(--ev-muted);margin-bottom:12px">{{ attendanceData().length }} students</p>
       <table class="table">
-        <thead><tr><th>Student</th><th>Present</th><th>Absent</th><th>Late</th><th>Total Days</th><th>%</th></tr></thead>
+        <thead>
+          <tr><th>Student</th><th>Present</th><th>Absent</th><th>Late</th><th>Total Days</th><th>%</th></tr>
+        </thead>
         <tbody>
           @for (s of attendanceData(); track s.student_id) {
             <tr>
               <td>{{ s.student_name }}</td>
-              <td>{{ s.present }}</td>
-              <td>{{ s.absent }}</td>
-              <td>{{ s.late }}</td>
+              <td style="color:#4ade80">{{ s.present }}</td>
+              <td style="color:#f87171">{{ s.absent }}</td>
+              <td style="color:#fbbf24">{{ s.late }}</td>
               <td>{{ s.total }}</td>
-              <td><span class="badge" [class.badge-success]="s.percentage>=75" [class.badge-warning]="s.percentage<75&&s.percentage>=50" [class.badge-error]="s.percentage<50">{{ s.percentage }}%</span></td>
+              <td>
+                <span class="badge"
+                  [class.badge-success]="s.percentage >= 75"
+                  [class.badge-yellow]="s.percentage >= 50 && s.percentage < 75"
+                  [class.badge-error]="s.percentage < 50">
+                  {{ s.percentage }}%
+                </span>
+              </td>
             </tr>
           }
         </tbody>
@@ -59,19 +88,29 @@
   <div class="card print-area">
     <h2 class="print-title">Test Scores Report</h2>
     @if (!testData().length) {
-      <div class="empty-state">Run the report to see test data.</div>
+      <div class="empty-state">
+        @if (!selectedClass) {
+          Select a class and click <strong>Test Scores Report</strong> to view data.
+        } @else {
+          No published tests with results found for this class.
+        }
+      </div>
     } @else {
+      <p style="font-size:12px;color:var(--ev-muted);margin-bottom:12px">{{ testData().length }} tests</p>
       <table class="table">
-        <thead><tr><th>Test</th><th>Subject</th><th>Max Marks</th><th>Avg Score</th><th>Highest</th><th>Lowest</th></tr></thead>
+        <thead>
+          <tr><th>Test</th><th>Subject</th><th>Max Marks</th><th>Avg Score</th><th>Highest</th><th>Lowest</th><th>Submissions</th></tr>
+        </thead>
         <tbody>
           @for (t of testData(); track t.test_id) {
             <tr>
               <td>{{ t.test_title }}</td>
-              <td>{{ t.subject }}</td>
+              <td>{{ t.subject || '—' }}</td>
               <td>{{ t.total_marks }}</td>
-              <td>{{ t.avg_score | number:'1.1-1' }}</td>
-              <td>{{ t.highest }}</td>
-              <td>{{ t.lowest }}</td>
+              <td><strong>{{ t.avg_score | number:'1.1-1' }}</strong></td>
+              <td style="color:#4ade80">{{ t.highest }}</td>
+              <td style="color:#f87171">{{ t.lowest }}</td>
+              <td>{{ t.submissions }}</td>
             </tr>
           }
         </tbody>

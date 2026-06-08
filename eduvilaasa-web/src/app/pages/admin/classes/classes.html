@@ -3,9 +3,11 @@
     <h1>Classes & Subjects</h1>
     <p>Manage class sections and their subjects</p>
   </div>
-  <button class="btn btn-primary" (click)="showForm.set(!showForm())">
-    @if (showForm()) { Cancel } @else { + Add Class }
-  </button>
+  @if (isAdmin) {
+    <button class="btn btn-primary" (click)="showForm.set(!showForm())">
+      @if (showForm()) { Cancel } @else { + Add Class }
+    </button>
+  }
 </div>
 
 @if (success()) { <div class="alert alert-success">{{ success() }}</div> }
@@ -36,6 +38,21 @@
   </div>
 }
 
+@if (editTarget()) {
+  <div class="modal-overlay" (click)="editTarget.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Edit Class</h3>
+      <div class="field"><label>Class Name *</label><input [(ngModel)]="editForm.name" placeholder="Grade 10" /></div>
+      <div class="field"><label>Section</label><input [(ngModel)]="editForm.section" placeholder="A" /></div>
+      <div class="field"><label>Academic Year</label><input [(ngModel)]="editForm.academic_year" placeholder="2025-26" /></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="editTarget.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="saveEdit()" [disabled]="editSaving()">{{ editSaving() ? 'Saving...' : 'Save Changes' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
 <div class="classes-list">
   @if (loading()) {
     <p class="loading-text">Loading classes...</p>
@@ -51,6 +68,10 @@
           </div>
           <div class="class-meta">
             <span class="badge badge-blue">{{ cls.subjects?.length ?? 0 }} subjects</span>
+            @if (isAdmin) {
+              <button class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 8px" (click)="$event.stopPropagation(); openEdit(cls)">Edit</button>
+              <button class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 8px;color:#dc2626;border-color:#dc2626" (click)="$event.stopPropagation(); deleteClass(cls)">Delete</button>
+            }
             <span class="expand-icon">{{ expandedClass() === cls.id ? '▲' : '▼' }}</span>
           </div>
         </div>
@@ -62,21 +83,25 @@
                 @for (sub of cls.subjects; track sub.id) {
                   <div class="subject-chip">
                     {{ sub.name }}@if (sub.code) { <span class="code"> ({{ sub.code }})</span> }
-                    <button class="chip-del" (click)="deleteSubject(cls.id, sub.id, sub.name)" title="Remove subject">×</button>
+                    @if (isAdmin) {
+                      <button class="chip-del" (click)="deleteSubject(cls.id, sub.id, sub.name)" title="Remove subject">×</button>
+                    }
                   </div>
                 }
               </div>
             }
 
-            @if (addingSubjectFor() === cls.id) {
-              <div class="add-subject-form">
-                <input [(ngModel)]="subjectForm.name" placeholder="Subject name" />
-                <input [(ngModel)]="subjectForm.code" placeholder="Code (optional)" style="width:120px" />
-                <button class="btn btn-primary" style="padding:8px 14px;font-size:12px" (click)="addSubject(cls.id)">Add</button>
-                <button class="btn btn-outline" style="padding:8px 14px;font-size:12px" (click)="addingSubjectFor.set(null)">Cancel</button>
-              </div>
-            } @else {
-              <button class="btn btn-outline" style="font-size:12px;margin-top:12px" (click)="addingSubjectFor.set(cls.id)">+ Add Subject</button>
+            @if (isAdmin) {
+              @if (addingSubjectFor() === cls.id) {
+                <div class="add-subject-form">
+                  <input [(ngModel)]="subjectForm.name" placeholder="Subject name" />
+                  <input [(ngModel)]="subjectForm.code" placeholder="Code (optional)" style="width:120px" />
+                  <button class="btn btn-primary" style="padding:8px 14px;font-size:12px" (click)="addSubject(cls.id)">Add</button>
+                  <button class="btn btn-outline" style="padding:8px 14px;font-size:12px" (click)="addingSubjectFor.set(null)">Cancel</button>
+                </div>
+              } @else {
+                <button class="btn btn-outline" style="font-size:12px;margin-top:12px" (click)="addingSubjectFor.set(cls.id)">+ Add Subject</button>
+              }
             }
           </div>
         }

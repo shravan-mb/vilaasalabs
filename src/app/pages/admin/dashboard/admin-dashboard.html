@@ -65,7 +65,7 @@
         </thead>
         <tbody>
           @for (inst of overview()!.recent_institutions; track inst.id) {
-            <tr>
+            <tr (click)="goToSchool(inst.id)" title="Click to view details">
               <td><strong>{{ inst.name }}</strong></td>
               <td>{{ inst.type }}</td>
               <td>{{ inst.city || '—' }}</td>

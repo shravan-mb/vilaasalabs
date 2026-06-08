@@ -19,6 +19,8 @@ export class ParentsPage implements OnInit {
   private auth = inject(AuthService);
   private toast = inject(ToastService);
 
+  get isAdmin() { return this.auth.hasRole('institution_admin'); }
+
   parents = signal<any[]>([]);
   students = signal<any[]>([]);
   loading = signal(true);

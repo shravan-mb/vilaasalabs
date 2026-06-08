@@ -3,12 +3,14 @@
     <h1>Students</h1>
     <p>Manage student accounts in your institution</p>
   </div>
-  <div style="display:flex;gap:8px">
-    <button class="btn btn-outline" (click)="openBulkProctor()">Bulk Assign Proctor</button>
-    <button class="btn btn-primary" (click)="showForm.set(!showForm())">
-      @if (showForm()) { Cancel } @else { + Add Student }
-    </button>
-  </div>
+  @if (isAdmin) {
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" (click)="openBulkProctor()">Bulk Assign Proctor</button>
+      <button class="btn btn-primary" (click)="showForm.set(!showForm())">
+        @if (showForm()) { Cancel } @else { + Add Student }
+      </button>
+    </div>
+  }
 </div>
 
 @if (showBulkProctor()) {
@@ -98,45 +100,94 @@
   </div>
 }
 
-<div class="card">
-  @if (loading()) {
-    <p class="loading-text">Loading students...</p>
-  } @else if (students().length === 0) {
-    <div class="empty-state"><p>No students yet. Add your first student above.</p></div>
-  } @else {
-    <table class="table">
-      <thead>
-        <tr><th>Name</th><th>Class</th><th>Proctor</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr>
-      </thead>
-      <tbody>
-        @for (s of students(); track s.id) {
-          <tr>
-            <td>{{ s.name }}</td>
-            <td>{{ className(s.class_id) }}</td>
-            <td>{{ s.proctor?.name ?? teacherName(s.proctor_id) }}</td>
-            <td>{{ s.phone || '—' }}</td>
-            <td>{{ s.email || '—' }}</td>
-            <td>
-              <span class="badge" [class]="s.is_active ? 'badge-green' : 'badge-red'">
-                {{ s.is_active ? 'Active' : 'Inactive' }}
-              </span>
-            </td>
-            <td style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openEdit(s)">Edit</button>
-              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openResetPassword(s)">Reset PW</button>
-              @if (s.is_active) {
-                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#d97706;border-color:#d97706" (click)="deactivate(s.id)">Deactivate</button>
-              } @else {
-                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#16a34a;border-color:#16a34a" (click)="activate(s.id)">Activate</button>
+@if (loading()) {
+  <div class="card"><p class="loading-text">Loading students...</p></div>
+} @else if (students().length === 0) {
+  <div class="card"><div class="empty-state"><p>No students yet. Add your first student above.</p></div></div>
+} @else {
+  @for (cls of classes(); track cls.id) {
+    @let clsStudents = studentsForClass(cls.id);
+    @if (clsStudents.length > 0) {
+      <div class="class-accordion">
+        <div class="class-accordion-header" (click)="toggleClass(cls.id)">
+          <span class="class-accordion-name">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</span>
+          <span class="badge badge-blue">{{ clsStudents.length }} student{{ clsStudents.length !== 1 ? 's' : '' }}</span>
+          <span class="chevron" [class.open]="isExpanded(cls.id)">▾</span>
+        </div>
+        @if (isExpanded(cls.id)) {
+          <table class="table">
+            <thead>
+              <tr><th>Name</th><th>Proctor</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              @for (s of clsStudents; track s.id) {
+                <tr>
+                  <td>{{ s.name }}</td>
+                  <td>{{ s.proctor?.name ?? teacherName(s.proctor_id) }}</td>
+                  <td>{{ s.phone || '—' }}</td>
+                  <td>{{ s.email || '—' }}</td>
+                  <td><span class="badge" [class]="s.is_active ? 'badge-green' : 'badge-red'">{{ s.is_active ? 'Active' : 'Inactive' }}</span></td>
+                  <td style="display:flex;gap:6px;flex-wrap:wrap">
+                    @if (isAdmin) {
+                      <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openEdit(s)">Edit</button>
+                      <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openResetPassword(s)">Reset PW</button>
+                      @if (s.is_active) {
+                        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#d97706;border-color:#d97706" (click)="deactivate(s.id)">Deactivate</button>
+                      } @else {
+                        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#16a34a;border-color:#16a34a" (click)="activate(s.id)">Activate</button>
+                      }
+                      <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#dc2626;border-color:#dc2626" (click)="delete(s.id)">Delete</button>
+                    }
+                  </td>
+                </tr>
               }
-              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#dc2626;border-color:#dc2626" (click)="delete(s.id)">Delete</button>
-            </td>
-          </tr>
+            </tbody>
+          </table>
         }
-      </tbody>
-    </table>
+      </div>
+    }
   }
-</div>
+  @let unassigned = studentsForClass(null);
+  @if (unassigned.length > 0) {
+    <div class="class-accordion">
+      <div class="class-accordion-header" (click)="toggleClass('__unassigned__')">
+        <span class="class-accordion-name" style="color:#888">Unassigned</span>
+        <span class="badge" style="background:#2a2a2a;color:#888">{{ unassigned.length }} student{{ unassigned.length !== 1 ? 's' : '' }}</span>
+        <span class="chevron" [class.open]="isExpanded('__unassigned__')">▾</span>
+      </div>
+      @if (isExpanded('__unassigned__')) {
+        <table class="table">
+          <thead>
+            <tr><th>Name</th><th>Proctor</th><th>Phone</th><th>Email</th><th>Status</th>@if (isAdmin) { <th>Actions</th> }</tr>
+          </thead>
+          <tbody>
+            @for (s of unassigned; track s.id) {
+              <tr>
+                <td>{{ s.name }}</td>
+                <td>{{ s.proctor?.name ?? teacherName(s.proctor_id) }}</td>
+                <td>{{ s.phone || '—' }}</td>
+                <td>{{ s.email || '—' }}</td>
+                <td><span class="badge" [class]="s.is_active ? 'badge-green' : 'badge-red'">{{ s.is_active ? 'Active' : 'Inactive' }}</span></td>
+                @if (isAdmin) {
+                  <td style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openEdit(s)">Edit</button>
+                    <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openResetPassword(s)">Reset PW</button>
+                    @if (s.is_active) {
+                      <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#d97706;border-color:#d97706" (click)="deactivate(s.id)">Deactivate</button>
+                    } @else {
+                      <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#16a34a;border-color:#16a34a" (click)="activate(s.id)">Activate</button>
+                    }
+                    <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#dc2626;border-color:#dc2626" (click)="delete(s.id)">Delete</button>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+}
 
 @if (editTarget()) {
   <div class="modal-overlay" (click)="editTarget.set(null)">

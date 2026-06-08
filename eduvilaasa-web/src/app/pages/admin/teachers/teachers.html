@@ -3,9 +3,11 @@
     <h1>Teachers</h1>
     <p>Manage teacher accounts in your institution</p>
   </div>
-  <button class="btn btn-primary" (click)="showForm.set(!showForm())">
-    @if (showForm()) { Cancel } @else { + Add Teacher }
-  </button>
+  @if (isAdmin) {
+    <button class="btn btn-primary" (click)="showForm.set(!showForm())">
+      @if (showForm()) { Cancel } @else { + Add Teacher }
+    </button>
+  }
 </div>
 
 @if (error()) { <div class="alert alert-error">{{ error() }}</div> }
@@ -34,6 +36,37 @@
         @if (isInvalid('password')) { <span class="err">Min 8 characters</span> }
       </div>
     </div>
+
+    @if (classes().length > 0) {
+      <div class="subject-assign-section">
+        <label style="font-weight:600;font-size:13px;color:#ccc;display:block;margin-bottom:10px">Subjects Assigned to This Teacher</label>
+        <div class="subject-classes-grid">
+          @for (cls of classes(); track cls.id) {
+            @if (cls.subjects && cls.subjects.length > 0) {
+              <div class="subject-class-block">
+                <div class="subject-class-name">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</div>
+                <div class="subject-checkboxes">
+                  @for (sub of cls.subjects; track sub.id) {
+                    <label class="subject-checkbox-label" [class.selected]="isSubjectSelected(sub.id)">
+                      <input type="checkbox" [checked]="isSubjectSelected(sub.id)" (change)="toggleSubject(cls, sub)" />
+                      {{ sub.name }}
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+        @if (teachingSubjectSelections.length > 0) {
+          <div class="selected-subjects-preview">
+            Selected: @for (s of teachingSubjectSelections; track s.subject_id) {
+              <span class="subject-chip">{{ s.subject_name }} <span style="color:#888;font-size:11px">({{ s.class_name }})</span></span>
+            }
+          </div>
+        }
+      </div>
+    }
+
     <div class="form-actions">
       <button class="btn btn-primary" (click)="onSubmit()" [disabled]="saving()">
         @if (saving()) { Saving... } @else { Add Teacher }
@@ -50,7 +83,7 @@
   } @else {
     <table class="table">
       <thead>
-        <tr><th>Name</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+        <tr><th>Name</th><th>Phone</th><th>Email</th><th>Subjects</th><th>Status</th><th>Actions</th></tr>
       </thead>
       <tbody>
         @for (t of teachers(); track t.id) {
@@ -58,16 +91,19 @@
             <td>{{ t.name }}</td>
             <td>{{ t.phone || '—' }}</td>
             <td>{{ t.email || '—' }}</td>
+            <td style="font-size:12px;color:#aaa">{{ subjectSummary(t.teaching_subjects) }}</td>
             <td><span class="badge" [class]="t.is_active ? 'badge-green' : 'badge-red'">{{ t.is_active ? 'Active' : 'Inactive' }}</span></td>
             <td style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openEdit(t)">Edit</button>
-              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openResetPassword(t)">Reset PW</button>
-              @if (t.is_active) {
-                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#d97706;border-color:#d97706" (click)="deactivate(t.id)">Deactivate</button>
-              } @else {
-                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#16a34a;border-color:#16a34a" (click)="activate(t.id)">Activate</button>
+              @if (isAdmin) {
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openEdit(t)">Edit</button>
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openResetPassword(t)">Reset PW</button>
+                @if (t.is_active) {
+                  <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#d97706;border-color:#d97706" (click)="deactivate(t.id)">Deactivate</button>
+                } @else {
+                  <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#16a34a;border-color:#16a34a" (click)="activate(t.id)">Activate</button>
+                }
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#dc2626;border-color:#dc2626" (click)="delete(t.id)">Delete</button>
               }
-              <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#dc2626;border-color:#dc2626" (click)="delete(t.id)">Delete</button>
             </td>
           </tr>
         }
@@ -78,11 +114,35 @@
 
 @if (editTarget()) {
   <div class="modal-overlay" (click)="editTarget.set(null)">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <h3>Edit Teacher</h3>
+    <div class="modal modal-wide" (click)="$event.stopPropagation()">
+      <h3>Edit Teacher — {{ editTarget().name }}</h3>
       <div class="field"><label>Full Name *</label><input [(ngModel)]="editForm.name" placeholder="Teacher name" /></div>
       <div class="field"><label>Phone</label><input [(ngModel)]="editForm.phone" placeholder="+91 9876543210" /></div>
       <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="editForm.email" type="email" placeholder="teacher@school.edu" /></div>
+
+      @if (classes().length > 0) {
+        <div class="subject-assign-section" style="margin-top:16px">
+          <label style="font-weight:600;font-size:13px;color:#ccc;display:block;margin-bottom:10px">Subjects Assigned</label>
+          <div class="subject-classes-grid">
+            @for (cls of classes(); track cls.id) {
+              @if (cls.subjects && cls.subjects.length > 0) {
+                <div class="subject-class-block">
+                  <div class="subject-class-name">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</div>
+                  <div class="subject-checkboxes">
+                    @for (sub of cls.subjects; track sub.id) {
+                      <label class="subject-checkbox-label" [class.selected]="isEditSubjectSelected(sub.id)">
+                        <input type="checkbox" [checked]="isEditSubjectSelected(sub.id)" (change)="toggleEditSubject(cls, sub)" />
+                        {{ sub.name }}
+                      </label>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+
       <div class="modal-actions">
         <button class="btn btn-secondary" (click)="editTarget.set(null)">Cancel</button>
         <button class="btn btn-primary" (click)="saveEdit()" [disabled]="editSaving()">{{ editSaving() ? 'Saving...' : 'Save Changes' }}</button>
