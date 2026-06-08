@@ -27,7 +27,7 @@ const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
             <label>New Password</label>
             <div class="pw-wrapper">
               <input [(ngModel)]="newPassword" [type]="showNew() ? 'text' : 'password'" placeholder="Min 8 chars, mixed case + number + symbol" />
-              <button type="button" class="pw-eye" (click)="showNew.update(v => !v)" tabindex="-1">
+              <button type="button" class="pw-eye" (click)="showNew.set(!showNew())" tabindex="-1">
                 @if (showNew()) {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                 } @else {
@@ -40,7 +40,7 @@ const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
             <label>Confirm Password</label>
             <div class="pw-wrapper">
               <input [(ngModel)]="confirm" [type]="showConfirm() ? 'text' : 'password'" placeholder="Repeat new password" />
-              <button type="button" class="pw-eye" (click)="showConfirm.update(v => !v)" tabindex="-1">
+              <button type="button" class="pw-eye" (click)="showConfirm.set(!showConfirm())" tabindex="-1">
                 @if (showConfirm()) {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                 } @else {
