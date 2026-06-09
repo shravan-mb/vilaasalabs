@@ -324,21 +324,21 @@ async function seed() {
     frequency:      FeeFrequency.MONTHLY,
     amount:         1500,
     description:    'Monthly tuition fee',
-  }));
+  } as any));
   const exam = await feeCatRepo.save(feeCatRepo.create({
     institution_id: inst.id,
     name:           'Exam Fee',
     frequency:      FeeFrequency.ANNUAL,
     amount:         2000,
     description:    'Annual examination fee',
-  }));
+  } as any));
 
   // Apply to first 8 classes as sample
   for (const cls of Object.values(classMap).slice(0, 8)) {
-    for (const cat of [tuition, exam]) {
+    for (const cat of [tuition, exam] as any[]) {
       await feeStrRepo.save(feeStrRepo.create({
-        institution_id: inst.id,
-        class_id:       cls.id,
+        institution_id:  inst.id,
+        class_id:        cls.id,
         fee_category_id: cat.id,
         amount:          cat.amount,
       } as any));
