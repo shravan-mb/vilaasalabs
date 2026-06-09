@@ -327,13 +327,17 @@ async function seed() {
   } as any));
 
   // Apply to first 8 classes as sample
+  const feeEntries = [
+    { cat: tuition as any, amount: 1500 },
+    { cat: exam    as any, amount: 2000 },
+  ];
   for (const cls of Object.values(classMap).slice(0, 8)) {
-    for (const cat of [tuition, exam] as any[]) {
+    for (const { cat, amount } of feeEntries) {
       await feeStrRepo.save(feeStrRepo.create({
         institution_id:  inst.id,
         class_id:        cls.id,
         fee_category_id: cat.id,
-        amount:          cat.amount,
+        amount,
       } as any));
     }
   }
