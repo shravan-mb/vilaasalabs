@@ -346,7 +346,7 @@ async function seed() {
   // ── 10. Timetable (sample — Class 1A, Mon-Fri) ────────────────────────────
   process.stdout.write('  [10/10] Timetable (Class 1 sample)...');
   const cls1A = classMap['1-A'];
-  const days5 = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  const days5 = [1, 2, 3, 4, 5]; // 1=Monday … 5=Friday
   const periods = [
     { start: '09:00', end: '09:45' },
     { start: '09:45', end: '10:30' },
@@ -359,11 +359,13 @@ async function seed() {
 
   for (const day of days5) {
     for (let p = 0; p < Math.min(periods.length, cls1Subs.length); p++) {
+      const sub = cls1Subs[p % cls1Subs.length];
       await ttRepo.save(ttRepo.create({
         institution_id: inst.id,
         class_id:       cls1A.id,
-        subject_id:     cls1Subs[p % cls1Subs.length].id,
+        subject_name:   sub.name,
         teacher_id:     teachers[0].id,
+        teacher_name:   teachers[0].name,
         day_of_week:    day,
         start_time:     periods[p].start,
         end_time:       periods[p].end,
@@ -376,9 +378,9 @@ async function seed() {
   await annoRepo.save(annoRepo.create({
     institution_id: inst.id,
     title:          'Welcome to Academic Year 2025-26',
-    content:        'Dear students and parents, welcome to the new academic year. Classes begin on June 2nd, 2025.',
-    created_by_id:  allStudents[0].id,
-    target_role:    null,
+    body:           'Dear students and parents, welcome to the new academic year. Classes begin on June 2nd, 2025.',
+    created_by:     allStudents[0].id,
+    created_by_name: 'Admin',
   } as any));
 
   // ── Print credentials ──────────────────────────────────────────────────────
