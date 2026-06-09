@@ -82,34 +82,50 @@
 .ev-pricing-section { position: relative; }
 .ev-pricing-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 .ev-pricing-section .container { position: relative; z-index: 1; }
-.ev-plans-grid { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 48px; align-items: flex-start; }
+.ev-plans-grid { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 48px; align-items: stretch; }
 .ev-plan-card {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
   padding: 28px 24px; width: 200px; position: relative; transition: all 0.3s;
+  display: flex; flex-direction: column;
   &.popular { border-color: #7c3aed; background: rgba(124,58,237,0.08); transform: scale(1.04); box-shadow: 0 0 0 2px rgba(124,58,237,0.3), 0 20px 50px rgba(124,58,237,0.2); }
   &:hover:not(.popular) { border-color: rgba(124,58,237,0.3); transform: translateY(-4px); }
 }
 .popular-tag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #7c3aed; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 20px; white-space: nowrap; }
 .ev-plan-name { font-size: 14px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; }
-.ev-plan-price { margin-bottom: 20px; display: flex; align-items: baseline; gap: 2px; flex-wrap: wrap; }
-.price-rs { font-size: 16px; color: var(--text-secondary); }
-.price-val { font-size: 32px; font-weight: 800; color: #f1f5f9; }
-.price-period { font-size: 12px; color: var(--text-muted); margin-left: 2px; }
-.ev-plan-features { list-style: none; margin: 0 0 24px; padding: 0; display: flex; flex-direction: column; gap: 8px;
+.ev-plan-price { margin-bottom: 20px; display: flex; align-items: baseline; gap: 2px; flex-wrap: nowrap; white-space: nowrap; }
+.price-rs { font-size: 16px; color: var(--text-secondary); flex-shrink: 0; }
+.price-val { font-size: 28px; font-weight: 800; color: #f1f5f9; }
+.price-period { font-size: 12px; color: var(--text-muted); margin-left: 2px; flex-shrink: 0; }
+.ev-plan-features { list-style: none; margin: 0 0 24px; padding: 0; display: flex; flex-direction: column; gap: 8px; flex: 1;
   li { font-size: 12px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; i { color: #4ade80; font-size: 11px; margin-top: 2px; flex-shrink: 0; } }
 }
-.ev-plan-btn { display: block; text-align: center; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s; cursor: pointer; border: 1.5px solid transparent;
+.ev-plan-btn { display: block; text-align: center; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s; cursor: pointer; border: 1.5px solid transparent; margin-top: auto;
   &.btn-primary { background: #7c3aed; color: #fff; &:hover{background:#6d28d9;} }
   &.btn-outline { border-color: var(--border); color: var(--text-secondary); &:hover{border-color:#7c3aed;color:#a78bfa;} }
 }
 .pricing-note { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 24px; }
-.ev-enterprise-card {
-  border-color: #f59e0b !important;
-  background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, var(--bg-card) 100%);
-  .ev-plan-name { color: #f59e0b; }
-  .price-val { font-size: 28px; font-weight: 800; color: #f59e0b; }
-  li i { color: #f59e0b !important; }
-  &:hover { border-color: #d97706 !important; transform: translateY(-4px); }
+.ev-enterprise-banner {
+  display: flex; align-items: center; gap: 32px; flex-wrap: wrap;
+  margin-top: 32px; padding: 28px 32px; border-radius: 16px;
+  border: 1px solid #f59e0b55;
+  background: linear-gradient(135deg, rgba(245,158,11,0.07) 0%, var(--bg-card) 100%);
+}
+.ev-enterprise-left {
+  flex: 1; min-width: 220px;
+  .ev-enterprise-tag { display: inline-block; background: #f59e0b22; color: #f59e0b; border: 1px solid #f59e0b55; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
+  h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px; }
+  p  { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0; }
+}
+.ev-enterprise-features {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; flex-shrink: 0;
+  span { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  i { color: #f59e0b; font-size: 10px; }
+}
+.ev-enterprise-cta {
+  flex-shrink: 0; padding: 12px 24px; background: #f59e0b; color: #000; border-radius: 10px;
+  font-size: 14px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px;
+  &:hover { background: #d97706; }
+  i { font-size: 12px; }
 }
 
 // ── Enroll Steps ──────────────────────────────────────────────────────────────

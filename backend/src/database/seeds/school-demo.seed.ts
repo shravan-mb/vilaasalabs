@@ -302,7 +302,7 @@ async function seed() {
           class_id:       cls.id,
           date:           day as any,
           status,
-          marked_by_id:   teachers[0].id,
+          marked_by:      teachers[0].id,
         } as any));
       }
     }
