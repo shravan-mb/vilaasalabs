@@ -239,13 +239,6 @@ async function seed() {
       registration_number: null,
     })));
   }
-  // Assign class teachers (one teacher per class)
-  for (let idx = 0; idx < 40; idx++) {
-    const std = STANDARDS[Math.floor(idx / 4)];
-    const sec = SECTIONS[idx % 4];
-    const cls = classMap[`${std}-${sec}`];
-    await classRepo.update(cls.id, { class_teacher_id: teachers[idx].id } as any);
-  }
   console.log(' ✓');
 
   // ── 7. Students — 36 per section = 1,440 total ────────────────────────────

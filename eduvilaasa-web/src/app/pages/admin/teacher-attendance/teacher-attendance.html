@@ -1,0 +1,206 @@
+<div class="page-header">
+  <div>
+    <h1>Teacher Attendance</h1>
+    <p>Mark and track staff attendance daily or import from biometric device</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <button [class.active]="activeTab()==='daily'"   (click)="activeTab.set('daily')">Daily Mark</button>
+  <button [class.active]="activeTab()==='monthly'" (click)="activeTab.set('monthly')">Monthly Summary</button>
+  <button [class.active]="activeTab()==='import'"  (click)="activeTab.set('import')">Biometric Import</button>
+</div>
+
+<!-- ── Daily Mark Tab ──────────────────────────────────────────────────────── -->
+@if (activeTab() === 'daily') {
+  <div class="card">
+    <div class="daily-toolbar">
+      <div class="date-picker-group">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="selectedDate" (ngModelChange)="loadDaily()" [max]="today.toISOString().split('T')[0]" />
+      </div>
+      <div class="bulk-actions">
+        <span>Mark all:</span>
+        @for (s of statuses; track s) {
+          <button class="status-chip" [style.background]="statusColors[s]" (click)="markAll(s)">{{ statusLabels[s] }}</button>
+        }
+      </div>
+    </div>
+
+    @if (dailyMsg()) { <div class="alert alert-success">{{ dailyMsg() }}</div> }
+    @if (dailyErr()) { <div class="alert alert-error">{{ dailyErr() }}</div> }
+    @if (isMarked()) { <div class="alert alert-info">Attendance already marked for this date. Saving will overwrite it.</div> }
+
+    @if (loadingDaily()) {
+      <p class="loading-text">Loading teachers...</p>
+    } @else if (rows().length === 0) {
+      <p class="empty-text">No teachers found. Add teachers first.</p>
+    } @else {
+      <div class="attendance-table-wrap">
+        <table class="attendance-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Teacher</th>
+              <th>Phone</th>
+              <th>Status</th>
+              <th>Check In</th>
+              <th>Check Out</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.teacher.id; let i = $index) {
+              <tr>
+                <td class="num">{{ i + 1 }}</td>
+                <td class="name">{{ row.teacher.name }}</td>
+                <td class="phone">{{ row.teacher.phone || '—' }}</td>
+                <td class="status-cell">
+                  <div class="status-btns">
+                    @for (s of statuses; track s) {
+                      <button
+                        class="status-btn"
+                        [class.active]="row.selected === s"
+                        [style.--sc]="statusColors[s]"
+                        (click)="row.selected = s">
+                        {{ statusLabels[s] }}
+                      </button>
+                    }
+                  </div>
+                </td>
+                <td class="time-cell">{{ row.record?.check_in_time || '—' }}</td>
+                <td class="time-cell">{{ row.record?.check_out_time || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="save-bar">
+        <span class="save-summary">
+          Present: <strong class="c-green">{{ countPresent() }}</strong> &nbsp;
+          Absent: <strong class="c-red">{{ countAbsent() }}</strong> &nbsp;
+          Late: <strong class="c-yellow">{{ countLate() }}</strong> &nbsp;
+          Leave: <strong class="c-gray">{{ countLeave() }}</strong>
+        </span>
+        <button class="btn btn-primary" (click)="saveAttendance()" [disabled]="savingDaily()">
+          {{ savingDaily() ? 'Saving...' : 'Save Attendance' }}
+        </button>
+      </div>
+    }
+  </div>
+}
+
+<!-- ── Monthly Summary Tab ─────────────────────────────────────────────────── -->
+@if (activeTab() === 'monthly') {
+  <div class="card">
+    <div class="monthly-toolbar">
+      <div class="field-inline">
+        <label>Month</label>
+        <select [(ngModel)]="selectedMonth" (ngModelChange)="loadMonthly()">
+          @for (m of months; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="field-inline">
+        <label>Year</label>
+        <select [(ngModel)]="selectedYear" (ngModelChange)="loadMonthly()">
+          @for (y of years; track y) { <option [value]="y">{{ y }}</option> }
+        </select>
+      </div>
+    </div>
+
+    @if (loadingMonthly()) {
+      <p class="loading-text">Loading summary...</p>
+    } @else if (summary().length === 0) {
+      <p class="empty-text">No attendance records for this month.</p>
+    } @else {
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Teacher</th>
+            <th>Present</th>
+            <th>Absent</th>
+            <th>Late</th>
+            <th>Half Day</th>
+            <th>Leave</th>
+            <th>Total Days</th>
+            <th>Attendance %</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of summary(); track row.teacher_id; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td class="fw-500">{{ row.teacher_name }}</td>
+              <td class="c-green">{{ row.present }}</td>
+              <td class="c-red">{{ row.absent }}</td>
+              <td class="c-yellow">{{ row.late }}</td>
+              <td class="c-purple">{{ row.half_day }}</td>
+              <td class="c-gray">{{ row.leave }}</td>
+              <td>{{ row.total }}</td>
+              <td>
+                <div class="pct-bar">
+                  <div class="pct-fill" [style.width.%]="row.percentage" [class.low]="row.percentage < 75"></div>
+                  <span>{{ row.percentage }}%</span>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+
+<!-- ── Biometric Import Tab ────────────────────────────────────────────────── -->
+@if (activeTab() === 'import') {
+  <div class="card">
+    <h3 class="section-title">Import from Biometric Device</h3>
+    <p class="section-desc">Export the attendance CSV from your biometric device and upload it here. The system will match records by teacher phone number.</p>
+
+    <div class="csv-format-box">
+      <div class="csv-format-title">Expected CSV format</div>
+      <pre class="csv-preview">Phone,Date,CheckIn,CheckOut
+9911000000,2025-06-09,09:00,17:00
+9911000001,2025-06-09,09:20,17:00</pre>
+      <p class="csv-notes">
+        <strong>Phone</strong> — teacher's registered phone number &nbsp;·&nbsp;
+        <strong>Date</strong> — YYYY-MM-DD &nbsp;·&nbsp;
+        <strong>CheckIn / CheckOut</strong> — HH:MM (24h, optional)<br/>
+        Check-in after 09:15 → auto-marked <strong>Late</strong>. No check-in → <strong>Absent</strong>.
+        Optionally add a <strong>Status</strong> column to override.
+      </p>
+      <button class="btn btn-outline" (click)="downloadTemplate()">Download Template CSV</button>
+    </div>
+
+    <div class="upload-area">
+      <label class="file-label">
+        <input type="file" accept=".csv" (change)="onFileSelect($event)" />
+        <span class="file-btn">Choose CSV File</span>
+        <span class="file-name">{{ csvFile()?.name || 'No file selected' }}</span>
+      </label>
+      <button class="btn btn-primary" (click)="importCsv()" [disabled]="!csvFile() || importing()">
+        {{ importing() ? 'Importing...' : 'Import' }}
+      </button>
+    </div>
+
+    @if (importErr()) { <div class="alert alert-error">{{ importErr() }}</div> }
+
+    @if (importResult(); as result) {
+      <div class="import-result">
+        <div class="import-stat green">✓ {{ result.imported }} records imported</div>
+        @if (result.skipped > 0) {
+          <div class="import-stat yellow">⚠ {{ result.skipped }} rows skipped</div>
+        }
+        @if (result.errors.length > 0) {
+          <div class="import-errors">
+            <div class="import-errors-title">Errors:</div>
+            @for (e of result.errors; track e) { <div class="import-error-row">{{ e }}</div> }
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

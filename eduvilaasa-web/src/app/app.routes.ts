@@ -33,6 +33,7 @@ export const routes: Routes = [
       { path: 'subscription', canActivate: [featureFlagGuard], data: { flagKey: 'show_subscription_tab' }, loadComponent: () => import('./pages/admin/subscription/subscription').then((m) => m.SubscriptionPage) },
       { path: 'timetable', loadComponent: () => import('./pages/admin/timetable/timetable').then((m) => m.AdminTimetablePage) },
       { path: 'fees',     loadComponent: () => import('./pages/admin/fees/fees').then((m) => m.FeesPage) },
+      { path: 'teacher-attendance', loadComponent: () => import('./pages/admin/teacher-attendance/teacher-attendance').then((m) => m.TeacherAttendancePage) },
     ],
   },
 

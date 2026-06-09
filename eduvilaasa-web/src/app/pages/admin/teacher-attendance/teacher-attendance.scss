@@ -1,0 +1,91 @@
+.page-header { margin-bottom: 20px; h1 { font-size: 22px; font-weight: 700; margin: 0 0 4px; } p { font-size: 13px; color: var(--vl-muted); margin: 0; } }
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; button { padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; background: var(--vl-card); color: var(--vl-muted); &.active { background: #7c3aed; color: #fff; } } }
+.card { background: var(--vl-card); border: 1px solid var(--vl-border-2); border-radius: 10px; padding: 24px; margin-bottom: 16px; }
+.section-title { font-size: 14px; font-weight: 600; color: var(--vl-muted); text-transform: uppercase; letter-spacing: .05em; margin: 0 0 8px; }
+.section-desc { font-size: 13px; color: var(--vl-muted); margin-bottom: 20px; }
+.loading-text, .empty-text { text-align: center; color: var(--vl-muted); padding: 40px 0; font-size: 14px; }
+.alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; }
+.alert-success { background: #14532d22; border: 1px solid #22c55e55; color: #4ade80; }
+.alert-error   { background: #450a0a22; border: 1px solid #ef444455; color: #f87171; }
+.alert-info    { background: #1e3a5f22; border: 1px solid #3b82f655; color: #93c5fd; }
+
+// ── Daily tab ──
+.daily-toolbar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+  .date-picker-group { display: flex; align-items: center; gap: 8px; label { font-size: 13px; color: var(--vl-muted); } }
+  input[type="date"] { padding: 8px 12px; background: var(--vl-input-bg); border: 1px solid var(--vl-border-2); border-radius: 8px; color: var(--vl-text); font-size: 13px; }
+  .bulk-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; span { font-size: 12px; color: var(--vl-muted); } }
+  .status-chip { padding: 4px 10px; border: none; border-radius: 20px; font-size: 11px; font-weight: 600; color: #fff; cursor: pointer; opacity: .85; &:hover { opacity: 1; } }
+}
+
+.attendance-table-wrap { overflow-x: auto; }
+.attendance-table {
+  width: 100%; border-collapse: collapse;
+  th { font-size: 11px; text-transform: uppercase; color: var(--vl-dim); padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--vl-border-2); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--vl-border-2); font-size: 13px; color: var(--vl-text); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .num { color: var(--vl-muted); width: 40px; }
+  .name { font-weight: 500; }
+  .phone { color: var(--vl-muted); }
+  .time-cell { font-size: 12px; color: var(--vl-muted); white-space: nowrap; }
+}
+
+.status-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.status-btn {
+  padding: 4px 10px; border: 1.5px solid transparent; border-radius: 20px;
+  font-size: 11px; font-weight: 600; cursor: pointer; color: var(--vl-muted);
+  background: var(--vl-card-2); transition: all .15s;
+  &.active { background: var(--sc); border-color: var(--sc); color: #fff; }
+  &:not(.active):hover { border-color: var(--sc); color: var(--sc); }
+}
+
+.save-bar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--vl-border-2);
+  .save-summary { font-size: 13px; color: var(--vl-muted); }
+}
+.btn { padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+.btn-primary { background: #7c3aed; color: #fff; &:hover:not(:disabled) { background: #6d28d9; } &:disabled { opacity: .5; cursor: not-allowed; } }
+.btn-outline  { background: transparent; border: 1px solid var(--vl-border-2); color: var(--vl-text); &:hover { border-color: #7c3aed; color: #a78bfa; } }
+
+// ── Monthly tab ──
+.monthly-toolbar { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.field-inline { display: flex; align-items: center; gap: 8px; label { font-size: 13px; color: var(--vl-muted); } select { padding: 8px 12px; background: var(--vl-input-bg); border: 1px solid var(--vl-border-2); border-radius: 8px; color: var(--vl-text); font-size: 13px; } }
+
+.table { width: 100%; border-collapse: collapse;
+  th { font-size: 11px; text-transform: uppercase; color: var(--vl-dim); padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--vl-border-2); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--vl-border-2); font-size: 13px; color: var(--vl-text); }
+  tr:last-child td { border-bottom: none; }
+}
+.fw-500 { font-weight: 500; }
+.c-green  { color: #22c55e; }
+.c-red    { color: #ef4444; }
+.c-yellow { color: #f59e0b; }
+.c-purple { color: #8b5cf6; }
+.c-gray   { color: #64748b; }
+
+.pct-bar {
+  display: flex; align-items: center; gap: 8px;
+  .pct-fill { height: 6px; border-radius: 3px; background: #22c55e; min-width: 4px; max-width: 80px; &.low { background: #ef4444; } }
+  span { font-size: 12px; font-weight: 600; color: var(--vl-text); }
+}
+
+// ── Import tab ──
+.csv-format-box {
+  background: var(--vl-card-2); border: 1px solid var(--vl-border-2); border-radius: 10px;
+  padding: 18px 20px; margin-bottom: 24px;
+  .csv-format-title { font-size: 12px; font-weight: 700; color: var(--vl-muted); text-transform: uppercase; margin-bottom: 10px; }
+}
+.csv-preview { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #a3e635; font-family: monospace; margin: 0 0 12px; overflow-x: auto; }
+.csv-notes { font-size: 12px; color: var(--vl-muted); line-height: 1.7; margin-bottom: 14px; }
+
+.upload-area { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.file-label { display: flex; align-items: center; gap: 10px; cursor: pointer; input[type="file"] { display: none; } }
+.file-btn { padding: 9px 16px; background: var(--vl-card-2); border: 1px solid var(--vl-border-2); border-radius: 8px; font-size: 13px; color: var(--vl-text); cursor: pointer; &:hover { border-color: #7c3aed; } }
+.file-name { font-size: 13px; color: var(--vl-muted); }
+
+.import-result { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.import-stat { font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 8px; &.green { background: #14532d22; color: #4ade80; } &.yellow { background: #78350f22; color: #fbbf24; } }
+.import-errors { background: #450a0a22; border: 1px solid #ef444433; border-radius: 8px; padding: 12px 16px; }
+.import-errors-title { font-size: 12px; font-weight: 700; color: #f87171; margin-bottom: 8px; }
+.import-error-row { font-size: 12px; color: #fca5a5; padding: 2px 0; }

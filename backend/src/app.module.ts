@@ -21,6 +21,7 @@ import { Subject } from './database/entities/subject.entity';
 import { Subscription } from './database/entities/subscription.entity';
 import { Test } from './database/entities/test.entity';
 import { TestResult } from './database/entities/test-result.entity';
+import { TeacherAttendance } from './database/entities/teacher-attendance.entity';
 import { TimetableSlot } from './database/entities/timetable-slot.entity';
 import { User } from './database/entities/user.entity';
 import { AcademicYearsModule } from './modules/academic-years/academic-years.module';
@@ -37,6 +38,7 @@ import { QuestionBankModule } from './modules/question-bank/question-bank.module
 import { StudentParentModule } from './modules/student-parent/student-parent.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { TestResultsModule } from './modules/test-results/test-results.module';
+import { TeacherAttendanceModule } from './modules/teacher-attendance/teacher-attendance.module';
 import { TimetableModule } from './modules/timetable/timetable.module';
 import { UsersModule } from './modules/users/users.module';
 import { VilaasalabsAdminModule } from './modules/vilaasalabs-admin/vilaasalabs-admin.module';
@@ -62,6 +64,7 @@ import { VilaasalabsAdminModule } from './modules/vilaasalabs-admin/vilaasalabs-
           PasswordResetToken, TestResult, Announcement, TimetableSlot, AcademicYear,
           ProctorNote, MeetingRequest,
           FeeCategory, ClassFeeStructure, StudentFeeDiscount, FeePayment,
+          TeacherAttendance,
         ],
         synchronize: config.get('NODE_ENV') !== 'production' || config.get('DB_SYNC') === 'true',
         logging: config.get('NODE_ENV') === 'development',
@@ -85,6 +88,7 @@ import { VilaasalabsAdminModule } from './modules/vilaasalabs-admin/vilaasalabs-
     TimetableModule,
     AcademicYearsModule,
     FeesModule,
+    TeacherAttendanceModule,
   ],
 })
 export class AppModule {}
