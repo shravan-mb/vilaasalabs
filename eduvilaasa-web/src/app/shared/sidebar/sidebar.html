@@ -1,9 +1,14 @@
 <nav class="sidebar" [class.open]="open">
   <div class="sidebar-logo">
     @if (open) {
-      <span class="logo-text">EduVilaasa</span>
+      <div class="logo-brand">
+        <span class="logo-text">{{ institutionName() || 'EduVilaasa' }}</span>
+        @if (institutionName()) {
+          <span class="logo-powered">Powered by EduVilaasa</span>
+        }
+      </div>
     } @else {
-      <span class="logo-icon">EV</span>
+      <span class="logo-icon">{{ institutionInitials() }}</span>
     }
   </div>
 

@@ -6,9 +6,12 @@
 </div>
 
 <div class="tabs">
-  <button [class.active]="activeTab()==='categories'" (click)="activeTab.set('categories')">Fee Categories</button>
-  <button [class.active]="activeTab()==='structure'"  (click)="activeTab.set('structure')">Class Fee Structure</button>
-  <button [class.active]="activeTab()==='collect'"    (click)="activeTab.set('collect')">Collect Payment</button>
+  @if (isAdmin) {
+    <button [class.active]="activeTab()==='categories'" (click)="switchTab('categories')">Fee Categories</button>
+    <button [class.active]="activeTab()==='structure'"  (click)="switchTab('structure')">Class Fee Structure</button>
+  }
+  <button [class.active]="activeTab()==='collect'" (click)="switchTab('collect')">Collect Payment</button>
+  <button [class.active]="activeTab()==='pending'" (click)="switchTab('pending')">Pending Fees</button>
 </div>
 
 <!-- ── Fee Categories ──────────────────────────────────────────────────────────── -->
@@ -25,9 +28,12 @@
             @for (f of frequencies; track f.value) { <option [value]="f.value">{{ f.label }}</option> }
           </select>
         </div>
-        <button class="btn btn-primary" style="align-self:flex-end" (click)="addCategory()" [disabled]="catSaving() || !catForm.name.trim()">
-          {{ catSaving() ? 'Adding...' : '+ Add' }}
-        </button>
+        <div class="field" style="flex:none;justify-content:flex-end">
+          <label style="visibility:hidden">Add</label>
+          <button class="btn btn-primary" (click)="addCategory()" [disabled]="catSaving() || !catForm.name.trim()">
+            {{ catSaving() ? 'Adding...' : '+ Add' }}
+          </button>
+        </div>
       </div>
     </div>
   }
@@ -136,20 +142,23 @@
   @if (!selStudent()) {
     <div class="card">
       <h3>Search Student</h3>
-      <!-- Fix: use [ngModel] + (ngModelChange) — studentSearch is a signal, [(ngModel)] would corrupt it -->
       <input class="search-input"
-        [ngModel]="studentSearch()"
-        (ngModelChange)="studentSearch.set($event)"
-        placeholder="Type student name or email..." />
-      @if (studentSearch().length >= 1) {
+        [(ngModel)]="studentSearch"
+        (ngModelChange)="onStudentSearchInput()"
+        placeholder="Type registration number or name..." />
+      @if (studentSearch.length >= 1) {
         <div class="student-dropdown">
-          @for (s of filteredStudents(); track s.id) {
-            <div class="student-option" (click)="selectStudent(s)">
-              <span class="student-name">{{ s.name }}</span>
-              <span class="student-meta">{{ s.email || s.phone || '—' }}</span>
-            </div>
+          @if (searchLoading()) {
+            <div class="student-option empty-opt">Searching...</div>
+          } @else {
+            @for (s of searchResults(); track s.id) {
+              <div class="student-option" (click)="selectStudent(s)">
+                <span class="student-name">{{ s.registration_number || '—' }} &nbsp;·&nbsp; {{ s.name }}</span>
+                <span class="student-meta">{{ s.email || s.phone || '—' }}</span>
+              </div>
+            }
+            @empty { <div class="student-option empty-opt">No students found</div> }
           }
-          @empty { <div class="student-option empty-opt">No students found</div> }
         </div>
       }
     </div>
@@ -165,8 +174,13 @@
     </div>
 
     @if (lastReceipt()) {
-      <div class="alert-success">
-        ✓ Payment recorded · Receipt No: <strong>{{ lastReceipt() }}</strong>
+      <div class="alert-success" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <span>✓ Payment recorded · Receipt No: <strong>{{ lastReceipt() }}</strong></span>
+        <button class="btn btn-outline btn-sm" style="background:#fff;color:#166534;border-color:#166534"
+          (click)="printReceipt(lastReceiptId())"
+          [disabled]="receiptLoading() === lastReceiptId()">
+          {{ receiptLoading() === lastReceiptId() ? 'Loading...' : '🖨 Print Receipt' }}
+        </button>
       </div>
     }
 
@@ -231,7 +245,7 @@
           <div class="form-row">
             <div class="field">
               <label>Fee Category *</label>
-              <select [(ngModel)]="payForm.fee_category_id">
+              <select [(ngModel)]="payForm.fee_category_id" (ngModelChange)="onCategoryChange()">
                 <option value="">— Select category —</option>
                 @for (row of feeSummary().rows; track row.fee_category_id) {
                   @if (row.balance > 0) {
@@ -241,8 +255,19 @@
               </select>
             </div>
             <div class="field">
-              <label>Amount (₹) *</label>
-              <input type="number" [(ngModel)]="payForm.amount_paid" min="1" placeholder="0" />
+              <label>
+                Amount (₹) *
+                @if (payForm.fee_category_id) {
+                  <span class="muted"> — max ₹{{ selectedCategoryBalance() | number }}</span>
+                }
+              </label>
+              <input type="number" [(ngModel)]="payForm.amount_paid"
+                min="1" [max]="selectedCategoryBalance()"
+                placeholder="0"
+                [class.invalid-amount]="isAmountOverBalance()" />
+              @if (isAmountOverBalance()) {
+                <span class="field-error-inline">Cannot exceed remaining balance of ₹{{ selectedCategoryBalance() | number }}</span>
+              }
             </div>
             <div class="field">
               <label>Date *</label>
@@ -255,7 +280,7 @@
           </div>
           <button class="btn btn-primary" style="margin-top:12px"
             (click)="recordPayment()"
-            [disabled]="paySaving() || !payForm.fee_category_id || !payForm.amount_paid">
+            [disabled]="paySaving() || !payForm.fee_category_id || !payForm.amount_paid || isAmountOverBalance()">
             {{ paySaving() ? 'Recording...' : '💾 Record Cash Payment' }}
           </button>
         </div>
@@ -295,9 +320,19 @@
                 <td>{{ p.fee_category?.name }}</td>
                 <td>₹{{ p.amount_paid | number }}</td>
                 <td>{{ p.payment_date | date:'d MMM y' }}</td>
-                <td><span class="badge badge-neutral">{{ p.payment_mode | uppercase }}</span></td>
+                <td><span class="badge badge-blue">{{ p.payment_mode | uppercase }}</span></td>
                 <td>{{ p.remarks || '—' }}</td>
-                <td>@if (isAdmin) { <button class="btn btn-outline btn-sm danger" (click)="deletePayment(p.id)">Delete</button> }</td>
+                <td class="action-cell">
+                  <button class="btn btn-outline btn-sm"
+                    (click)="printReceipt(p.id)"
+                    [disabled]="receiptLoading() === p.id"
+                    title="Print / Download Receipt">
+                    {{ receiptLoading() === p.id ? '...' : '🖨 Receipt' }}
+                  </button>
+                  @if (isAdmin) {
+                    <button class="btn btn-outline btn-sm danger" (click)="deletePayment(p.id)">Delete</button>
+                  }
+                </td>
               </tr>
             }
           </tbody>
@@ -418,3 +453,65 @@
     </div>
   </div>
 }
+
+<!-- ── Pending Fees ──────────────────────────────────────────────────────────── -->
+@if (activeTab() === 'pending') {
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:200px;margin:0">
+        <label>Select Class</label>
+        <select [(ngModel)]="pendingClassId" (ngModelChange)="loadPendingFees()">
+          <option value="">— Choose a class —</option>
+          @for (c of classes(); track c.id) {
+            <option [value]="c.id">{{ c.name }}{{ c.section ? ' — ' + c.section : '' }}</option>
+          }
+        </select>
+      </div>
+      @if (pendingData().length) {
+        <button class="btn btn-outline" style="align-self:flex-end" (click)="exportPendingCSV()">Export CSV</button>
+      }
+    </div>
+
+    @if (!pendingClassId) {
+      <p class="empty">Select a class to view pending fee balances.</p>
+    } @else if (pendingLoading()) {
+      <p class="loading-text">Loading...</p>
+    } @else if (!pendingData().length) {
+      <p class="empty">No students found for this class.</p>
+    } @else {
+      <div style="display:flex;gap:24px;margin-bottom:16px;flex-wrap:wrap">
+        <div class="stat-chip"><span class="stat-label">Students with balance</span><strong class="stat-val c-red">{{ pendingStudentCount() }}</strong></div>
+        <div class="stat-chip"><span class="stat-label">Total pending</span><strong class="stat-val c-red">₹{{ pendingTotal() | number }}</strong></div>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th><th>Student</th><th>Reg No</th>
+            <th>Total Due</th><th>Discount</th><th>Paid</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of pendingData(); track r.student_id; let i = $index) {
+            <tr [class.row-due]="r.balance > 0">
+              <td>{{ i + 1 }}</td>
+              <td class="fw-500">{{ r.student_name }}</td>
+              <td>{{ r.reg_no || '—' }}</td>
+              <td>₹{{ r.total_due | number }}</td>
+              <td style="color:#a78bfa">{{ r.discount > 0 ? ('₹' + (r.discount | number)) : '—' }}</td>
+              <td style="color:#4ade80">₹{{ r.paid | number }}</td>
+              <td>
+                @if (r.balance > 0) {
+                  <strong class="c-red">₹{{ r.balance | number }}</strong>
+                } @else {
+                  <span class="badge badge-green">Paid</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+

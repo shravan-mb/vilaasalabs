@@ -22,7 +22,8 @@
     "db:down": "docker-compose down",
     "db:seed": "ts-node -r tsconfig-paths/register src/database/seeds/super-admin.seed.ts",
     "db:seed:test": "ts-node -r tsconfig-paths/register src/database/seeds/test-data.seed.ts",
-    "db:seed:demo": "ts-node -r tsconfig-paths/register src/database/seeds/school-demo.seed.ts"
+    "db:seed:demo": "ts-node -r tsconfig-paths/register src/database/seeds/school-demo.seed.ts",
+    "db:seed:8th-tests": "ts-node -r tsconfig-paths/register src/database/seeds/8th-std-tests.seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

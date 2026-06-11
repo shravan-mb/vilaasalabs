@@ -27,7 +27,7 @@ import { environment } from '../../../../environments/environment';
               <tr>
                 <td>{{ r.test_title }}</td>
                 <td>{{ r.subject }}</td>
-                <td style="font-weight:600;color:#fff">{{ r.score }}</td>
+                <td style="font-weight:600;color:#7c3aed">{{ r.score }}</td>
                 <td>{{ r.test_total_marks }}</td>
                 <td><span class="badge" [class.badge-success]="pct(r)>=60" [class.badge-warning]="pct(r)<60&&pct(r)>=40" [class.badge-error]="pct(r)<40">{{ pct(r) }}%</span></td>
                 <td style="color:#888;font-size:12px">{{ r.remarks || '—' }}</td>

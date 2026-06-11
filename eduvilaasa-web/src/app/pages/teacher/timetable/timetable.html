@@ -14,11 +14,17 @@
 } @else {
   <div class="week-grid">
     @for (day of days; track $index; let d = $index) {
-      <div class="day-col">
-        <div class="day-header">{{ day }}</div>
+      <div class="day-col" [class.day-col-past]="isPastDay(d)" [class.day-col-today]="isToday(d)">
+        <div class="day-header">
+          {{ day }}
+          @if (isToday(d)) { <span class="day-today-dot"></span> }
+        </div>
         @for (slot of slotsForDay(d); track slot.id) {
-          <div class="slot-card">
-            <div class="slot-subject">{{ slot.subject_name }}</div>
+          <div class="slot-card" [class.slot-past]="slotState(slot, d) === 'past'" [class.slot-live]="slotState(slot, d) === 'live'">
+            <div class="slot-subject">
+              {{ slot.subject_name }}
+              @if (slotState(slot, d) === 'live') { <span class="slot-now-badge">NOW</span> }
+            </div>
             <div class="slot-time">{{ slot.start_time }} – {{ slot.end_time }}</div>
             <div class="slot-class">{{ className(slot.class_id) }}</div>
           </div>

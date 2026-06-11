@@ -24,6 +24,13 @@ import { TestResult } from './database/entities/test-result.entity';
 import { TeacherAttendance } from './database/entities/teacher-attendance.entity';
 import { TimetableSlot } from './database/entities/timetable-slot.entity';
 import { User } from './database/entities/user.entity';
+import { ContentBoard } from './database/entities/content-board.entity';
+import { ContentPack } from './database/entities/content-pack.entity';
+import { ContentSyllabusChapter } from './database/entities/content-syllabus-chapter.entity';
+import { ContentSyllabusNote } from './database/entities/content-syllabus-note.entity';
+import { ContentQuestion } from './database/entities/content-question.entity';
+import { ContentTestTemplate } from './database/entities/content-test-template.entity';
+import { InstitutionContentAccess } from './database/entities/institution-content-access.entity';
 import { AcademicYearsModule } from './modules/academic-years/academic-years.module';
 import { FeesModule } from './modules/fees/fees.module';
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
@@ -42,6 +49,7 @@ import { TeacherAttendanceModule } from './modules/teacher-attendance/teacher-at
 import { TimetableModule } from './modules/timetable/timetable.module';
 import { UsersModule } from './modules/users/users.module';
 import { VilaasalabsAdminModule } from './modules/vilaasalabs-admin/vilaasalabs-admin.module';
+import { ContentPacksModule } from './modules/content-packs/content-packs.module';
 
 @Module({
   imports: [
@@ -65,6 +73,8 @@ import { VilaasalabsAdminModule } from './modules/vilaasalabs-admin/vilaasalabs-
           ProctorNote, MeetingRequest,
           FeeCategory, ClassFeeStructure, StudentFeeDiscount, FeePayment,
           TeacherAttendance,
+          ContentBoard, ContentPack, ContentSyllabusChapter, ContentSyllabusNote,
+          ContentQuestion, ContentTestTemplate, InstitutionContentAccess,
         ],
         synchronize: config.get('NODE_ENV') !== 'production' || config.get('DB_SYNC') === 'true',
         logging: config.get('NODE_ENV') === 'development',
@@ -89,6 +99,7 @@ import { VilaasalabsAdminModule } from './modules/vilaasalabs-admin/vilaasalabs-
     AcademicYearsModule,
     FeesModule,
     TeacherAttendanceModule,
+    ContentPacksModule,
   ],
 })
 export class AppModule {}

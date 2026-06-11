@@ -1,3 +1,24 @@
+// ── Global student search ─────────────────────────────────────────────────────
+.student-search-bar { margin-bottom: 16px; }
+
+.student-search-wrap {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--ev-input-bg); border: 1px solid var(--ev-border); border-radius: 10px;
+  padding: 0 14px; transition: border-color .15s;
+  &:focus-within { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,.1); }
+}
+.search-icon { font-size: 14px; color: var(--ev-muted); flex-shrink: 0; }
+.student-search-input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--ev-text); font-size: 14px; padding: 12px 0;
+  &::placeholder { color: var(--ev-dim); }
+}
+.search-clear {
+  background: none; border: none; color: var(--ev-muted); cursor: pointer; font-size: 13px; padding: 4px;
+  &:hover { color: var(--ev-text); }
+}
+.search-results-card { margin-bottom: 16px; }
+
 .form-card { margin-bottom: 20px; h3 { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 16px; } }
 .form-actions { margin-top: 16px; }
 .loading-text { color: #555; }
@@ -41,4 +62,238 @@
 .badge-blue {
   background: #1e3a5f;
   color: #93c5fd;
+}
+
+/* Parent section */
+.parent-section {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--ev-border);
+  border-radius: 10px;
+  background: var(--ev-card-2);
+}
+.parent-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.parent-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--ev-muted);
+}
+.parent-mode-tabs {
+  display: flex;
+  gap: 6px;
+}
+.parent-tab {
+  padding: 4px 14px;
+  border: 1px solid var(--ev-border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--ev-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .15s;
+  &.active {
+    background: #7c3aed;
+    color: #fff;
+    border-color: #7c3aed;
+  }
+  &:hover:not(.active) { border-color: #7c3aed; color: #7c3aed; }
+}
+.parent-search-wrap { position: relative; }
+.parent-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--ev-border);
+  border-radius: 8px;
+  background: var(--ev-input-bg, #1a1a1a);
+  color: var(--ev-text);
+  font-size: 14px;
+  margin-top: 4px;
+  &:focus { outline: none; border-color: #7c3aed; }
+}
+.parent-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0; right: 0;
+  background: var(--ev-card);
+  border: 1px solid var(--ev-border);
+  border-radius: 8px;
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(0,0,0,.3);
+}
+.parent-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  &:hover { background: var(--ev-card-2); }
+}
+.parent-opt-name { font-size: 14px; color: var(--ev-text); }
+.parent-opt-phone { font-size: 12px; color: var(--ev-muted); }
+.parent-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #14532d22;
+  border: 1px solid #166534;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #4ade80;
+}
+.parent-clear {
+  background: transparent;
+  border: none;
+  color: #f87171;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+}
+.parent-hint {
+  font-size: 12px;
+  color: var(--ev-muted);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* ── Fee view modal ─────────────────────────────────────────────────── */
+.fee-modal {
+  max-width: 780px;
+  width: 95vw;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.fee-modal-sub {
+  font-size: 13px;
+  color: var(--ev-muted);
+  margin-top: 2px;
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--ev-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  &:hover { color: var(--ev-text); }
+}
+.fee-loading {
+  text-align: center;
+  color: var(--ev-muted);
+  padding: 32px 0;
+  font-size: 14px;
+}
+.fee-empty {
+  font-size: 13px;
+  color: var(--ev-muted);
+  padding: 12px 0;
+}
+.fee-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #7c3aed;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--ev-border);
+}
+.fee-table-wrap {
+  overflow-x: auto;
+}
+.fee-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th {
+    background: var(--ev-surface2);
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--ev-muted);
+  }
+  th.num, td.num { text-align: right; }
+  td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--ev-border);
+    color: var(--ev-text);
+  }
+}
+.fee-totals-row td {
+  font-weight: 700;
+  border-top: 2px solid var(--ev-border);
+  background: var(--ev-surface2);
+}
+.fee-freq {
+  font-size: 10px;
+  color: var(--ev-muted);
+  margin-left: 5px;
+}
+.fee-discount { color: #16a34a; }
+.fee-paid     { color: #16a34a; }
+.fee-balance-zero { color: #16a34a; font-weight: 600; }
+.fee-balance-due  { color: #dc2626; font-weight: 600; }
+.fee-receipt-no {
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--ev-muted);
+}
+.btn-receipt {
+  background: none;
+  border: 1px solid #7c3aed;
+  color: #7c3aed;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover { background: #f5f3ff; }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+.fee-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  h3 { margin-bottom: 4px; }
+}
+.fee-reg-no {
+  font-family: monospace;
+  font-size: 12px;
+}
+.fee-modal-actions-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.btn-print-summary {
+  background: none;
+  border: 1px solid #7c3aed;
+  color: #7c3aed;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover { background: #f5f3ff; }
 }

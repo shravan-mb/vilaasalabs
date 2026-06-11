@@ -23,7 +23,7 @@
           <label>Class *</label>
           <select [(ngModel)]="bulkProctorClassId">
             <option value="">Select class...</option>
-            @for (c of classes(); track c.id) {
+            @for (c of sortedClasses(); track c.id) {
               <option [value]="c.id">{{ c.name }}{{ c.section ? ' — ' + c.section : '' }}</option>
             }
           </select>
@@ -60,17 +60,19 @@
         @if (isInvalid('name')) { <span class="err">Name is required</span> }
       </div>
       <div class="field">
-        <label>Class</label>
-        <select [(ngModel)]="form.class_id">
-          <option value="">— Not assigned —</option>
-          @for (cls of classes(); track cls.id) {
+        <label>Class *</label>
+        <select [(ngModel)]="form.class_id" [class.invalid]="isInvalid('class_id')" (blur)="touch('class_id')">
+          <option value="">— Select class —</option>
+          @for (cls of sortedClasses(); track cls.id) {
             <option [value]="cls.id">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</option>
           }
         </select>
+        @if (isInvalid('class_id')) { <span class="err">Class is required</span> }
       </div>
       <div class="field">
-        <label>Registration / Admission No. <span style="color:#888;font-weight:400">(optional)</span></label>
-        <input [(ngModel)]="form.registration_number" placeholder="e.g. STU2024001 or 2024/KA/001" />
+        <label>Registration / Admission No. *</label>
+        <input [(ngModel)]="form.registration_number" [class.invalid]="isInvalid('registration_number')" (blur)="touch('registration_number')" placeholder="e.g. STU2024001" />
+        @if (isInvalid('registration_number')) { <span class="err">Registration number is required</span> }
       </div>
       <div class="field">
         <label>Phone</label>
@@ -82,7 +84,7 @@
         @if (isInvalid('email')) { <span class="err">Enter a valid email</span> }
       </div>
       <div class="field">
-        <label>Reporting Teacher / Proctor <span style="color:#888;font-weight:400">(optional)</span></label>
+        <label>Proctor Teacher <span style="color:#888;font-weight:400">(optional)</span></label>
         <select [(ngModel)]="form.proctor_id">
           <option value="">— Not assigned —</option>
           @for (t of teachers(); track t.id) {
@@ -92,10 +94,65 @@
       </div>
       <div class="field">
         <label>Password *</label>
-        <input [(ngModel)]="form.password" type="password" [class.invalid]="isInvalid('password')" (blur)="touch('password')" placeholder="Min 8 characters" />
+        <input [(ngModel)]="form.password" type="text" [class.invalid]="isInvalid('password')" (blur)="touch('password')" placeholder="Min 8 characters" />
         @if (isInvalid('password')) { <span class="err">Min 8 characters</span> }
       </div>
     </div>
+
+    <!-- Parent / Guardian Section -->
+    <div class="parent-section">
+      <div class="parent-section-header">
+        <span class="parent-section-title">Parent / Guardian</span>
+        <div class="parent-mode-tabs">
+          <button type="button" class="parent-tab" [class.active]="parentMode === 'none'" (click)="setParentMode('none')">Skip</button>
+          <button type="button" class="parent-tab" [class.active]="parentMode === 'existing'" (click)="setParentMode('existing')">Link Existing</button>
+          <button type="button" class="parent-tab" [class.active]="parentMode === 'new'" (click)="setParentMode('new')">Add New</button>
+        </div>
+      </div>
+
+      @if (parentMode === 'existing') {
+        <div class="parent-search-wrap">
+          <label>Search parent by name or phone</label>
+          <input [(ngModel)]="parentSearch" (ngModelChange)="onParentSearchInput()" placeholder="Type name or phone number..." class="parent-search-input" autocomplete="off" />
+          @if (parentSearchLoading()) { <div class="parent-hint">Searching...</div> }
+          @if (parentSearchResults().length > 0) {
+            <div class="parent-dropdown">
+              @for (p of parentSearchResults(); track p.id) {
+                <div class="parent-option" (click)="selectParent(p)">
+                  <span class="parent-opt-name">{{ p.name }}</span>
+                  <span class="parent-opt-phone">{{ p.phone }}</span>
+                </div>
+              }
+            </div>
+          }
+          @if (selectedParent()) {
+            <div class="parent-selected">
+              <span>✓ Selected: <strong>{{ selectedParent().name }}</strong> ({{ selectedParent().phone }})</span>
+              <button type="button" class="parent-clear" (click)="setParentMode('existing')">✕</button>
+            </div>
+          }
+        </div>
+      }
+
+      @if (parentMode === 'new') {
+        <div class="grid-2" style="margin-top:12px">
+          <div class="field">
+            <label>Parent Full Name *</label>
+            <input [(ngModel)]="newParentForm.name" placeholder="Parent name" />
+          </div>
+          <div class="field">
+            <label>Phone * <span style="color:#888;font-weight:400;font-size:11px">(login username)</span></label>
+            <input [(ngModel)]="newParentForm.phone" placeholder="+91 9876543210" />
+          </div>
+        </div>
+        <div class="parent-hint">Password will be set to <strong>Parents@1234</strong> — admin can reset later.</div>
+      }
+
+      @if (parentMode === 'none') {
+        <div class="parent-hint">No parent will be linked now. You can add parents later from the Parents tab.</div>
+      }
+    </div>
+
     <div class="form-actions">
       <button class="btn btn-primary" (click)="onSubmit()" [disabled]="saving()">
         @if (saving()) { Saving... } @else { Add Student }
@@ -104,44 +161,119 @@
   </div>
 }
 
+<!-- Global student search -->
+<div class="student-search-bar">
+  <div class="student-search-wrap">
+    <span class="search-icon">🔍</span>
+    <input
+      class="student-search-input"
+      [(ngModel)]="globalSearch"
+      (ngModelChange)="onGlobalSearchInput()"
+      placeholder="Search by student name or registration number..."
+    />
+    @if (globalSearch) {
+      <button class="search-clear" (click)="clearGlobalSearch()">✕</button>
+    }
+  </div>
+</div>
+
+<!-- Search results (shown only when searching) -->
+@if (globalSearch.trim()) {
+  <div class="card search-results-card">
+    @if (globalSearchLoading()) {
+      <p style="color:#888;font-size:13px;padding:12px 0">Searching...</p>
+    } @else if (globalSearchResults().length === 0) {
+      <p style="color:#888;font-size:13px;padding:12px 0">No students found matching "{{ globalSearch }}".</p>
+    } @else {
+      <p style="font-size:12px;color:var(--ev-muted);margin-bottom:12px">{{ globalSearchResults().length }} result{{ globalSearchResults().length > 1 ? 's' : '' }} for "{{ globalSearch }}"</p>
+      <table class="table">
+        <thead>
+          <tr><th>Name</th><th>Reg #</th><th>Class</th><th>Proctor</th><th>Phone</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          @for (s of globalSearchResults(); track s.id) {
+            <tr>
+              <td class="fw-500">{{ s.name }}</td>
+              <td>{{ s.registration_number || '—' }}</td>
+              <td>{{ classNameById(s.class_id) }}</td>
+              <td>
+                @if (s.proctor?.name) { {{ s.proctor.name }} }
+                @else if (s.proctor_id) { {{ teacherName(s.proctor_id) }} }
+                @else { <span style="color:#f59e0b;font-size:11px">⚠ Not assigned</span> }
+              </td>
+              <td>{{ s.phone || '—' }}</td>
+              <td><span class="badge" [class]="s.is_active ? 'badge-green' : 'badge-red'">{{ s.is_active ? 'Active' : 'Inactive' }}</span></td>
+              <td style="display:flex;gap:6px;flex-wrap:wrap">
+                @if (isAdmin) {
+                  <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openEdit(s)">Edit</button>
+                }
+                <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#7c3aed;border-color:#7c3aed" (click)="openFeeView(s)">View Fees</button>
+                @if (isAdmin) {
+                  <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openResetPassword(s)">Reset PW</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+
+<!-- Academic year filter -->
+<div class="filter-bar" style="display:flex;gap:12px;margin-bottom:16px;align-items:center">
+  <label style="font-size:13px;color:var(--ev-muted)">Academic Year:</label>
+  <select [ngModel]="filterYear()" (ngModelChange)="filterYear.set($event)" style="min-width:140px;padding:8px 12px;border-radius:8px;border:1px solid var(--ev-border);background:var(--ev-input-bg,var(--bg-card));color:var(--ev-white,#1a1a1a);font-size:13px">
+    <option value="">All Years</option>
+    @for (y of academicYears(); track y) { <option [value]="y">{{ y }}</option> }
+  </select>
+  <span style="font-size:12px;color:var(--ev-muted)">{{ sortedClasses().length }} classes</span>
+</div>
+
 @if (loading()) {
-  <div class="card"><p class="loading-text">Loading students...</p></div>
-} @else if (students().length === 0) {
-  <div class="card"><div class="empty-state"><p>No students yet. Add your first student above.</p></div></div>
+  <div class="card"><p class="loading-text">Loading classes...</p></div>
+} @else if (sortedClasses().length === 0) {
+  <div class="card"><div class="empty-state"><p>No classes found.</p></div></div>
 } @else {
-  @for (cls of classes(); track cls.id) {
-    @let clsStudents = studentsForClass(cls.id);
-    @if (clsStudents.length > 0) {
-      <div class="class-accordion">
-        <div class="class-accordion-header" (click)="toggleClass(cls.id)">
-          <span class="class-accordion-name">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</span>
-          <span class="badge badge-blue">{{ clsStudents.length }} student{{ clsStudents.length !== 1 ? 's' : '' }}</span>
-          <span class="chevron" [class.open]="isExpanded(cls.id)">▾</span>
-        </div>
-        @if (isExpanded(cls.id)) {
+  @for (cls of sortedClasses(); track cls.id) {
+    <div class="class-accordion">
+      <div class="class-accordion-header" (click)="toggleClass(cls.id)">
+        <span class="class-accordion-name">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</span>
+        @if (cls.academic_year) { <span style="font-size:11px;color:var(--ev-muted);margin-left:6px">{{ cls.academic_year }}</span> }
+        <span class="chevron" [class.open]="isExpanded(cls.id)">▾</span>
+      </div>
+      @if (isExpanded(cls.id)) {
+        @if (isLoadingClass(cls.id)) {
+          <p class="loading-text" style="padding:16px">Loading students...</p>
+        } @else if (studentsFor(cls.id).length === 0) {
+          <p style="padding:16px;font-size:13px;color:var(--ev-muted)">No students in this class.</p>
+        } @else {
+          <div style="padding:4px 0 8px;font-size:12px;color:var(--ev-muted);padding-left:16px">{{ studentsFor(cls.id).length }} students</div>
           <table class="table">
             <thead>
-              <tr><th>Name</th><th>Reg #</th><th>Proctor</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+              <tr><th>Name</th><th>Reg #</th><th>Proctor</th><th>Phone</th><th>Status</th><th>Actions</th></tr>
             </thead>
             <tbody>
-              @for (s of clsStudents; track s.id) {
+              @for (s of studentsFor(cls.id); track s.id) {
                 <tr>
-                  <td>{{ s.name }}</td>
+                  <td class="fw-500">{{ s.name }}</td>
                   <td>{{ s.registration_number || '—' }}</td>
                   <td>{{ s.proctor?.name ?? teacherName(s.proctor_id) }}</td>
                   <td>{{ s.phone || '—' }}</td>
-                  <td>{{ s.email || '—' }}</td>
                   <td><span class="badge" [class]="s.is_active ? 'badge-green' : 'badge-red'">{{ s.is_active ? 'Active' : 'Inactive' }}</span></td>
                   <td style="display:flex;gap:6px;flex-wrap:wrap">
                     @if (isAdmin) {
                       <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openEdit(s)">Edit</button>
+                    }
+                    <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#7c3aed;border-color:#7c3aed" (click)="openFeeView(s)">View Fees</button>
+                    @if (isAdmin) {
                       <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openResetPassword(s)">Reset PW</button>
                       @if (s.is_active) {
-                        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#d97706;border-color:#d97706" (click)="deactivate(s.id)">Deactivate</button>
+                        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#d97706;border-color:#d97706" (click)="deactivate(s)">Deactivate</button>
                       } @else {
-                        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#16a34a;border-color:#16a34a" (click)="activate(s.id)">Activate</button>
+                        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#16a34a;border-color:#16a34a" (click)="activate(s)">Activate</button>
                       }
-                      <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#dc2626;border-color:#dc2626" (click)="delete(s.id)">Delete</button>
+                      <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#dc2626;border-color:#dc2626" (click)="delete(s)">Delete</button>
                     }
                   </td>
                 </tr>
@@ -149,47 +281,6 @@
             </tbody>
           </table>
         }
-      </div>
-    }
-  }
-  @let unassigned = studentsForClass(null);
-  @if (unassigned.length > 0) {
-    <div class="class-accordion">
-      <div class="class-accordion-header" (click)="toggleClass('__unassigned__')">
-        <span class="class-accordion-name" style="color:#888">Unassigned</span>
-        <span class="badge" style="background:#2a2a2a;color:#888">{{ unassigned.length }} student{{ unassigned.length !== 1 ? 's' : '' }}</span>
-        <span class="chevron" [class.open]="isExpanded('__unassigned__')">▾</span>
-      </div>
-      @if (isExpanded('__unassigned__')) {
-        <table class="table">
-          <thead>
-            <tr><th>Name</th><th>Reg #</th><th>Proctor</th><th>Phone</th><th>Email</th><th>Status</th>@if (isAdmin) { <th>Actions</th> }</tr>
-          </thead>
-          <tbody>
-            @for (s of unassigned; track s.id) {
-              <tr>
-                <td>{{ s.name }}</td>
-                <td>{{ s.registration_number || '—' }}</td>
-                <td>{{ s.proctor?.name ?? teacherName(s.proctor_id) }}</td>
-                <td>{{ s.phone || '—' }}</td>
-                <td>{{ s.email || '—' }}</td>
-                <td><span class="badge" [class]="s.is_active ? 'badge-green' : 'badge-red'">{{ s.is_active ? 'Active' : 'Inactive' }}</span></td>
-                @if (isAdmin) {
-                  <td style="display:flex;gap:6px;flex-wrap:wrap">
-                    <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openEdit(s)">Edit</button>
-                    <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" (click)="openResetPassword(s)">Reset PW</button>
-                    @if (s.is_active) {
-                      <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#d97706;border-color:#d97706" (click)="deactivate(s.id)">Deactivate</button>
-                    } @else {
-                      <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#16a34a;border-color:#16a34a" (click)="activate(s.id)">Activate</button>
-                    }
-                    <button class="btn btn-outline" style="font-size:11px;padding:4px 10px;color:#dc2626;border-color:#dc2626" (click)="delete(s.id)">Delete</button>
-                  </td>
-                }
-              </tr>
-            }
-          </tbody>
-        </table>
       }
     </div>
   }
@@ -204,13 +295,13 @@
         <label>Class</label>
         <select [(ngModel)]="editForm.class_id">
           <option value="">— Not assigned —</option>
-          @for (cls of classes(); track cls.id) {
+          @for (cls of sortedClasses(); track cls.id) {
             <option [value]="cls.id">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</option>
           }
         </select>
       </div>
       <div class="field">
-        <label>Reporting Teacher / Proctor</label>
+        <label>Proctor Teacher</label>
         <select [(ngModel)]="editForm.proctor_id">
           <option value="">— Not assigned —</option>
           @for (t of teachers(); track t.id) {
@@ -219,8 +310,8 @@
         </select>
       </div>
       <div class="field"><label>Phone</label><input [(ngModel)]="editForm.phone" placeholder="+91 9876543210" /></div>
-      <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="editForm.email" type="email" placeholder="student@school.edu" /></div>
-      <div class="field"><label>Registration / Admission No. <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="editForm.registration_number" placeholder="e.g. STU2024001" /></div>
+      <div class="field"><label>Email</label><input [(ngModel)]="editForm.email" type="email" placeholder="student@school.edu" /></div>
+      <div class="field"><label>Registration / Admission No.</label><input [(ngModel)]="editForm.registration_number" placeholder="e.g. STU2024001" /></div>
       <div class="modal-actions">
         <button class="btn btn-secondary" (click)="editTarget.set(null)">Cancel</button>
         <button class="btn btn-primary" (click)="saveEdit()" [disabled]="editSaving()">{{ editSaving() ? 'Saving...' : 'Save Changes' }}</button>
@@ -240,6 +331,119 @@
       <div class="modal-actions">
         <button class="btn btn-secondary" (click)="passwordTarget.set(null)">Cancel</button>
         <button class="btn btn-primary" (click)="savePassword()" [disabled]="passwordSaving()">{{ passwordSaving() ? 'Updating...' : 'Set Password' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (feeViewStudent()) {
+  <div class="modal-overlay" (click)="closeFeeView()">
+    <div class="modal fee-modal" (click)="$event.stopPropagation()">
+      <div class="fee-modal-header">
+        <div>
+          <h3>Fee Details</h3>
+          <div class="fee-modal-sub">
+            {{ feeViewStudent().name }}
+            @if (feeViewStudent().registration_number) {
+              &nbsp;·&nbsp; <span class="fee-reg-no">Reg: {{ feeViewStudent().registration_number }}</span>
+            }
+            &nbsp;&mdash;&nbsp; {{ className(feeViewStudent().class_id) }}
+          </div>
+        </div>
+        <div class="fee-modal-actions-top">
+          @if (feePayments().length > 0) {
+            <button class="btn-print-summary" (click)="printFeeStatement()" title="Print full fee statement">🖨 Print Statement</button>
+          }
+          <button class="modal-close" (click)="closeFeeView()">✕</button>
+        </div>
+      </div>
+
+      @if (feeModalLoading()) {
+        <div class="fee-loading">Loading fee details...</div>
+      } @else {
+        @if (feeSummary().length > 0) {
+          <div class="fee-section-title">Fee Structure</div>
+          <div class="fee-table-wrap">
+            <table class="fee-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th class="num">Standard</th>
+                  <th class="num">Discount</th>
+                  <th class="num">Net Due</th>
+                  <th class="num">Paid</th>
+                  <th class="num">Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of feeSummary(); track row.fee_category_id) {
+                  <tr>
+                    <td>{{ row.category_name }}<span class="fee-freq">{{ row.frequency }}</span></td>
+                    <td class="num">₹{{ row.standard_amount | number }}</td>
+                    <td class="num fee-discount">{{ row.discount_amount > 0 ? '- ₹' + (row.discount_amount | number) : '—' }}</td>
+                    <td class="num">₹{{ row.net_due | number }}</td>
+                    <td class="num fee-paid">₹{{ row.paid | number }}</td>
+                    <td class="num" [class.fee-balance-zero]="row.balance === 0" [class.fee-balance-due]="row.balance > 0">
+                      {{ row.balance === 0 ? '✓ Paid' : '₹' + (row.balance | number) }}
+                    </td>
+                  </tr>
+                }
+                <tr class="fee-totals-row">
+                  <td><strong>Total</strong></td>
+                  <td class="num"><strong>₹{{ feeSummaryTotals().standard | number }}</strong></td>
+                  <td class="num fee-discount"><strong>{{ feeSummaryTotals().discount > 0 ? '- ₹' + (feeSummaryTotals().discount | number) : '—' }}</strong></td>
+                  <td class="num"><strong>₹{{ feeSummaryTotals().net_due | number }}</strong></td>
+                  <td class="num fee-paid"><strong>₹{{ feeSummaryTotals().paid | number }}</strong></td>
+                  <td class="num" [class.fee-balance-zero]="feeSummaryTotals().balance === 0" [class.fee-balance-due]="feeSummaryTotals().balance > 0">
+                    <strong>{{ feeSummaryTotals().balance === 0 ? '✓ Fully Paid' : '₹' + (feeSummaryTotals().balance | number) }}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="fee-empty">Fee structure not yet configured for this class. Payments are shown below.</p>
+        }
+
+        @if (feePayments().length > 0) {
+          <div class="fee-section-title" style="margin-top:20px">Payment History</div>
+          <div class="fee-table-wrap">
+            <table class="fee-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Receipt No.</th>
+                  <th>Category</th>
+                  <th>Mode</th>
+                  <th class="num">Amount</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of feePayments(); track p.id) {
+                  <tr>
+                    <td>{{ p.payment_date | date:'dd MMM yyyy' }}</td>
+                    <td class="fee-receipt-no">{{ p.receipt_number }}</td>
+                    <td>{{ p.fee_category?.name ?? '—' }}</td>
+                    <td>{{ p.payment_mode }}</td>
+                    <td class="num fee-paid">₹{{ p.amount_paid | number }}</td>
+                    <td>
+                      <button class="btn-receipt" (click)="printStudentReceipt(p.id)" [disabled]="feeReceiptLoading() === p.id">
+                        {{ feeReceiptLoading() === p.id ? '...' : '🖨 Receipt' }}
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else if (feeSummary().length > 0) {
+          <p class="fee-empty" style="margin-top:16px">No payments recorded yet.</p>
+        }
+      }
+
+      <div class="modal-actions" style="margin-top:20px">
+        <button class="btn btn-secondary" (click)="closeFeeView()">Close</button>
       </div>
     </div>
   </div>

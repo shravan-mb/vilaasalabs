@@ -1,42 +1,109 @@
 <div class="page-header">
   <h1>Mark Attendance</h1>
-  <p>Record attendance for your class</p>
+  <p>{{ formattedDate }}</p>
 </div>
 
-@if (submitted()) { <div class="alert alert-success">Attendance submitted successfully!</div> }
-
-<div class="card filter-bar">
-  <div class="field">
-    <label>Class *</label>
-    <select [(ngModel)]="selectedClass" (ngModelChange)="onClassChange()">
-      <option value="">Select class</option>
-      @for (cls of classes(); track cls.id) {
-        <option [value]="cls.id">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</option>
-      }
-    </select>
-  </div>
+<!-- Date picker — always visible -->
+<div class="card date-bar">
   <div class="field">
     <label>Date</label>
-    <input type="date" [(ngModel)]="date" />
+    <input type="date" [(ngModel)]="date" (ngModelChange)="onDateChange()" />
   </div>
 </div>
 
-@if (loadingStudents()) {
-  <div class="card"><p style="text-align:center;color:#888;padding:24px">Loading students...</p></div>
-} @else if (selectedClass && entries().length === 0) {
-  <div class="card"><div class="empty-state">No students found in this class.</div></div>
-} @else if (entries().length > 0) {
+<!-- ── SCHEDULE OVERVIEW ──────────────────────────────────────────────── -->
+@if (!activeSlot() && !manualMode()) {
+  @if (slotsLoading()) {
+    <div class="card"><p class="center-msg">Loading your schedule...</p></div>
+  } @else if (todaySlots.length === 0) {
+    <div class="card empty-slots">
+      <div class="empty-icon">📅</div>
+      <p>No classes scheduled in your timetable for this day.</p>
+      <p class="hint">You can still mark attendance manually below.</p>
+      <button class="btn btn-outline" style="margin-top:12px" (click)="activateManual()">+ Manual Entry</button>
+    </div>
+  } @else {
+    <div class="slot-section-title">Today's Schedule — {{ todaySlots.length }} period{{ todaySlots.length > 1 ? 's' : '' }}</div>
+    <div class="slot-grid">
+      @for (slot of todaySlots; track slot.id) {
+        <div class="slot-card" (click)="selectSlot(slot)">
+          <div class="slot-time">{{ slot.start_time }} – {{ slot.end_time }}</div>
+          <div class="slot-subject">{{ slot.subject_name }}</div>
+          <div class="slot-class">{{ className(slot.class_id) }}</div>
+          <button class="btn btn-primary slot-cta">Take Attendance →</button>
+        </div>
+      }
+    </div>
+    <div class="manual-link">
+      <button class="btn btn-ghost" (click)="activateManual()">+ Manual / off-schedule entry</button>
+    </div>
+  }
+}
+
+<!-- ── MANUAL CLASS PICKER ─────────────────────────────────────────────── -->
+@if (manualMode() && entries().length === 0 && !loadingStudents()) {
   <div class="card">
-    <div class="bulk-actions" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-      <span style="color:#999;font-size:13px">Mark all as:</span>
+    <div class="attendance-header">
+      <button class="btn btn-ghost btn-sm" (click)="back()">← Back</button>
+      <span class="attendance-title-text">Manual Entry</span>
+    </div>
+    <div class="form-row" style="margin-top:16px">
+      <div class="field">
+        <label>Class *</label>
+        <select [(ngModel)]="manualClassId">
+          <option value="">Select class...</option>
+          @for (cls of classes(); track cls.id) {
+            <option [value]="cls.id">{{ cls.name }}{{ cls.section ? ' — ' + cls.section : '' }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Subject <span style="color:#888;font-weight:400">(optional)</span></label>
+        <input [(ngModel)]="manualSubject" placeholder="e.g. Mathematics" />
+      </div>
+      <div class="field" style="flex:none;justify-content:flex-end">
+        <label style="visibility:hidden">Load</label>
+        <button class="btn btn-primary" (click)="loadManual()">Load Students</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── LOADING ─────────────────────────────────────────────────────────── -->
+@if (loadingStudents()) {
+  <div class="card"><p class="center-msg">Loading students...</p></div>
+}
+
+<!-- ── ATTENDANCE FORM ─────────────────────────────────────────────────── -->
+@if (!loadingStudents() && entries().length > 0) {
+  <div class="card">
+    <!-- Header row -->
+    <div class="attendance-header">
+      <button class="btn btn-ghost btn-sm" (click)="back()">← Back to Schedule</button>
+      <div class="attendance-meta">
+        <span class="att-subject">{{ activeSlot()?.subject_name || manualSubject || 'General' }}</span>
+        <span class="att-sep">·</span>
+        <span class="att-class">{{ className(activeSlot()?.class_id || manualClassId) }}</span>
+        @if (isEditMode()) {
+          <span class="badge badge-warning" style="margin-left:8px">Editing</span>
+        } @else {
+          <span class="badge badge-outline" style="margin-left:8px">New</span>
+        }
+      </div>
+    </div>
+
+    <!-- Bulk actions -->
+    <div class="bulk-actions">
+      <span class="bulk-label">Mark all as:</span>
       <button class="btn btn-outline" style="font-size:12px" (click)="markAll('present')">Present</button>
       <button class="btn btn-outline" style="font-size:12px" (click)="markAll('absent')">Absent</button>
       <button class="btn btn-outline" style="font-size:12px" (click)="markAll('late')">Late</button>
-      <span style="margin-left:auto;color:#888;font-size:12px">
+      <span class="count-summary">
         {{ presentCount }} present · {{ absentCount }} absent · {{ entries().length - presentCount - absentCount }} other
       </span>
     </div>
 
+    <!-- Student table -->
     <table class="table">
       <thead>
         <tr><th>#</th><th>Student</th><th>Status</th><th>Remarks</th></tr>
@@ -55,17 +122,22 @@
               </div>
             </td>
             <td>
-              <input class="remarks-input" [value]="e.remarks" (input)="setRemarks(e.student_id, $any($event.target).value)" placeholder="Optional note" />
+              <input class="remarks-input" [value]="e.remarks"
+                (input)="setRemarks(e.student_id, $any($event.target).value)"
+                placeholder="Optional note" />
             </td>
           </tr>
         }
       </tbody>
     </table>
 
-    <div style="margin-top:20px">
+    <div class="form-actions">
       <button class="btn btn-primary" (click)="submit()" [disabled]="saving()">
-        @if (saving()) { Submitting... } @else { Submit Attendance ({{ entries().length }} students) }
+        @if (saving()) { Saving... }
+        @else if (isEditMode()) { Update Attendance ({{ entries().length }} students) }
+        @else { Submit Attendance ({{ entries().length }} students) }
       </button>
+      <button class="btn btn-outline" (click)="back()">Cancel</button>
     </div>
   </div>
 }

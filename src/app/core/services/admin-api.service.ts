@@ -80,4 +80,46 @@ export class AdminApiService {
   updateFeatureFlags(id: string, flags: Record<string, boolean>) {
     return this.http.patch(`${API}/vilaasalabs-admin/institutions/${id}/feature-flags`, { feature_flags: flags });
   }
+
+  // ── Content Pack API ──────────────────────────────────────────────────────
+
+  listBoards()                       { return this.http.get<any[]>(`${API}/vilaasalabs-admin/content/boards`); }
+  createBoard(dto: any)              { return this.http.post<any>(`${API}/vilaasalabs-admin/content/boards`, dto); }
+  updateBoard(id: string, dto: any)  { return this.http.patch<any>(`${API}/vilaasalabs-admin/content/boards/${id}`, dto); }
+
+  listPacks(boardId?: string, standard?: number) {
+    const p = new URLSearchParams();
+    if (boardId)  p.set('boardId', boardId);
+    if (standard) p.set('standard', String(standard));
+    return this.http.get<any[]>(`${API}/vilaasalabs-admin/content/packs?${p}`);
+  }
+  createPack(dto: any)               { return this.http.post<any>(`${API}/vilaasalabs-admin/content/packs`, dto); }
+  updatePack(id: string, dto: any)   { return this.http.patch<any>(`${API}/vilaasalabs-admin/content/packs/${id}`, dto); }
+  deletePack(id: string)             { return this.http.delete(`${API}/vilaasalabs-admin/content/packs/${id}`); }
+
+  getPackChapters(packId: string)    { return this.http.get<any[]>(`${API}/vilaasalabs-admin/content/packs/${packId}/chapters`); }
+  createChapter(packId: string, dto: any) { return this.http.post<any>(`${API}/vilaasalabs-admin/content/packs/${packId}/chapters`, dto); }
+  updateChapter(id: string, dto: any)     { return this.http.patch<any>(`${API}/vilaasalabs-admin/content/chapters/${id}`, dto); }
+  deleteChapter(id: string)               { return this.http.delete(`${API}/vilaasalabs-admin/content/chapters/${id}`); }
+
+  createNote(chapterId: string, dto: any) { return this.http.post<any>(`${API}/vilaasalabs-admin/content/chapters/${chapterId}/notes`, dto); }
+  updateNote(id: string, dto: any)        { return this.http.patch<any>(`${API}/vilaasalabs-admin/content/notes/${id}`, dto); }
+  deleteNote(id: string)                  { return this.http.delete(`${API}/vilaasalabs-admin/content/notes/${id}`); }
+
+  getPackQuestions(packId: string)        { return this.http.get<any[]>(`${API}/vilaasalabs-admin/content/packs/${packId}/questions`); }
+  createQuestion(packId: string, dto: any){ return this.http.post<any>(`${API}/vilaasalabs-admin/content/packs/${packId}/questions`, dto); }
+  updateQuestion(id: string, dto: any)    { return this.http.patch<any>(`${API}/vilaasalabs-admin/content/questions/${id}`, dto); }
+  deleteQuestion(id: string)              { return this.http.delete(`${API}/vilaasalabs-admin/content/questions/${id}`); }
+
+  getPackTests(packId: string)            { return this.http.get<any[]>(`${API}/vilaasalabs-admin/content/packs/${packId}/tests`); }
+  createTestTemplate(packId: string, dto: any) { return this.http.post<any>(`${API}/vilaasalabs-admin/content/packs/${packId}/tests`, dto); }
+  updateTestTemplate(id: string, dto: any)     { return this.http.patch<any>(`${API}/vilaasalabs-admin/content/tests/${id}`, dto); }
+  deleteTestTemplate(id: string)               { return this.http.delete(`${API}/vilaasalabs-admin/content/tests/${id}`); }
+
+  getInstitutionContentAccess(id: string) {
+    return this.http.get<any[]>(`${API}/vilaasalabs-admin/content/institutions/${id}/access`);
+  }
+  setInstitutionContentAccess(id: string, boardId: string, isEnabled: boolean) {
+    return this.http.post<any>(`${API}/vilaasalabs-admin/content/institutions/${id}/access`, { board_id: boardId, is_enabled: isEnabled });
+  }
 }

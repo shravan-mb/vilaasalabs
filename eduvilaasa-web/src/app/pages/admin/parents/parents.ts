@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -23,13 +23,62 @@ export class ParentsPage implements OnInit {
 
   parents = signal<any[]>([]);
   students = signal<any[]>([]);
+  classes = signal<any[]>([]);
   loading = signal(true);
+  filterClassId = signal('');
+
+  // student id → class_id map (built once after students load)
+  private studentClassMap = computed(() => {
+    const map = new Map<string, string>();
+    for (const s of this.students()) { if (s.class_id) map.set(s.id, s.class_id); }
+    return map;
+  });
+
+  // parent id → set of class_ids of their children
+  private parentClassIds = computed(() => {
+    const parentToClasses = new Map<string, Set<string>>();
+    for (const s of this.students()) {
+      if (!s.class_id) continue;
+      // parents linked via student name convention ("Parent of X")
+    }
+    return parentToClasses;
+  });
+
+  filteredParents = computed(() => {
+    const cls = this.filterClassId();
+    if (!cls) return this.parents();
+    // Find students in the selected class
+    const studentIdsInClass = new Set(this.students().filter((s) => s.class_id === cls).map((s) => s.id));
+    // Filter parents whose name contains a student name that's in the class
+    // More reliable: filter based on linked students (students loaded separately)
+    const studentNamesInClass = new Set(
+      this.students().filter((s) => s.class_id === cls).map((s) => s.name.toLowerCase())
+    );
+    return this.parents().filter((p) => {
+      const lower = (p.name || '').toLowerCase();
+      // "Parent of <StudentName>" pattern from seed
+      if (lower.startsWith('parent of ')) {
+        const sName = lower.replace('parent of ', '').trim();
+        return studentNamesInClass.has(sName);
+      }
+      return true; // show manually-named parents always
+    });
+  });
+
+  sortedClasses = computed(() => {
+    return [...this.classes()].sort((a, b) => {
+      const aNum = parseInt(a.name.match(/\d+/)?.[0] ?? '0', 10) || 0;
+      const bNum = parseInt(b.name.match(/\d+/)?.[0] ?? '0', 10) || 0;
+      if (aNum !== bNum) return aNum - bNum;
+      return (a.section || '').localeCompare(b.section || '');
+    });
+  });
   showForm = signal(false);
   showLink = signal(false);
   deleteTarget = signal<any>(null);
   saving = signal(false);
 
-  form = { name: '', email: '', phone: '', password: '' };
+  form = { name: '', email: '', phone: '', password: 'Parents@1234' };
   linkForm = { parent_id: '', student_id: '', relationship: 'guardian' };
 
   editTarget = signal<any>(null);
@@ -43,7 +92,13 @@ export class ParentsPage implements OnInit {
   private get base() { return `${environment.apiUrl}/institutions/${this.auth.institutionId}/users`; }
   private get studentBase() { return `${environment.apiUrl}/institutions/${this.auth.institutionId}/students`; }
 
-  ngOnInit() { this.load(); this.loadStudents(); }
+  ngOnInit() { this.load(); this.loadStudents(); this.loadClasses(); }
+
+  loadClasses() {
+    this.http.get<any[]>(`${environment.apiUrl}/institutions/${this.auth.institutionId}/classes`).subscribe({
+      next: (res) => this.classes.set(res ?? []),
+    });
+  }
 
   load() {
     this.loading.set(true);
@@ -68,7 +123,7 @@ export class ParentsPage implements OnInit {
     const payload: any = { name: this.form.name, phone: this.form.phone, password: this.form.password, role: 'parent' };
     if (this.form.email) payload.email = this.form.email;
     this.http.post(this.base, payload).subscribe({
-      next: () => { this.toast.success('Parent added'); this.showForm.set(false); this.form = { name: '', email: '', phone: '', password: '' }; this.load(); this.saving.set(false); },
+      next: () => { this.toast.success('Parent added'); this.showForm.set(false); this.form = { name: '', email: '', phone: '', password: 'Parents@1234' }; this.load(); this.saving.set(false); },
       error: (e) => { this.toast.error(e.error?.message || 'Failed to add parent'); this.saving.set(false); },
     });
   }

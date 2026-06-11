@@ -36,7 +36,9 @@ export class TeacherStudentsPage implements OnInit {
   private get base() { return `${environment.apiUrl}/institutions/${this.auth.institutionId}`; }
 
   ngOnInit() {
-    this.http.get<any[]>(`${this.base}/classes`).subscribe({ next: (res) => this.classes.set(res ?? []) });
+    this.http.get<any[]>(`${this.base}/classes`).subscribe({
+      next: (res) => this.classes.set((res ?? []).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }))),
+    });
     this.loadProctoredStudents();
   }
 

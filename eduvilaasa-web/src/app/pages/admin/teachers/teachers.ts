@@ -27,7 +27,7 @@ export class TeachersPage implements OnInit {
   saving = signal(false);
   error = signal('');
 
-  form = { name: '', email: '', phone: '', password: '', role: 'teacher' };
+  form = { name: '', email: '', phone: '', password: 'Teacher@1234', role: 'teacher' };
   touched: Record<string, boolean> = {};
   teachingSubjectSelections: SubjectEntry[] = [];
 
@@ -45,7 +45,11 @@ export class TeachersPage implements OnInit {
   load() {
     this.loading.set(true);
     this.api.get<any>('users', { role: 'teacher', limit: '200' }).subscribe({
-      next: (res: any) => { this.teachers.set(res.data ?? res); this.loading.set(false); },
+      next: (res: any) => {
+        const list: any[] = res.data ?? res;
+        this.teachers.set([...list].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')));
+        this.loading.set(false);
+      },
       error: () => this.loading.set(false),
     });
   }
@@ -58,6 +62,7 @@ export class TeachersPage implements OnInit {
   isInvalid(f: string): boolean {
     if (!this.touched[f]) return false;
     if (f === 'name') return !this.form.name.trim();
+    if (f === 'phone') return !this.form.phone.trim();
     if (f === 'email') return !!this.form.email && !this.form.email.includes('@');
     if (f === 'password') return this.form.password.length < 8;
     return false;
@@ -107,8 +112,8 @@ export class TeachersPage implements OnInit {
   }
 
   onSubmit() {
-    ['name', 'password'].forEach((f) => this.touch(f));
-    if (['name', 'password'].some((f) => this.isInvalid(f))) return;
+    ['name', 'phone', 'password'].forEach((f) => this.touch(f));
+    if (['name', 'phone', 'password'].some((f) => this.isInvalid(f))) return;
     if (this.form.email) { this.touch('email'); if (this.isInvalid('email')) return; }
     this.saving.set(true);
     this.error.set('');
@@ -123,7 +128,7 @@ export class TeachersPage implements OnInit {
         this.toast.success('Teacher added successfully');
         this.saving.set(false);
         this.showForm.set(false);
-        this.form = { name: '', email: '', phone: '', password: '', role: 'teacher' };
+        this.form = { name: '', email: '', phone: '', password: 'Teacher@1234', role: 'teacher' };
         this.touched = {};
         this.teachingSubjectSelections = [];
         this.load();

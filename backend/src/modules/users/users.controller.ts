@@ -125,6 +125,17 @@ export class UsersController {
 
   // ── Parameterized single-segment (:userId) ─────────────────────────────────
 
+  @Post(':studentId/link-parent')
+  @Roles(Role.INSTITUTION_ADMIN, Role.INSTITUTION_STAFF)
+  @ApiOperation({ summary: 'Link a parent to a student' })
+  linkParent(
+    @Param('institutionId') institutionId: string,
+    @Param('studentId') studentId: string,
+    @Body() body: { parent_id: string },
+  ) {
+    return this.service.linkStudentParent(institutionId, studentId, body.parent_id);
+  }
+
   @Get(':userId/children')
   @Roles(Role.INSTITUTION_ADMIN, Role.PARENT, Role.VILAASALABS_SUPER_ADMIN)
   @ApiOperation({ summary: 'Get all students linked to a parent, with proctor info' })

@@ -23,7 +23,13 @@ export class SubscriptionsService {
   }
 
   async getCurrent(institutionId: string): Promise<Subscription> {
-    const active = await this.subscriptionRepo.findOne({
+    const active = await this.findCurrent(institutionId);
+    if (!active) throw new NotFoundException('No active subscription found for this institution');
+    return active;
+  }
+
+  async findCurrent(institutionId: string): Promise<Subscription | null> {
+    const sub = await this.subscriptionRepo.findOne({
       where: [
         { institution_id: institutionId, status: SubscriptionStatus.TRIAL },
         { institution_id: institutionId, status: SubscriptionStatus.ACTIVE },
@@ -31,8 +37,28 @@ export class SubscriptionsService {
       ],
       order: { created_at: 'DESC' },
     });
-    if (!active) throw new NotFoundException('No active subscription found for this institution');
-    return active;
+    if (sub) return sub;
+
+    // Fallback: synthesise from institution fields for institutions without a subscriptions row
+    const inst = await this.institutionRepo.findOne({ where: { id: institutionId } });
+    if (!inst?.subscription_plan) return null;
+    const activeStatuses: SubscriptionStatus[] = [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL, SubscriptionStatus.GRACE_PERIOD];
+    if (!activeStatuses.includes(inst.subscription_status)) return null;
+
+    return Object.assign(new Subscription(), {
+      id:              null,
+      institution_id:  institutionId,
+      plan:            inst.subscription_plan,
+      status:          inst.subscription_status,
+      billing_cycle:   null,
+      amount:          0,
+      started_at:      inst.created_at,
+      expires_at:      inst.subscription_expires_at ?? null,
+      razorpay_subscription_id: null,
+      razorpay_payment_id:      null,
+      created_at:      inst.created_at,
+      updated_at:      inst.updated_at,
+    });
   }
 
   async extendOrUpgrade(institutionId: string, dto: ExtendSubscriptionDto): Promise<Subscription> {
@@ -100,7 +126,8 @@ export class SubscriptionsService {
   }
 
   async getPlanLimits(institutionId: string): Promise<{ plan: SubscriptionPlan; limits: { maxStudents: number; maxTeachers: number } }> {
-    const current = await this.getCurrent(institutionId);
+    const current = await this.findCurrent(institutionId);
+    if (!current) throw new NotFoundException('No active subscription found for this institution');
     return { plan: current.plan, limits: PLAN_LIMITS[current.plan] };
   }
 

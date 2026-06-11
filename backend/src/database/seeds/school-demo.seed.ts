@@ -34,6 +34,8 @@ import { Attendance, AttendanceStatus } from '../entities/attendance.entity';
 import { FeeCategory, FeeFrequency } from '../entities/fee-category.entity';
 import { ClassFeeStructure } from '../entities/class-fee-structure.entity';
 import { TimetableSlot } from '../entities/timetable-slot.entity';
+import { Subscription } from '../entities/subscription.entity';
+import { BillingCycle } from '../../common/enums/subscription-plan.enum';
 
 const SUBDOMAIN = 'shrivdya';
 const PASSWORD  = 'Demo@1234';
@@ -111,6 +113,7 @@ async function seed() {
   const feeCatRepo = ds.getRepository(FeeCategory);
   const feeStrRepo = ds.getRepository(ClassFeeStructure);
   const ttRepo     = ds.getRepository(TimetableSlot);
+  const subscriptionRepo = ds.getRepository(Subscription);
 
   // ── Reset ──────────────────────────────────────────────────────────────────
   if (RESET) {
@@ -149,6 +152,15 @@ async function seed() {
     subscription_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
     is_active:               true,
     feature_flags:           { show_subscription_tab: true },
+  }));
+
+  await subscriptionRepo.save(subscriptionRepo.create({
+    institution_id: inst.id,
+    plan:           SubscriptionPlan.PRO,
+    status:         SubscriptionStatus.ACTIVE,
+    billing_cycle:  BillingCycle.ANNUAL,
+    started_at:     new Date(),
+    expires_at:     new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
   }));
   console.log(' ✓');
 

@@ -133,6 +133,15 @@ export class FeesController {
     return this.service.deletePayment(institutionId, id);
   }
 
+  // ── Today's summary (for staff dashboard) ────────────────────────────────────
+
+  @Get('today-summary')
+  @Roles(Role.INSTITUTION_ADMIN, Role.INSTITUTION_STAFF)
+  @ApiOperation({ summary: "Today's fee collection summary: total collected, count, recent payments" })
+  getTodaySummary(@Param('institutionId') institutionId: string) {
+    return this.service.getTodaySummary(institutionId);
+  }
+
   // ── Summary ───────────────────────────────────────────────────────────────────
 
   @Get('summary/:studentId')
@@ -145,5 +154,25 @@ export class FeesController {
     @Query('academicYearId') academicYearId?: string,
   ) {
     return this.service.getStudentFeeSummary(institutionId, studentId, classId, academicYearId);
+  }
+
+  @Get('pending-summary')
+  @Roles(Role.INSTITUTION_ADMIN, Role.INSTITUTION_STAFF)
+  @ApiOperation({ summary: 'Get pending fee balances for all students in a class' })
+  getPendingSummary(
+    @Param('institutionId') institutionId: string,
+    @Query('classId') classId: string,
+  ) {
+    return this.service.getPendingFeesSummary(institutionId, classId);
+  }
+
+  @Get('receipts/:paymentId')
+  @Roles(Role.INSTITUTION_ADMIN, Role.INSTITUTION_STAFF, Role.STUDENT, Role.PARENT)
+  @ApiOperation({ summary: 'Get full receipt data for a payment' })
+  getReceipt(
+    @Param('institutionId') institutionId: string,
+    @Param('paymentId') paymentId: string,
+  ) {
+    return this.service.getReceipt(institutionId, paymentId);
   }
 }

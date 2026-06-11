@@ -1,7 +1,69 @@
 <div class="page-header">
   <h1>Settings</h1>
-  <p>Manage your profile and account security</p>
+  <p>Manage your profile, institution details and account security</p>
 </div>
+
+@if (isAdmin) {
+  <div class="card inst-card">
+    <h3>Institution Profile</h3>
+    <p class="card-desc">These details appear on all payment receipts — school name, logo, principal signature, contact info.</p>
+
+    @if (instSuccess()) { <div class="alert alert-success">{{ instSuccess() }}</div> }
+    @if (instError())   { <div class="alert alert-error">{{ instError() }}</div> }
+
+    <div class="inst-grid">
+      <div class="field">
+        <label>Institution Name *</label>
+        <input [(ngModel)]="inst.name" placeholder="e.g. Shri Vidya Public School" />
+      </div>
+      <div class="field">
+        <label>Registration / Affiliation No.</label>
+        <input [(ngModel)]="inst.registration_number" placeholder="e.g. KA/SCH/2024/SVPS001" />
+      </div>
+      <div class="field">
+        <label>Principal / Authorised Signatory Name</label>
+        <input [(ngModel)]="inst.principal_name" placeholder="Name shown on receipt signature" />
+      </div>
+      <div class="field">
+        <label>Contact Phone</label>
+        <input [(ngModel)]="inst.phone" placeholder="9900000000" />
+      </div>
+      <div class="field">
+        <label>Email (read-only — used for login)</label>
+        <input [ngModel]="inst.email" disabled style="opacity:.6;cursor:not-allowed" />
+      </div>
+      <div class="field">
+        <label>Logo URL</label>
+        <input [(ngModel)]="inst.logo_url" placeholder="https://... (paste hosted image URL)" />
+        @if (inst.logo_url) {
+          <div style="margin-top:8px">
+            <img [src]="inst.logo_url" alt="logo preview" style="height:48px;border-radius:6px;border:1px solid var(--ev-border)" />
+          </div>
+        }
+      </div>
+      <div class="field inst-field-wide">
+        <label>Address</label>
+        <input [(ngModel)]="inst.address" placeholder="Street address" />
+      </div>
+      <div class="field">
+        <label>City</label>
+        <input [(ngModel)]="inst.city" placeholder="Bangalore" />
+      </div>
+      <div class="field">
+        <label>State</label>
+        <input [(ngModel)]="inst.state" placeholder="Karnataka" />
+      </div>
+      <div class="field">
+        <label>Pincode</label>
+        <input [(ngModel)]="inst.pincode" placeholder="560010" />
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="margin-top:20px" (click)="saveInstitutionProfile()" [disabled]="instSaving()">
+      @if (instSaving()) { Saving... } @else { Save Institution Profile }
+    </button>
+  </div>
+}
 
 <div class="settings-grid">
   <!-- Profile -->

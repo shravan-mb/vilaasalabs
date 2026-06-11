@@ -23,9 +23,9 @@ export class SubscriptionsController {
 
   @Get('current')
   @Roles(Role.INSTITUTION_ADMIN, Role.VILAASALABS_SUPER_ADMIN, Role.VILAASALABS_DEV)
-  @ApiOperation({ summary: 'Get the active subscription for an institution' })
+  @ApiOperation({ summary: 'Get the active subscription for an institution (null if none)' })
   getCurrent(@Param('institutionId') institutionId: string) {
-    return this.service.getCurrent(institutionId);
+    return this.service.findCurrent(institutionId);
   }
 
   @Get('limits')

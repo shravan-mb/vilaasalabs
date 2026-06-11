@@ -15,20 +15,38 @@
 }
 
 .sidebar-logo {
-  height: 52px;
+  min-height: 52px;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 8px 16px;
   border-bottom: 1px solid #1f1f1f;
   flex-shrink: 0;
 
+  .logo-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+  }
+
   .logo-text {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 800;
     background: linear-gradient(135deg, #a78bfa, #7c3aed);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 188px;
+  }
+
+  .logo-powered {
+    font-size: 9px;
+    font-weight: 500;
+    color: #555;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
   }
 
   .logo-icon {

@@ -1,9 +1,10 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
-import { ILike, Repository } from 'typeorm';
+import { ILike, In, Repository } from 'typeorm';
 import { Role } from '../../common/enums/role.enum';
 import { Attendance, AttendanceStatus } from '../../database/entities/attendance.entity';
+import { Class } from '../../database/entities/class.entity';
 import { MeetingRequest, MeetingRequestStatus } from '../../database/entities/meeting-request.entity';
 import { ProctorNote } from '../../database/entities/proctor-note.entity';
 import { StudentParent } from '../../database/entities/student-parent.entity';
@@ -38,6 +39,8 @@ export class UsersService {
     private readonly testResultRepo: Repository<TestResult>,
     @InjectRepository(Attendance)
     private readonly attendanceRepo: Repository<Attendance>,
+    @InjectRepository(Class)
+    private readonly classRepo: Repository<Class>,
   ) {}
 
   async findAll(
@@ -47,9 +50,16 @@ export class UsersService {
     limit = 20,
     search?: string,
   ): Promise<PaginatedUsers> {
-    const where: any = { institution_id: institutionId };
-    if (role) where.role = role;
-    if (search) where.name = ILike(`%${search}%`);
+    const base: any = { institution_id: institutionId };
+    if (role) base.role = role;
+
+    // Search matches registration_number OR name
+    const where = search
+      ? [
+          { ...base, registration_number: ILike(`%${search}%`) },
+          { ...base, name: ILike(`%${search}%`) },
+        ]
+      : base;
 
     const [data, total] = await this.userRepo.findAndCount({
       where,
@@ -154,12 +164,38 @@ export class UsersService {
     });
   }
 
-  async findChildrenOfParent(institutionId: string, parentId: string): Promise<User[]> {
+  async linkStudentParent(institutionId: string, studentId: string, parentId: string): Promise<StudentParent> {
+    const [student, parent] = await Promise.all([
+      this.userRepo.findOne({ where: { id: studentId, institution_id: institutionId, role: Role.STUDENT } }),
+      this.userRepo.findOne({ where: { id: parentId, institution_id: institutionId, role: Role.PARENT } }),
+    ]);
+    if (!student) throw new NotFoundException('Student not found');
+    if (!parent) throw new NotFoundException('Parent not found');
+    const existing = await this.spRepo.findOne({ where: { institution_id: institutionId, student_id: studentId, parent_id: parentId } });
+    if (existing) return existing;
+    const link = this.spRepo.create({ institution_id: institutionId, student_id: studentId, parent_id: parentId });
+    return this.spRepo.save(link);
+  }
+
+  async findChildrenOfParent(institutionId: string, parentId: string): Promise<any[]> {
     const links = await this.spRepo.find({
       where: { institution_id: institutionId, parent_id: parentId },
       relations: { student: { proctor: true } },
     });
-    return links.map((l) => l.student).filter(Boolean);
+    const students = links.map((l) => l.student).filter(Boolean);
+
+    // Attach class info (name, section, academic_year) for each student
+    const classIds = [...new Set(students.map(s => s.class_id).filter(Boolean))];
+    let classMap = new Map<string, any>();
+    if (classIds.length) {
+      const classes = await this.classRepo.findBy({ id: In(classIds) });
+      classes.forEach(c => classMap.set(c.id, c));
+    }
+
+    return students.map(s => ({
+      ...s,
+      class: s.class_id ? classMap.get(s.class_id) ?? null : null,
+    }));
   }
 
   async countByRole(institutionId: string): Promise<Record<string, number>> {

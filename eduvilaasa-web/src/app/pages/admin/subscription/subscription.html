@@ -73,9 +73,10 @@
 
       <div class="upgrade-summary">
         <span>You will pay: <strong>₹{{ selectedPrice | number }}</strong> for {{ selectedCycle === 'annual' ? '1 year' : '1 month' }}</span>
-        <button class="btn btn-primary" (click)="startPayment()" [disabled]="paymentLoading()">
-          @if (paymentLoading()) { Processing... } @else { Pay ₹{{ selectedPrice | number }} with Razorpay }
-        </button>
+        <div class="contact-notice">
+          <span>📞</span>
+          <span>To activate or extend your plan, contact <strong>Vilaasalabs support</strong> — <strong>hello&#64;vilaasalabs.com</strong></span>
+        </div>
       </div>
     </div>
   }

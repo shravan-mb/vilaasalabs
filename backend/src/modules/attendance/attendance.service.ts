@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, IsNull, Repository } from 'typeorm';
 import { Attendance, AttendanceStatus } from '../../database/entities/attendance.entity';
 import { AttendanceQueryDto } from './dto/attendance-query.dto';
 import { MarkAttendanceDto } from './dto/mark-attendance.dto';
@@ -13,13 +13,15 @@ export class AttendanceService {
   ) {}
 
   async mark(institutionId: string, markedById: string, dto: MarkAttendanceDto): Promise<Attendance[]> {
-    // Prevent re-marking the same class on the same date
-    const alreadyMarked = await this.attendanceRepo.findOne({
-      where: { institution_id: institutionId, class_id: dto.class_id, date: dto.date },
-    });
+    // Prevent re-marking the same class+subject on the same date
+    const where: any = { institution_id: institutionId, class_id: dto.class_id, date: dto.date };
+    where.subject_name = dto.subject_name ? dto.subject_name : IsNull();
+
+    const alreadyMarked = await this.attendanceRepo.findOne({ where });
     if (alreadyMarked) {
+      const subjectLabel = dto.subject_name ? ` (${dto.subject_name})` : '';
       throw new BadRequestException(
-        `Attendance for class ${dto.class_id} on ${dto.date} has already been marked. Use update instead.`,
+        `Attendance for this class${subjectLabel} on ${dto.date} has already been marked. Use update instead.`,
       );
     }
 
@@ -28,6 +30,7 @@ export class AttendanceService {
         institution_id: institutionId,
         class_id: dto.class_id,
         date: dto.date,
+        subject_name: dto.subject_name ?? null,
         student_id: entry.student_id,
         marked_by: markedById,
         status: entry.status,
@@ -58,6 +61,7 @@ export class AttendanceService {
 
     if (query.student_id) where.student_id = query.student_id;
     if (query.class_id) where.class_id = query.class_id;
+    if (query.subject_name) where.subject_name = query.subject_name;
     if (query.from_date && query.to_date) {
       where.date = Between(query.from_date, query.to_date);
     } else if (query.from_date) {
@@ -75,9 +79,12 @@ export class AttendanceService {
     institutionId: string,
     classId: string,
     date: string,
+    subjectName?: string,
   ): Promise<Attendance[]> {
+    const where: any = { institution_id: institutionId, class_id: classId, date };
+    if (subjectName) where.subject_name = subjectName;
     return this.attendanceRepo.find({
-      where: { institution_id: institutionId, class_id: classId, date },
+      where,
       relations: { student: true },
       order: { student: { name: 'ASC' } },
     });
@@ -106,9 +113,107 @@ export class AttendanceService {
     return { total, present, absent, late, percentage };
   }
 
-  async getClassReport(institutionId: string, classId: string, from?: string, to?: string) {
+  // ── Day Sheet: student × subject matrix for a single date ───────────────────
+
+  async getDaySheet(institutionId: string, classId: string, date: string) {
+    const records = await this.attendanceRepo.find({
+      where: { institution_id: institutionId, class_id: classId, date },
+      relations: { student: true, teacher: true },
+      order: { student: { name: 'ASC' } },
+    });
+
+    // Unique subjects for this day (null → 'General')
+    const subjectSet = new Set<string>();
+    for (const r of records) subjectSet.add(r.subject_name ?? 'General');
+    const subjects = [...subjectSet].sort();
+
+    // Teacher name per subject (first teacher found per subject)
+    const teacherBySubject: Record<string, string> = {};
+    for (const r of records) {
+      const key = r.subject_name ?? 'General';
+      if (!teacherBySubject[key]) teacherBySubject[key] = r.teacher?.name ?? '—';
+    }
+
+    // Per-student rows
+    const studentMap = new Map<string, { name: string; cells: Record<string, { status: string; id: string; remarks: string }> }>();
+    for (const r of records) {
+      const key = r.subject_name ?? 'General';
+      if (!studentMap.has(r.student_id)) {
+        studentMap.set(r.student_id, { name: r.student?.name ?? 'Unknown', cells: {} });
+      }
+      studentMap.get(r.student_id)!.cells[key] = { status: r.status, id: r.id, remarks: r.remarks ?? '' };
+    }
+
+    const rows = Array.from(studentMap.entries()).map(([student_id, s]) => ({
+      student_id,
+      student_name: s.name,
+      cells: s.cells,
+      present_count: Object.values(s.cells).filter(c => c.status === 'present' || c.status === 'late').length,
+      absent_count: Object.values(s.cells).filter(c => c.status === 'absent').length,
+    }));
+
+    return { date, subjects, teacher_by_subject: teacherBySubject, rows };
+  }
+
+  // ── Student timeline: records grouped by date with per-subject breakdown ─────
+
+  async getStudentAttendanceTimeline(institutionId: string, studentId: string, fromDate: string, toDate: string) {
+    const records = await this.attendanceRepo.find({
+      where: {
+        institution_id: institutionId,
+        student_id: studentId,
+        date: Between(fromDate, toDate),
+      },
+      order: { date: 'DESC' },
+    });
+
+    // Group by date
+    const byDate = new Map<string, any[]>();
+    for (const r of records) {
+      if (!byDate.has(r.date)) byDate.set(r.date, []);
+      byDate.get(r.date)!.push({
+        id:      r.id,
+        subject: r.subject_name ?? 'General',
+        status:  r.status,
+        remarks: r.remarks ?? '',
+      });
+    }
+
+    const totalPeriods   = records.length;
+    const presentPeriods = records.filter(r => r.status === AttendanceStatus.PRESENT || r.status === AttendanceStatus.LATE).length;
+    const absentPeriods  = records.filter(r => r.status === AttendanceStatus.ABSENT).length;
+    const latePeriods    = records.filter(r => r.status === AttendanceStatus.LATE).length;
+
+    const days = Array.from(byDate.entries())
+      .map(([date, periods]) => ({
+        date,
+        periods: periods.sort((a, b) => a.subject.localeCompare(b.subject)),
+        present_count: periods.filter(p => p.status === 'present' || p.status === 'late').length,
+        absent_count:  periods.filter(p => p.status === 'absent').length,
+        late_count:    periods.filter(p => p.status === 'late').length,
+        total_count:   periods.length,
+        has_absent:    periods.some(p => p.status === 'absent'),
+        all_present:   periods.every(p => p.status === 'present' || p.status === 'late'),
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    return {
+      summary: {
+        total_periods:   totalPeriods,
+        present_periods: presentPeriods,
+        absent_periods:  absentPeriods,
+        late_periods:    latePeriods,
+        total_days:      byDate.size,
+        percentage:      totalPeriods > 0 ? Math.round((presentPeriods / totalPeriods) * 100) : 0,
+      },
+      days,
+    };
+  }
+
+  async getClassReport(institutionId: string, classId: string, from?: string, to?: string, subjectName?: string) {
     const where: any = { institution_id: institutionId, class_id: classId };
     if (from && to) where.date = Between(from, to);
+    if (subjectName) where.subject_name = subjectName;
 
     const records = await this.attendanceRepo.find({ where, relations: { student: true } });
 

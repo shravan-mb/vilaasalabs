@@ -73,8 +73,21 @@
         </div>
 
         <div class="field">
-          <label>Registration / UDISE Number <span class="hint">optional</span></label>
-          <input [(ngModel)]="form.registration_number" name="registration_number" placeholder="e.g. 29140108303 or KA/SCH/2024/001" />
+          <label>
+            Registration / UDISE Number
+            @if (requiresRegistration()) {
+              <span class="required-star">*</span>
+            } @else {
+              <span class="hint">optional</span>
+            }
+          </label>
+          <input [(ngModel)]="form.registration_number" name="registration_number"
+            placeholder="e.g. 29140108303 or KA/SCH/2024/001"
+            [class.invalid]="isInvalid('registration_number')"
+            (blur)="touch('registration_number')" />
+          @if (isInvalid('registration_number')) {
+            <span class="field-error">Registration / UDISE Number is required for {{ form.type | titlecase }}</span>
+          }
         </div>
 
         <div class="field">

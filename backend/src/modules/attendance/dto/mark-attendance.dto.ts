@@ -21,6 +21,10 @@ export class MarkAttendanceDto {
   @IsDateString()
   date: string;
 
+  @IsOptional()
+  @IsString()
+  subject_name?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AttendanceEntryDto)

@@ -7,6 +7,24 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton';
 import { environment } from '../../../../environments/environment';
 
+const DEPARTMENTS = [
+  'Administration',
+  'Finance / Accounts',
+  'Fee Collection',
+  'Library',
+  'Canteen',
+  'Security',
+  'Transport',
+  'IT / Computer Lab',
+  'Housekeeping / Maintenance',
+  'Sports',
+  'Other',
+];
+
+const STAFF_ROLES = [
+  { value: 'institution_staff', label: 'Fee Collector / Cashier', desc: 'Can collect fees, view students, view reports' },
+];
+
 @Component({
   selector: 'app-staff',
   standalone: true,
@@ -27,10 +45,13 @@ export class StaffPage implements OnInit {
   deleteTarget = signal<any>(null);
   saving = signal(false);
 
-  form = { name: '', email: '', phone: '', password: '', department: '' };
+  departments = DEPARTMENTS;
+  staffRoles = STAFF_ROLES;
+
+  form = { name: '', email: '', phone: '', password: '', department: '', role: 'institution_staff' };
 
   editTarget = signal<any>(null);
-  editForm = { name: '', email: '', phone: '', department: '' };
+  editForm = { name: '', email: '', phone: '', department: '', role: 'institution_staff' };
   editSaving = signal(false);
 
   passwordTarget = signal<any>(null);
@@ -44,17 +65,22 @@ export class StaffPage implements OnInit {
   load() {
     this.loading.set(true);
     this.http.get<any>(`${this.base}?role=institution_staff&limit=100`).subscribe({
-      next: (res) => { this.staff.set(res.data ?? res); this.loading.set(false); },
+      next: (res) => {
+        const list: any[] = res.data ?? res;
+        this.staff.set([...list].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')));
+        this.loading.set(false);
+      },
       error: () => { this.toast.error('Failed to load staff'); this.loading.set(false); },
     });
   }
 
-  openForm() { this.form = { name: '', email: '', phone: '', password: '', department: '' }; this.showForm.set(true); }
+  openForm() { this.form = { name: '', email: '', phone: '', password: 'Staff@1234', department: '', role: 'institution_staff' }; this.showForm.set(true); }
 
   save() {
-    if (!this.form.name || !this.form.password) { this.toast.error('Name and password are required'); return; }
+    if (!this.form.name || !this.form.phone) { this.toast.error('Name and phone number are required'); return; }
+    if (!this.form.password || this.form.password.length < 8) { this.toast.error('Password must be at least 8 characters'); return; }
     this.saving.set(true);
-    const payload: any = { name: this.form.name, phone: this.form.phone, password: this.form.password, role: 'institution_staff' };
+    const payload: any = { name: this.form.name, phone: this.form.phone, password: this.form.password, role: this.form.role };
     if (this.form.email) payload.email = this.form.email;
     if (this.form.department) payload.department = this.form.department;
     this.http.post(this.base, payload).subscribe({
@@ -64,14 +90,14 @@ export class StaffPage implements OnInit {
   }
 
   openEdit(m: any) {
-    this.editForm = { name: m.name, email: m.email ?? '', phone: m.phone ?? '', department: m.department ?? '' };
+    this.editForm = { name: m.name, email: m.email ?? '', phone: m.phone ?? '', department: m.department ?? '', role: m.role ?? 'institution_staff' };
     this.editTarget.set(m);
   }
 
   saveEdit() {
     if (!this.editForm.name.trim()) { this.toast.error('Name is required'); return; }
     this.editSaving.set(true);
-    const payload: any = { name: this.editForm.name, phone: this.editForm.phone };
+    const payload: any = { name: this.editForm.name, phone: this.editForm.phone, role: this.editForm.role };
     if (this.editForm.email) payload.email = this.editForm.email;
     if (this.editForm.department) payload.department = this.editForm.department;
     this.http.patch(`${this.base}/${this.editTarget().id}`, payload).subscribe({

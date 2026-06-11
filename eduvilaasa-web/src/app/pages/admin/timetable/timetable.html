@@ -43,7 +43,7 @@
           <label>Day *</label>
           <select [(ngModel)]="form.day_of_week">
             @for (d of days; track $index; let i = $index) {
-              <option [value]="i">{{ d }}</option>
+              <option [value]="i + 1">{{ d }}</option>
             }
           </select>
         </div>
@@ -85,17 +85,23 @@
       <div class="class-heading">{{ className(classId) }}</div>
       <div class="week-grid">
         @for (day of days; track $index; let d = $index) {
-          <div class="day-col">
-            <div class="day-header">{{ day }}</div>
-            @for (slot of slotsForDay(classId, d); track slot.id) {
-              <div class="slot-card">
-                <div class="slot-subject">{{ slot.subject_name }}</div>
+          <div class="day-col" [class.day-col-past]="isPastDay(d)" [class.day-col-today]="isToday(d)">
+            <div class="day-header">
+              {{ day }}
+              @if (isToday(d)) { <span class="day-today-dot"></span> }
+            </div>
+            @for (slot of slotsForDay(classId, d + 1); track slot.id) {
+              <div class="slot-card" [class.slot-past]="slotState(slot, d) === 'past'" [class.slot-live]="slotState(slot, d) === 'live'">
+                <div class="slot-subject">
+                  {{ slot.subject_name }}
+                  @if (slotState(slot, d) === 'live') { <span class="slot-now-badge">NOW</span> }
+                </div>
                 <div class="slot-time">{{ slot.start_time }} – {{ slot.end_time }}</div>
                 @if (slot.teacher_name) { <div class="slot-teacher">{{ slot.teacher_name }}</div> }
                 <button class="slot-del" (click)="deleteSlot(slot.id)" title="Delete">×</button>
               </div>
             }
-            @if (!slotsForDay(classId, d).length) {
+            @if (!slotsForDay(classId, d + 1).length) {
               <div class="slot-empty">—</div>
             }
           </div>

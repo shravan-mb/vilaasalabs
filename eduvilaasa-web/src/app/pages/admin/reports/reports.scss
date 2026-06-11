@@ -2,7 +2,8 @@
 .filters { display:flex; gap:16px; margin-bottom:16px; }
 .filters .field { flex:1; }
 .tab-btns { display:flex; gap:10px; }
-select { width:100%;padding:10px 12px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;color:#fff;font-size:14px; }
+select { width:100%;padding:10px 12px;background:var(--ev-input-bg, var(--bg-card));border:1px solid var(--ev-border, #2a2a2a);border-radius:8px;color:var(--ev-white, #1a1a1a);font-size:14px; }
+option { background:var(--ev-input-bg, var(--bg-card)); color:var(--ev-white, #1a1a1a); }
 .print-title { display:none; font-size:20px; font-weight:700; margin-bottom:16px; }
 @media print {
   .no-print { display:none !important; }

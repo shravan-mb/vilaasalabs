@@ -13,11 +13,12 @@ import { ThemeService } from '../../../core/services/theme.service';
 })
 export class AdminLayout {
   navItems = [
-    { label: 'Dashboard',  path: '/admin/dashboard',  icon: '📊' },
-    { label: 'Schools',    path: '/admin/schools',     icon: '🏫' },
-    { label: 'Revenue',    path: '/admin/revenue',     icon: '💰' },
-    { label: 'Broadcast',  path: '/admin/broadcast',   icon: '📢' },
-    { label: 'Onboard',    path: '/admin/schools/onboard', icon: '➕' },
+    { label: 'Dashboard',  path: '/admin/dashboard',       icon: '📊' },
+    { label: 'Schools',    path: '/admin/schools',          icon: '🏫' },
+    { label: 'Revenue',    path: '/admin/revenue',          icon: '💰' },
+    { label: 'Content',    path: '/admin/content',          icon: '📚' },
+    { label: 'Broadcast',  path: '/admin/broadcast',        icon: '📢' },
+    { label: 'Onboard',    path: '/admin/schools/onboard',  icon: '➕' },
   ];
 
   sidebarOpen = signal(typeof window !== 'undefined' ? window.innerWidth > 768 : true);

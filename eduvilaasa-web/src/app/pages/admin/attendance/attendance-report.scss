@@ -1,2 +1,135 @@
 .filter-card { margin-bottom: 20px; }
 .filter-row { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; .field { min-width: 160px; } }
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+
+.att-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.att-tab {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--ev-border);
+  background: transparent;
+  color: var(--ev-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  &:hover { background: var(--ev-hover); color: var(--ev-white); }
+  &.active { background: #1e0a3c; color: #a78bfa; border-color: #7c3aed; }
+}
+
+// ── Day Sheet matrix ─────────────────────────────────────────────────────────
+
+.ds-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ds-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ev-white);
+}
+
+.ds-date {
+  font-size: 13px;
+  color: var(--ev-muted);
+  margin-left: 10px;
+}
+
+.ds-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ds-legend {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--ev-dim);
+}
+
+.ds-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  &.ds-p { background: #16a34a; }
+  &.ds-a { background: #dc2626; }
+  &.ds-l { background: #d97706; }
+  &.ds-h { background: #6b7280; }
+}
+
+.ds-scroll { overflow-x: auto; }
+
+.ds-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 400px;
+
+  th, td { border: 1px solid var(--ev-border); }
+
+  th {
+    background: var(--ev-hover);
+    padding: 8px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ev-muted);
+    white-space: nowrap;
+  }
+}
+
+.ds-student-col { text-align: left; min-width: 160px; }
+.ds-sub-col { text-align: center; min-width: 100px; }
+.ds-summary-col { text-align: center; min-width: 70px; }
+
+.ds-sub-name { font-weight: 700; color: var(--ev-white); }
+.ds-teacher-name { font-size: 10px; font-weight: 400; color: var(--ev-dim); margin-top: 2px; }
+
+.ds-student-name {
+  padding: 9px 12px;
+  color: var(--ev-white);
+  font-weight: 500;
+}
+
+.ds-cell {
+  text-align: center;
+  padding: 9px 8px;
+  font-weight: 700;
+  font-size: 12px;
+
+  &.ds-p    { background: rgba(22, 163, 74, 0.15);  color: #4ade80; }
+  &.ds-a    { background: rgba(220, 38,  38, 0.15);  color: #f87171; }
+  &.ds-l    { background: rgba(217, 119, 6,  0.15);  color: #fbbf24; }
+  &.ds-h    { background: rgba(107, 114, 128, 0.15); color: #9ca3af; }
+  &.ds-none { color: var(--ev-dim); font-weight: 400; }
+}
+
+.ds-present-count {
+  text-align: center;
+  padding: 9px 8px;
+}
+
+.ds-pct-row td { border-top: 2px solid var(--ev-border); }
+
+.pct-ok   { color: #4ade80; font-weight: 700; }
+.pct-warn { color: #fbbf24; font-weight: 700; }
+
+.pct-ok-cell   { color: #4ade80;  font-weight: 700; text-align: center; padding: 9px 8px; }
+.pct-warn-cell { color: #fbbf24;  font-weight: 700; text-align: center; padding: 9px 8px; }
+.pct-bad-cell  { color: #f87171;  font-weight: 700; text-align: center; padding: 9px 8px; }

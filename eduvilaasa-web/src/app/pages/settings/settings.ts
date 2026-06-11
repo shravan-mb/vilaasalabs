@@ -33,10 +33,59 @@ export class SettingsPage implements OnInit {
   passwordError = signal('');
   touched: Record<string, boolean> = {};
 
+  // Institution profile form
+  inst = {
+    name: '', registration_number: '', phone: '', email: '',
+    address: '', city: '', state: '', pincode: '',
+    logo_url: '', principal_name: '',
+  };
+  instSaving = signal(false);
+  instSuccess = signal('');
+  instError = signal('');
+
+  get isAdmin() { return this.auth.hasRole('institution_admin'); }
+
   ngOnInit() {
     const user = this.auth.currentUser();
     this.name = user?.name ?? '';
     this.phone = user?.phone ?? '';
+    if (this.isAdmin) this.loadInstitutionProfile();
+  }
+
+  loadInstitutionProfile() {
+    const instId = this.auth.institutionId;
+    if (!instId) return;
+    this.http.get<any>(
+      `${environment.apiUrl}/institutions/${instId}/profile`,
+      { headers: { Authorization: `Bearer ${this.auth.accessToken}` } }
+    ).subscribe({
+      next: (data) => { this.inst = { ...this.inst, ...data }; },
+      error: () => {},
+    });
+  }
+
+  saveInstitutionProfile() {
+    const instId = this.auth.institutionId;
+    if (!instId) return;
+    if (!this.inst.name.trim()) { this.instError.set('Institution name cannot be empty'); return; }
+    this.instSaving.set(true);
+    this.instError.set('');
+    const { email: _email, ...payload } = this.inst;
+    this.http.patch<any>(
+      `${environment.apiUrl}/institutions/${instId}/profile`,
+      payload,
+      { headers: { Authorization: `Bearer ${this.auth.accessToken}` } }
+    ).subscribe({
+      next: () => {
+        this.instSuccess.set('Institution profile updated successfully');
+        this.instSaving.set(false);
+        setTimeout(() => this.instSuccess.set(''), 3000);
+      },
+      error: (err) => {
+        this.instError.set(err.error?.message || 'Failed to update institution profile');
+        this.instSaving.set(false);
+      },
+    });
   }
 
   touch(f: string) { this.touched[f] = true; }

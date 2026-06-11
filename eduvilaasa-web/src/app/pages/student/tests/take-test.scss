@@ -147,6 +147,8 @@
   &.answered {
     border-color: #2d1460;
     background: #0f0a1a;
+    .q-text    { color: #f1f5f9; }
+    .option-text { color: #c4b5fd; }
   }
 }
 
@@ -194,11 +196,16 @@
 
   input[type="radio"] { display: none; }
 
-  &:hover { border-color: #7c3aed; background: #1e0a3c; }
+  &:hover {
+    border-color: #7c3aed;
+    background: #1e0a3c;
+    .option-text { color: #e2e8f0; }
+  }
 
   &.selected {
     border-color: #7c3aed;
     background: #1e0a3c;
+    .option-text { color: #e2e8f0; }
 
     .option-bubble {
       background: #7c3aed;

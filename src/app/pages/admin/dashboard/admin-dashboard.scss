@@ -29,7 +29,7 @@
 
 .alert-section {
   background: #1a1200;
-  border: 1px solid #3d2e00;
+  border: 1px solid #92400e;
   border-radius: 10px;
   padding: 16px 20px;
   margin-bottom: 24px;
@@ -41,11 +41,11 @@
     justify-content: space-between;
     font-size: 13px;
     padding: 6px 0;
-    border-bottom: 1px solid #2a2200;
-    color: var(--vl-text);
+    border-bottom: 1px solid #3d2e00;
+    color: #fef3c7;
 
     &:last-child { border: none; }
-    span { color: var(--vl-muted); }
+    span { color: #fbbf24; }
   }
 }
 

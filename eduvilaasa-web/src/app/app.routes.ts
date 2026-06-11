@@ -57,6 +57,7 @@ export const routes: Routes = [
       { path: 'proctor-performance', loadComponent: () => import('./pages/teacher/proctor-performance/proctor-performance').then((m) => m.ProctorPerformancePage) },
       { path: 'meeting-requests', loadComponent: () => import('./pages/teacher/meeting-requests/meeting-requests').then((m) => m.TeacherMeetingRequestsPage) },
       { path: 'notices', loadComponent: () => import('./pages/teacher/notices/notices').then((m) => m.TeacherNoticesPage) },
+      { path: 'content-library', loadComponent: () => import('./pages/teacher/content-library/content-library').then((m) => m.TeacherContentLibraryPage) },
     ],
   },
 

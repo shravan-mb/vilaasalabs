@@ -24,7 +24,7 @@
       <button [class.active]="activeTab()==='info'"         (click)="activeTab.set('info')">Info</button>
       <button [class.active]="activeTab()==='subscription'" (click)="activeTab.set('subscription')">Subscription</button>
       <button [class.active]="activeTab()==='users'"        (click)="activeTab.set('users')">Users</button>
-      <button [class.active]="activeTab()==='settings'"     (click)="activeTab.set('settings')">⚙ Settings</button>
+      <button [class.active]="activeTab()==='settings'"     (click)="activeTab.set('settings'); loadContentAccess()">⚙ Settings</button>
     </div>
 
     <!-- ── Info tab ──────────────────────────────────────────────────────── -->
@@ -141,6 +141,36 @@
         <button class="btn-primary" style="margin-top:20px" (click)="saveFlags()" [disabled]="flagSaving()">
           {{ flagSaving() ? 'Saving...' : 'Save Settings' }}
         </button>
+      </div>
+
+      <!-- Content Pack Access -->
+      <div class="card" style="margin-top:20px">
+        <h3>Content Pack Access</h3>
+        <p class="settings-desc">Enable board-specific content packs (syllabus, notes, question banks, test templates) for this institution. This is a paid add-on — only enable after confirming the purchase.</p>
+
+        @if (contentAccessLoading()) {
+          <p style="color:var(--vl-muted);font-size:13px">Loading boards…</p>
+        } @else if (!contentAccess().length) {
+          <p style="color:var(--vl-muted);font-size:13px">No content boards configured. Go to the <a routerLink="/admin/content" style="color:var(--vl-accent)">Content Library</a> to create boards first.</p>
+        } @else {
+          <div class="flag-list" style="margin-top:12px">
+            @for (item of contentAccess(); track item.board.id) {
+              <div class="flag-row">
+                <div class="flag-info">
+                  <span class="flag-label">{{ item.board.name }}</span>
+                  <span class="flag-desc">{{ item.board.code }} · {{ item.board.description || 'Board-specific syllabus, notes, Q-bank and tests' }}</span>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox"
+                    [checked]="item.is_enabled"
+                    [disabled]="savingContentAccess()[item.board.id]"
+                    (change)="toggleContentAccess(item.board.id, $any($event.target).checked)" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            }
+          </div>
+        }
       </div>
     }
   }

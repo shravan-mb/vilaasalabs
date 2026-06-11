@@ -10,33 +10,32 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './my-attendance.html',
 })
 export class MyAttendance implements OnInit {
-  private api = inject(ApiService);
+  private api  = inject(ApiService);
   private auth = inject(AuthService);
 
-  records = signal<any[]>([]);
-  summary = signal<any>(null);
-  loading = signal(false);
+  timeline = signal<{ summary: any; days: any[] } | null>(null);
+  loading  = signal(false);
 
   from = this.monthStart();
-  to = this.today();
+  to   = this.today();
 
   ngOnInit() { this.load(); }
 
   load() {
-    const userId = this.auth.currentUser()?.id;
-    if (!userId) return;
     this.loading.set(true);
-    this.api.get<any[]>('attendance/my', { from_date: this.from, to_date: this.to }).subscribe({
-      next: (data) => { this.records.set(data); this.loading.set(false); },
+    this.timeline.set(null);
+    this.api.get<any>('attendance/my/timeline', { from: this.from, to: this.to }).subscribe({
+      next: (data) => { this.timeline.set(data); this.loading.set(false); },
       error: () => this.loading.set(false),
-    });
-    this.api.get<any>(`attendance/student/${userId}/summary`, { from: this.from, to: this.to }).subscribe({
-      next: (data) => this.summary.set(data),
     });
   }
 
-  statusClass(s: string) {
-    return { present: 'badge-green', absent: 'badge-red', late: 'badge-yellow', holiday: 'badge-gray' }[s] ?? 'badge-gray';
+  subjectClass(status: string): string {
+    return { present: 'pill-present', absent: 'pill-absent', late: 'pill-late', holiday: 'pill-holiday' }[status] ?? 'pill-default';
+  }
+
+  formatDate(d: string): string {
+    return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   private today(): string { return new Date().toISOString().split('T')[0]; }

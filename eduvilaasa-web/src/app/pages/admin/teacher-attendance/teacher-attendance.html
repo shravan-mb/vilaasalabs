@@ -6,9 +6,9 @@
 </div>
 
 <div class="tabs">
-  <button [class.active]="activeTab()==='daily'"   (click)="activeTab.set('daily')">Daily Mark</button>
-  <button [class.active]="activeTab()==='monthly'" (click)="activeTab.set('monthly')">Monthly Summary</button>
-  <button [class.active]="activeTab()==='import'"  (click)="activeTab.set('import')">Biometric Import</button>
+  <button [class.active]="activeTab()==='daily'"   (click)="switchTab('daily')">Daily Mark</button>
+  <button [class.active]="activeTab()==='monthly'" (click)="switchTab('monthly')">Monthly Summary</button>
+  <button [class.active]="activeTab()==='import'"  (click)="switchTab('import')">Biometric Import</button>
 </div>
 
 <!-- ── Daily Mark Tab ──────────────────────────────────────────────────────── -->
@@ -29,7 +29,7 @@
 
     @if (dailyMsg()) { <div class="alert alert-success">{{ dailyMsg() }}</div> }
     @if (dailyErr()) { <div class="alert alert-error">{{ dailyErr() }}</div> }
-    @if (isMarked()) { <div class="alert alert-info">Attendance already marked for this date. Saving will overwrite it.</div> }
+    @if (isMarked() && !dailyMsg()) { <div class="alert alert-info">Attendance has been recorded for this date. Any changes you save will update existing records.</div> }
 
     @if (loadingDaily()) {
       <p class="loading-text">Loading teachers...</p>
@@ -115,6 +115,10 @@
     } @else if (summary().length === 0) {
       <p class="empty-text">No attendance records for this month.</p>
     } @else {
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px">
+        <button class="btn btn-outline" style="font-size:13px" (click)="exportMonthlyCsv()">Export CSV</button>
+        <button class="btn btn-outline" style="font-size:13px" (click)="printMonthlyReport()">Print / PDF</button>
+      </div>
       <table class="table">
         <thead>
           <tr>

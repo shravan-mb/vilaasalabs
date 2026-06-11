@@ -35,15 +35,20 @@ export class OnboardSchool {
     this.touched[field] = true;
   }
 
+  requiresRegistration(): boolean {
+    return this.form.type === 'school' || this.form.type === 'college';
+  }
+
   isInvalid(field: string): boolean {
     if (!this.touched[field]) return false;
     switch (field) {
-      case 'name':           return !this.form.name.trim();
-      case 'subdomain':      return !SUBDOMAIN_REGEX.test(this.form.subdomain);
-      case 'email':          return !this.form.email.includes('@');
-      case 'admin_name':     return !this.form.admin_name.trim();
-      case 'admin_password': return !PASSWORD_REGEX.test(this.form.admin_password);
-      default:               return false;
+      case 'name':                return !this.form.name.trim();
+      case 'subdomain':           return !SUBDOMAIN_REGEX.test(this.form.subdomain);
+      case 'email':               return !this.form.email.includes('@');
+      case 'admin_name':          return !this.form.admin_name.trim();
+      case 'admin_password':      return !PASSWORD_REGEX.test(this.form.admin_password);
+      case 'registration_number': return this.requiresRegistration() && !this.form.registration_number.trim();
+      default:                    return false;
     }
   }
 
@@ -64,12 +69,10 @@ export class OnboardSchool {
   }
 
   onSubmit() {
-    // touch all required fields to trigger red borders before submit
-    ['name', 'subdomain', 'email', 'admin_name', 'admin_password'].forEach(f => this.touch(f));
-
-    if (['name', 'subdomain', 'email', 'admin_name', 'admin_password'].some(f => this.isInvalid(f))) {
-      return;
-    }
+    const requiredFields = ['name', 'subdomain', 'email', 'admin_name', 'admin_password'];
+    if (this.requiresRegistration()) requiredFields.push('registration_number');
+    requiredFields.forEach(f => this.touch(f));
+    if (requiredFields.some(f => this.isInvalid(f))) return;
 
     this.loading.set(true);
     this.error.set('');

@@ -2,40 +2,88 @@
   <h1>My Attendance</h1>
 </div>
 
-<div class="filter-bar card" style="margin-bottom:20px">
+<div class="card" style="margin-bottom:20px">
   <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
     <div class="field"><label>From</label><input type="date" [(ngModel)]="from" /></div>
     <div class="field"><label>To</label><input type="date" [(ngModel)]="to" /></div>
-    <button class="btn btn-primary" (click)="load()" [disabled]="loading()">View</button>
+    <button class="btn btn-primary" (click)="load()" [disabled]="loading()">
+      @if (loading()) { Loading... } @else { View }
+    </button>
   </div>
 </div>
 
-@if (summary()) {
+@if (timeline()?.summary) {
   <div class="grid-stats" style="margin-bottom:24px">
-    <div class="stat-card"><div class="label">Total Days</div><div class="value">{{ summary().total }}</div></div>
-    <div class="stat-card"><div class="label">Present</div><div class="value" style="color:#4ade80">{{ summary().present }}</div></div>
-    <div class="stat-card"><div class="label">Absent</div><div class="value" style="color:#f87171">{{ summary().absent }}</div></div>
-    <div class="stat-card"><div class="label">Attendance %</div><div class="value">{{ summary().percentage }}%</div></div>
+    <div class="stat-card">
+      <div class="label">Total Sessions</div>
+      <div class="value">{{ timeline()!.summary.total_periods }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Present</div>
+      <div class="value" style="color:#4ade80">{{ timeline()!.summary.present_periods }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Absent</div>
+      <div class="value" style="color:#f87171">{{ timeline()!.summary.absent_periods }}</div>
+    </div>
+    @if (timeline()!.summary.late_periods > 0) {
+      <div class="stat-card">
+        <div class="label">Late</div>
+        <div class="value" style="color:#fbbf24">{{ timeline()!.summary.late_periods }}</div>
+      </div>
+    }
+    <div class="stat-card">
+      <div class="label">Attendance %</div>
+      <div class="value" [style.color]="timeline()!.summary.percentage >= 75 ? '#4ade80' : timeline()!.summary.percentage >= 50 ? '#fbbf24' : '#f87171'">
+        {{ timeline()!.summary.percentage }}%
+      </div>
+    </div>
   </div>
 }
 
 <div class="card">
   @if (loading()) {
-    <p style="color:#555">Loading...</p>
-  } @else if (records().length === 0) {
-    <div class="empty-state"><p>No records found for the selected period.</p></div>
+    <p style="color:var(--ev-dim)">Loading...</p>
+  } @else if (!timeline()?.days?.length) {
+    <div class="empty-state"><p>No attendance records for the selected period.</p></div>
   } @else {
-    <table class="table">
-      <thead><tr><th>Date</th><th>Status</th><th>Remarks</th></tr></thead>
-      <tbody>
-        @for (r of records(); track r.id) {
-          <tr>
-            <td>{{ r.date }}</td>
-            <td><span class="badge" [class]="statusClass(r.status)">{{ r.status }}</span></td>
-            <td>{{ r.remarks || '—' }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+    <div class="att-timeline">
+      @for (day of timeline()!.days; track day.date) {
+        <div class="att-day" [class.att-day-ok]="day.all_present" [class.att-day-warn]="day.has_absent">
+          <div class="att-day-date">
+            <span class="att-day-label">{{ formatDate(day.date) }}</span>
+            <span class="att-day-count" [class.count-ok]="!day.has_absent" [class.count-warn]="day.has_absent">
+              {{ day.present_count }}/{{ day.total_count }} present
+            </span>
+          </div>
+          <div class="att-subjects">
+            @for (p of day.periods; track p.id) {
+              <span class="att-pill" [class]="subjectClass(p.status)" [title]="p.remarks || p.status">
+                {{ p.subject }}
+              </span>
+            }
+          </div>
+        </div>
+      }
+    </div>
   }
 </div>
+
+<style>
+  .att-timeline { display:flex; flex-direction:column; gap:10px; }
+  .att-day { padding:12px 16px; border-radius:10px; border:1px solid var(--ev-border); background:var(--ev-hover); }
+  .att-day-warn { border-left:3px solid #f87171; }
+  .att-day-ok   { border-left:3px solid #4ade80; }
+  .att-day-date { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .att-day-label { font-size:13px; font-weight:600; color:var(--ev-white); }
+  .att-day-count { font-size:12px; font-weight:600; }
+  .count-ok   { color:#4ade80; }
+  .count-warn { color:#f87171; }
+  .att-subjects { display:flex; flex-wrap:wrap; gap:6px; }
+  .att-pill { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .pill-present { background:rgba(22,163,74,0.2);  color:#4ade80; }
+  .pill-absent  { background:rgba(220,38,38,0.2);  color:#f87171; }
+  .pill-late    { background:rgba(217,119,6,0.2);  color:#fbbf24; }
+  .pill-holiday { background:rgba(107,114,128,0.2);color:#9ca3af; }
+  .pill-default { background:var(--ev-hover); color:var(--ev-muted); }
+</style>

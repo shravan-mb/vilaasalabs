@@ -79,6 +79,12 @@ export class TeacherAttendancePage implements OnInit {
 
   get institutionId() { return this.auth.institutionId!; }
 
+  switchTab(tab: 'daily' | 'monthly' | 'import') {
+    this.activeTab.set(tab);
+    if (tab === 'daily') this.loadDaily();
+    else if (tab === 'monthly') this.loadMonthly();
+  }
+
   countPresent()  { return this.rows().filter(r => r.selected === 'present').length; }
   countAbsent()   { return this.rows().filter(r => r.selected === 'absent').length; }
   countLate()     { return this.rows().filter(r => r.selected === 'late').length; }
@@ -93,7 +99,7 @@ export class TeacherAttendancePage implements OnInit {
     this.loadingDaily.set(true);
     this.dailyMsg.set('');
     this.dailyErr.set('');
-    this.api.get<any[]>(`institutions/${this.institutionId}/teacher-attendance/date/${this.selectedDate}`).subscribe({
+    this.api.get<any[]>(`teacher-attendance/date/${this.selectedDate}`).subscribe({
       next: (data) => {
         this.rows.set(data.map((d) => ({
           teacher:  d.teacher,
@@ -115,7 +121,7 @@ export class TeacherAttendancePage implements OnInit {
     this.savingDaily.set(true);
     this.dailyErr.set('');
     const entries = this.rows().map((r) => ({ teacher_id: r.teacher.id, status: r.selected }));
-    this.api.post(`institutions/${this.institutionId}/teacher-attendance/mark`, {
+    this.api.post(`teacher-attendance/mark`, {
       date: this.selectedDate,
       entries,
     }).subscribe({
@@ -136,7 +142,8 @@ export class TeacherAttendancePage implements OnInit {
   loadMonthly() {
     this.loadingMonthly.set(true);
     this.api.get<MonthlySummaryRow[]>(
-      `institutions/${this.institutionId}/teacher-attendance/monthly-summary?year=${this.selectedYear}&month=${this.selectedMonth}`
+      `teacher-attendance/monthly-summary`,
+      { year: String(this.selectedYear), month: String(this.selectedMonth) }
     ).subscribe({
       next: (data) => { this.summary.set(data); this.loadingMonthly.set(false); },
       error: () => this.loadingMonthly.set(false),
@@ -182,6 +189,98 @@ export class TeacherAttendancePage implements OnInit {
       next: (res) => { this.importResult.set(res); this.importing.set(false); this.loadDaily(); this.loadMonthly(); },
       error: (e)  => { this.importErr.set(e.error?.message || 'Import failed.'); this.importing.set(false); },
     });
+  }
+
+  exportMonthlyCsv() {
+    const rows = this.summary();
+    if (!rows.length) return;
+    const monthLabel = this.months.find(m => m.value === this.selectedMonth)?.label ?? this.selectedMonth;
+    const header = 'Teacher,Present,Absent,Late,Half Day,Leave,Total Days,Attendance %';
+    const lines = rows.map(r =>
+      [`"${r.teacher_name}"`, r.present, r.absent, r.late, r.half_day, r.leave, r.total, `${r.percentage}%`].join(',')
+    );
+    const csv = [header, ...lines].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `teacher-attendance-${monthLabel}-${this.selectedYear}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  printMonthlyReport() {
+    const rows = this.summary();
+    if (!rows.length) return;
+    const monthLabel = this.months.find(m => m.value === this.selectedMonth)?.label ?? this.selectedMonth;
+    const genDate = new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    const tableRows = rows.map((r, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td><strong>${r.teacher_name}</strong></td>
+        <td style="color:#16a34a">${r.present}</td>
+        <td style="color:#dc2626">${r.absent}</td>
+        <td style="color:#d97706">${r.late}</td>
+        <td style="color:#8b5cf6">${r.half_day}</td>
+        <td style="color:#6b7280">${r.leave}</td>
+        <td>${r.total}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:8px;background:#f3f4f6;border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${r.percentage}%;background:${r.percentage >= 75 ? '#22c55e' : '#ef4444'};border-radius:4px"></div>
+            </div>
+            <span style="font-size:12px;font-weight:600;color:${r.percentage >= 75 ? '#16a34a' : '#dc2626'}">${r.percentage}%</span>
+          </div>
+        </td>
+      </tr>`).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Teacher Attendance — ${monthLabel} ${this.selectedYear}</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Segoe UI',Arial,sans-serif; color:#1a1a1a; background:#fff; }
+  .page { max-width:820px; margin:0 auto; padding:32px 28px; }
+  .header { border-bottom:3px solid #7c3aed; padding-bottom:16px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-end; }
+  .report-title { font-size:22px; font-weight:700; }
+  .report-sub { font-size:13px; color:#6b7280; margin-top:4px; }
+  .report-meta { text-align:right; font-size:12px; color:#6b7280; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { background:#f3f4f6; padding:9px 10px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#6b7280; }
+  td { padding:9px 10px; border-bottom:1px solid #f3f4f6; }
+  .footer { margin-top:24px; padding-top:12px; border-top:1px dashed #d1d5db; font-size:11px; color:#9ca3af; }
+  .no-print { display:flex; gap:10px; justify-content:center; margin-top:24px; }
+  @media print { .no-print { display:none !important; } body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="report-title">Teacher Attendance Report</div>
+      <div class="report-sub">Month: <strong>${monthLabel} ${this.selectedYear}</strong> &nbsp;|&nbsp; Total Teachers: <strong>${rows.length}</strong></div>
+    </div>
+    <div class="report-meta">Generated: ${genDate}</div>
+  </div>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Teacher</th><th>Present</th><th>Absent</th><th>Late</th><th>Half Day</th><th>Leave</th><th>Total Days</th><th>Attendance %</th></tr>
+    </thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+  <div class="footer">✦ This is a computer-generated attendance report.</div>
+  <div class="no-print">
+    <button onclick="window.print()" style="padding:10px 28px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">🖨 Print / Save as PDF</button>
+    <button onclick="window.close()" style="padding:10px 20px;background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:8px;font-size:14px;cursor:pointer">Close</button>
+  </div>
+</div>
+<script>window.onload = function() { setTimeout(function() { window.print(); }, 400); };</script>
+</body>
+</html>`;
+
+    const w = window.open('', '_blank', 'width=880,height=900');
+    if (w) { w.document.write(html); w.document.close(); }
   }
 
   downloadTemplate() {

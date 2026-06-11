@@ -23,6 +23,17 @@
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
             <div>
               <div style="font-weight:600;color:#e5e5e5;font-size:15px">{{ child.name }}</div>
+              @if (child.registration_number) {
+                <div style="font-size:12px;color:#a78bfa;font-weight:600;margin-top:4px;letter-spacing:.03em">
+                  Reg # {{ child.registration_number }}
+                </div>
+              }
+              @if (child.class?.name) {
+                <div style="color:#888;font-size:12px;margin-top:2px">
+                  Class: {{ child.class.name }}{{ child.class.section ? ' — ' + child.class.section : '' }}
+                  @if (child.class.academic_year) { · {{ child.class.academic_year }} }
+                </div>
+              }
               @if (child.phone) { <div style="color:#888;font-size:13px;margin-top:2px">📞 {{ child.phone }}</div> }
               @if (child.email) { <div style="color:#888;font-size:13px;margin-top:2px">✉ {{ child.email }}</div> }
             </div>

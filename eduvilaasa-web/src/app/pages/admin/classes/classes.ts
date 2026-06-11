@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -18,6 +18,23 @@ export class ClassesPage implements OnInit {
 
   classes = signal<any[]>([]);
   loading = signal(true);
+  filterYear = signal('');
+
+  academicYears = computed(() => {
+    const years = [...new Set(this.classes().map((c) => c.academic_year).filter(Boolean))];
+    return years.sort().reverse();
+  });
+
+  sortedClasses = computed(() => {
+    const year = this.filterYear();
+    const list = year ? this.classes().filter((c) => c.academic_year === year) : this.classes();
+    return [...list].sort((a, b) => {
+      const aNum = parseInt(a.name.match(/\d+/)?.[0] ?? '0', 10) || 0;
+      const bNum = parseInt(b.name.match(/\d+/)?.[0] ?? '0', 10) || 0;
+      if (aNum !== bNum) return aNum - bNum;
+      return (a.section || '').localeCompare(b.section || '');
+    });
+  });
   showForm = signal(false);
   saving = signal(false);
   error = signal('');
@@ -33,7 +50,7 @@ export class ClassesPage implements OnInit {
   load() {
     this.loading.set(true);
     this.api.get<any[]>('classes').subscribe({
-      next: (data) => { this.classes.set(data); this.loading.set(false); },
+      next: (data) => { this.classes.set((data ?? []).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }))); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
   }

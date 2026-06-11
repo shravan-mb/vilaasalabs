@@ -52,25 +52,62 @@ export class AttendanceController {
 
   @Get('class/:classId/date/:date')
   @Roles(Role.TEACHER, Role.INSTITUTION_ADMIN, Role.INSTITUTION_STAFF)
-  @ApiOperation({ summary: 'Get full attendance sheet for a class on a specific date' })
+  @ApiOperation({ summary: 'Get full attendance sheet for a class on a specific date (optionally filtered by subject)' })
   getClassSheet(
     @Param('institutionId') institutionId: string,
     @Param('classId') classId: string,
     @Param('date') date: string,
+    @Query('subject') subject?: string,
   ) {
-    return this.service.getClassAttendanceOnDate(institutionId, classId, date);
+    return this.service.getClassAttendanceOnDate(institutionId, classId, date, subject);
   }
 
   @Get('class-report')
   @Roles(Role.INSTITUTION_ADMIN, Role.INSTITUTION_STAFF, Role.TEACHER)
-  @ApiOperation({ summary: 'Class-wide attendance summary per student (for reports)' })
+  @ApiOperation({ summary: 'Class-wide attendance summary per student (optionally filtered by subject)' })
   classReport(
     @Param('institutionId') institutionId: string,
     @Query('class_id') classId: string,
     @Query('from') from?: string,
     @Query('to') to?: string,
+    @Query('subject') subject?: string,
   ) {
-    return this.service.getClassReport(institutionId, classId, from, to);
+    return this.service.getClassReport(institutionId, classId, from, to, subject);
+  }
+
+  @Get('class/:classId/day-sheet/:date')
+  @Roles(Role.TEACHER, Role.INSTITUTION_ADMIN, Role.INSTITUTION_STAFF)
+  @ApiOperation({ summary: 'Student × subject attendance matrix for a class on a specific date' })
+  getDaySheet(
+    @Param('institutionId') institutionId: string,
+    @Param('classId') classId: string,
+    @Param('date') date: string,
+  ) {
+    return this.service.getDaySheet(institutionId, classId, date);
+  }
+
+  @Get('my/timeline')
+  @Roles(Role.STUDENT)
+  @ApiOperation({ summary: "Student's own attendance grouped by date with per-subject breakdown" })
+  getMyTimeline(
+    @Param('institutionId') institutionId: string,
+    @CurrentUser() user: User,
+    @Query('from') from: string,
+    @Query('to') to: string,
+  ) {
+    return this.service.getStudentAttendanceTimeline(institutionId, user.id, from, to);
+  }
+
+  @Get('child/:studentId/timeline')
+  @Roles(Role.PARENT)
+  @ApiOperation({ summary: "Child's attendance grouped by date with per-subject breakdown" })
+  getChildTimeline(
+    @Param('institutionId') institutionId: string,
+    @Param('studentId') studentId: string,
+    @Query('from') from: string,
+    @Query('to') to: string,
+  ) {
+    return this.service.getStudentAttendanceTimeline(institutionId, studentId, from, to);
   }
 
   @Get('child/:studentId')

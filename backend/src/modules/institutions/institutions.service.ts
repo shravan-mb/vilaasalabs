@@ -112,6 +112,35 @@ export class InstitutionsService {
     await this.institutionRepo.remove(institution);
   }
 
+  async getProfile(id: string) {
+    const inst = await this.institutionRepo.findOne({ where: { id } });
+    if (!inst) throw new NotFoundException('Institution not found');
+    return {
+      name:                inst.name,
+      registration_number: inst.registration_number ?? '',
+      phone:               inst.phone ?? '',
+      email:               inst.email,
+      address:             inst.address ?? '',
+      city:                inst.city ?? '',
+      state:               inst.state ?? '',
+      pincode:             inst.pincode ?? '',
+      logo_url:            inst.logo_url ?? '',
+      principal_name:      inst.principal_name ?? '',
+    };
+  }
+
+  async updateProfile(id: string, dto: {
+    name?: string; registration_number?: string; phone?: string;
+    address?: string; city?: string; state?: string; pincode?: string;
+    logo_url?: string; principal_name?: string;
+  }) {
+    const inst = await this.institutionRepo.findOne({ where: { id } });
+    if (!inst) throw new NotFoundException('Institution not found');
+    Object.assign(inst, dto);
+    await this.institutionRepo.save(inst);
+    return this.getProfile(id);
+  }
+
   async getSettings(id: string): Promise<{ feature_flags: Record<string, boolean> }> {
     const inst = await this.institutionRepo.findOne({ where: { id }, select: { feature_flags: true } });
     if (!inst) throw new NotFoundException('Institution not found');

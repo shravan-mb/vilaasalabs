@@ -1,11 +1,17 @@
 <div class="page-header">
-  <h1>Dashboard</h1>
-  <p>Welcome back, {{ auth.currentUser()?.name }}</p>
+  <div>
+    <h1>Dashboard</h1>
+    <p>Welcome back, {{ auth.currentUser()?.name }}</p>
+  </div>
+  <button class="btn btn-ghost btn-sm" (click)="loadData()" [disabled]="loading()">
+    {{ loading() ? 'Loading…' : '↻ Refresh' }}
+  </button>
 </div>
 
 @if (loading()) {
   <p class="loading-text">Loading...</p>
-} @else {
+} @else if (isAdmin) {
+
   <div class="grid-stats">
     <div class="stat-card">
       <div class="label">Students</div>
@@ -27,27 +33,93 @@
 
   <div class="card subscription-card">
     <h3>Subscription</h3>
-    <div class="sub-grid">
-      <div>
-        <span class="sub-label">Plan</span>
-        <span class="sub-value">{{ planName | uppercase }}</span>
-      </div>
-      <div>
-        <span class="sub-label">Status</span>
-        <span class="badge" [class]="planStatus === 'active' || planStatus === 'trial' ? 'badge-green' : 'badge-red'">
-          {{ planStatus }}
-        </span>
-      </div>
-      <div>
-        <span class="sub-label">Expires</span>
-        <span class="sub-value">{{ planExpiry }}</span>
-      </div>
-      @if (daysLeft !== null) {
+    @if (subscription()) {
+      <div class="sub-grid">
         <div>
-          <span class="sub-label">Days Left</span>
-          <span class="sub-value" [class.warning]="daysLeft < 5">{{ daysLeft }}</span>
+          <span class="sub-label">Plan</span>
+          <span class="sub-value">{{ planName | uppercase }}</span>
         </div>
-      }
+        <div>
+          <span class="sub-label">Status</span>
+          <span class="badge" [class]="planStatus === 'active' || planStatus === 'trial' ? 'badge-green' : 'badge-red'">
+            {{ planStatus }}
+          </span>
+        </div>
+        <div>
+          <span class="sub-label">Expires</span>
+          <span class="sub-value">{{ planExpiry }}</span>
+        </div>
+        @if (daysLeft !== null) {
+          <div>
+            <span class="sub-label">Days Left</span>
+            <span class="sub-value" [class.warning]="daysLeft < 5">{{ daysLeft }}</span>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="sub-empty">No active subscription. Contact Vilaasalabs support to activate your plan.</p>
+    }
+  </div>
+
+} @else {
+
+  <!-- Staff / Cashier dashboard -->
+  <div class="grid-stats">
+    <div class="stat-card stat-card-green">
+      <div class="label">Today's Collections</div>
+      <div class="value">{{ (todaySummary()?.total_collected ?? 0) | currency:'INR':'symbol':'1.0-0' }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Transactions Today</div>
+      <div class="value">{{ todaySummary()?.transaction_count ?? 0 }}</div>
     </div>
   </div>
+
+  <div class="staff-quick-links">
+    <a [routerLink]="['/admin/fees']" class="quick-link">
+      <span class="quick-link-icon">💰</span>
+      <span>Collect Fees</span>
+    </a>
+    <a [routerLink]="['/admin/students']" class="quick-link">
+      <span class="quick-link-icon">🎓</span>
+      <span>Search Student</span>
+    </a>
+    <a [routerLink]="['/admin/reports']" class="quick-link">
+      <span class="quick-link-icon">📈</span>
+      <span>Reports</span>
+    </a>
+  </div>
+
+  <div class="card">
+    <h3>Recent Payments Today</h3>
+    @if (todaySummary()?.recent_payments?.length) {
+      <table class="recent-table">
+        <thead>
+          <tr>
+            <th>Receipt</th>
+            <th>Student</th>
+            <th>Reg #</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of todaySummary()!.recent_payments; track p.id) {
+            <tr>
+              <td><span class="receipt-no">{{ p.receipt_number }}</span></td>
+              <td>{{ p.student_name }}</td>
+              <td class="text-muted">{{ p.reg_no }}</td>
+              <td>{{ p.category_name }}</td>
+              <td class="amount-cell">{{ p.amount_paid | currency:'INR':'symbol':'1.0-0' }}</td>
+              <td class="text-muted">{{ p.created_at | date:'h:mm a' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else {
+      <p class="sub-empty">No payments recorded today yet.</p>
+    }
+  </div>
+
 }

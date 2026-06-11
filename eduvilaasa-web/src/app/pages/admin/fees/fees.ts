@@ -1,10 +1,12 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
+﻿import { CommonModule } from '@angular/common';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ReceiptService } from '../../../core/services/receipt.service';
 
-type Tab = 'categories' | 'structure' | 'collect';
+type Tab = 'categories' | 'structure' | 'collect' | 'pending';
 
 const FREQUENCIES = [
   { value: 'annual',   label: 'Annual'   },
@@ -21,68 +23,84 @@ const FREQUENCIES = [
   styleUrl: './fees.scss',
 })
 export class FeesPage implements OnInit {
-  activeTab = signal<Tab>('categories');
+  private auth = inject(AuthService);
+  activeTab = signal<Tab>(this.auth.hasRole('institution_admin') ? 'categories' : 'collect');
+
+  // â”€â”€ pending fees â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  pendingClassId   = '';
+  pendingData      = signal<any[]>([]);
+  pendingLoading   = signal(false);
   frequencies = FREQUENCIES;
 
-  // ── categories ────────────────────────────────────────────────────────────────
+  // â”€â”€ categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   categories  = signal<any[]>([]);
   catForm     = { name: '', description: '', frequency: 'annual' };
   editCat     = signal<any | null>(null);
   editCatForm = { name: '', description: '', frequency: 'annual' };
   catSaving   = signal(false);
 
-  // ── structure ─────────────────────────────────────────────────────────────────
+  // â”€â”€ structure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   classes      = signal<any[]>([]);
-  selClassId   = '';   // plain string — NOT a signal (avoids [(ngModel)] signal-corruption bug)
+  selClassId   = '';   // plain string â€” NOT a signal (avoids [(ngModel)] signal-corruption bug)
   structures   = signal<any[]>([]);
   structureAmounts: Record<string, { amount: string; due_date: string }> = {};
   structSaving = signal<Record<string, boolean>>({});
   structLoading = signal(false);
 
-  // ── copy structure ─────────────────────────────────────────────────────────────
+  // â”€â”€ copy structure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   showCopyModal     = signal(false);
   copyTargetIds: string[] = [];
   overwriteExisting = false;
   copySaving        = signal(false);
   copyResult        = signal<{ copied: number; skipped: number } | null>(null);
 
-  // ── collect payment ───────────────────────────────────────────────────────────
-  allStudents    = signal<any[]>([]);
-  studentSearch  = signal('');
+  // â”€â”€ collect payment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  searchResults  = signal<any[]>([]);
+  searchLoading  = signal(false);
+  studentSearch  = '';
   selStudent     = signal<any | null>(null);
   feeSummary     = signal<any | null>(null);
   summaryLoading = signal(false);
   payForm        = { fee_category_id: '', amount_paid: 0, payment_date: '', remarks: '' };
   paymentHistory = signal<any[]>([]);
-  paySaving      = signal(false);
-  lastReceipt    = signal('');
+  paySaving       = signal(false);
+  lastReceipt     = signal('');
+  lastReceiptId   = signal('');
 
-  // ── discount ──────────────────────────────────────────────────────────────────
+  private searchInput$ = new Subject<string>();
+
+  // â”€â”€ discount â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   showDiscountModal = signal(false);
   discountForm = { fee_category_id: '', discount_amount: 0, reason: '' };
   discSaving   = signal(false);
   discounts    = signal<any[]>([]);
 
-  filteredStudents = computed(() => {
-    const q = this.studentSearch().toLowerCase();
-    if (!q) return this.allStudents();
-    return this.allStudents().filter(
-      (s) => s.name.toLowerCase().includes(q) || (s.email ?? '').toLowerCase().includes(q),
-    );
-  });
-
   get isAdmin() { return this.auth.hasRole('institution_admin'); }
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  private receiptSvc = inject(ReceiptService);
+
+  constructor(private api: ApiService) {}
 
   ngOnInit() {
     this.loadCategories();
     this.loadClasses();
-    this.loadStudents();
     this.payForm.payment_date = new Date().toISOString().split('T')[0];
+
+    this.searchInput$.pipe(debounceTime(300), distinctUntilChanged()).subscribe((q) => {
+      if (!q.trim()) { this.searchResults.set([]); this.searchLoading.set(false); return; }
+      this.searchLoading.set(true);
+      this.api.get<any>('users', { role: 'student', search: q.trim(), limit: '20' }).subscribe({
+        next: (res) => { this.searchResults.set(res.data ?? res ?? []); this.searchLoading.set(false); },
+        error: () => this.searchLoading.set(false),
+      });
+    });
   }
 
-  // ── categories ────────────────────────────────────────────────────────────────
+  onStudentSearchInput() {
+    this.searchInput$.next(this.studentSearch);
+  }
+
+  // â”€â”€ categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   loadCategories() {
     this.api.get<any[]>('fees/categories').subscribe({ next: (c) => this.categories.set(c ?? []) });
@@ -123,14 +141,16 @@ export class FeesPage implements OnInit {
 
   freqLabel(val: string) { return FREQUENCIES.find((f) => f.value === val)?.label ?? val; }
 
-  // ── structure ─────────────────────────────────────────────────────────────────
+  // â”€â”€ structure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   loadClasses() {
-    this.api.get<any[]>('classes').subscribe({ next: (c) => this.classes.set(c ?? []) });
+    this.api.get<any[]>('classes').subscribe({
+      next: (c) => this.classes.set((c ?? []).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }))),
+    });
   }
 
   onClassSelect() {
-    const cid = this.selClassId;   // plain string access — no signal call
+    const cid = this.selClassId;   // plain string access â€” no signal call
     if (!cid) { this.structures.set([]); this.structureAmounts = {}; return; }
     this.structLoading.set(true);
     this.api.get<any[]>('fees/structures', { classId: cid }).subscribe({
@@ -176,7 +196,7 @@ export class FeesPage implements OnInit {
 
   structExists(catId: string) { return this.structures().some((s) => s.fee_category_id === catId); }
 
-  // ── copy structure ─────────────────────────────────────────────────────────────
+  // â”€â”€ copy structure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   otherClasses() { return this.classes().filter((c) => c.id !== this.selClassId); }
 
@@ -209,17 +229,13 @@ export class FeesPage implements OnInit {
     });
   }
 
-  // ── collect payment ───────────────────────────────────────────────────────────
-
-  loadStudents() {
-    this.api.get<any>('users', { role: 'student', limit: '500' }).subscribe({
-      next: (res) => this.allStudents.set(res.data ?? res ?? []),
-    });
-  }
+  // â”€â”€ collect payment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   selectStudent(student: any) {
     this.selStudent.set(student);
-    this.studentSearch.set('');
+    this.studentSearch = '';
+    this.searchResults.set([]);
+    this.searchInput$.next(''); // reset distinctUntilChanged so same term can fire later
     this.feeSummary.set(null);
     this.lastReceipt.set('');
     this.loadStudentSummary(student);
@@ -244,19 +260,40 @@ export class FeesPage implements OnInit {
     this.api.get<any[]>(`fees/discounts/${studentId}`).subscribe({ next: (d) => this.discounts.set(d ?? []) });
   }
 
+  selectedCategoryBalance(): number {
+    if (!this.payForm.fee_category_id || !this.feeSummary()) return 0;
+    const row = (this.feeSummary().rows ?? []).find((r: any) => r.fee_category_id === this.payForm.fee_category_id);
+    return row?.balance ?? 0;
+  }
+
+  onCategoryChange() {
+    const bal = this.selectedCategoryBalance();
+    this.payForm.amount_paid = bal > 0 ? bal : 0;
+  }
+
+  isAmountOverBalance(): boolean {
+    const bal = this.selectedCategoryBalance();
+    return bal > 0 && this.payForm.amount_paid > bal;
+  }
+
   recordPayment() {
     const s = this.selStudent();
     if (!s || !this.payForm.fee_category_id || !this.payForm.amount_paid) return;
+    if (this.isAmountOverBalance()) return;
     this.paySaving.set(true);
     this.api.post('fees/payments', { ...this.payForm, student_id: s.id }).subscribe({
       next: (p: any) => {
         this.lastReceipt.set(p.receipt_number);
+        this.lastReceiptId.set(p.id);
         this.payForm = { fee_category_id: '', amount_paid: 0, payment_date: new Date().toISOString().split('T')[0], remarks: '' };
         this.paySaving.set(false);
         this.loadStudentSummary(s);
         this.loadPaymentHistory(s.id);
       },
-      error: () => this.paySaving.set(false),
+      error: (err: any) => {
+        alert(err.error?.message || 'Failed to record payment');
+        this.paySaving.set(false);
+      },
     });
   }
 
@@ -291,13 +328,68 @@ export class FeesPage implements OnInit {
     });
   }
 
+  loadPendingFees() {
+    if (!this.pendingClassId) { this.pendingData.set([]); return; }
+    this.pendingLoading.set(true);
+    this.api.get<any[]>('fees/pending-summary', { classId: this.pendingClassId }).subscribe({
+      next: (d) => { this.pendingData.set(d ?? []); this.pendingLoading.set(false); },
+      error: () => this.pendingLoading.set(false),
+    });
+  }
+
+  pendingTotal() { return this.pendingData().reduce((s, r) => s + r.balance, 0); }
+  pendingStudentCount() { return this.pendingData().filter((r) => r.balance > 0).length; }
+
+  exportPendingCSV() {
+    const data = this.pendingData().filter((r) => r.balance > 0);
+    if (!data.length) return;
+    const header = 'Student,Reg No,Total Due,Paid,Discount,Balance';
+    const lines = data.map((r) =>
+      [`"${r.student_name}"`, `"${r.reg_no ?? ''}"`, r.total_due, r.paid, r.discount, r.balance].join(',')
+    );
+    const csv = [header, ...lines].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `pending-fees-${this.pendingClassId}-${Date.now()}.csv`;
+    a.click();
+  }
+
   clearStudent() {
     this.selStudent.set(null);
     this.feeSummary.set(null);
     this.paymentHistory.set([]);
     this.discounts.set([]);
     this.lastReceipt.set('');
+    this.lastReceiptId.set('');
+    this.studentSearch = '';
+    this.searchResults.set([]);
+    // Reset distinctUntilChanged state so the same search term can fire again
+    this.searchInput$.next('');
+  }
+
+  switchTab(tab: Tab) {
+    this.activeTab.set(tab);
+    if (tab === 'collect' && this.selStudent()) {
+      this.loadStudentSummary(this.selStudent());
+      this.loadPaymentHistory(this.selStudent().id);
+      this.loadDiscounts(this.selStudent().id);
+    }
+    if (tab === 'pending' && this.pendingClassId) {
+      this.loadPendingFees();
+    }
   }
 
   balanceClass(balance: number) { return balance === 0 ? 'badge-green' : 'badge-red'; }
+
+  // â”€â”€ Receipt â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  receiptLoading = signal<string | null>(null);
+
+  printReceipt(paymentId: string) {
+    this.receiptLoading.set(paymentId);
+    this.receiptSvc.print(paymentId).subscribe({
+      next: () => this.receiptLoading.set(null),
+      error: () => this.receiptLoading.set(null),
+    });
+  }
 }

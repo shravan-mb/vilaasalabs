@@ -11,17 +11,29 @@
   }
 </div>
 
+<!-- Class filter -->
+<div class="filter-bar" style="display:flex;gap:12px;margin-bottom:16px;align-items:center">
+  <label style="font-size:13px;color:var(--ev-muted)">Filter by Class:</label>
+  <select [ngModel]="filterClassId()" (ngModelChange)="filterClassId.set($event)" style="min-width:160px;padding:8px 12px;border-radius:8px;border:1px solid var(--ev-border);background:var(--ev-input-bg,var(--bg-card));color:var(--ev-white,#1a1a1a);font-size:13px">
+    <option value="">All Classes</option>
+    @for (c of sortedClasses(); track c.id) {
+      <option [value]="c.id">{{ c.name }}{{ c.section ? ' — ' + c.section : '' }}</option>
+    }
+  </select>
+  <span style="font-size:12px;color:var(--ev-muted)">{{ filteredParents().length }} parents</span>
+</div>
+
 @if (loading()) {
   <div class="card"><app-skeleton [lines]="5" /></div>
 } @else {
   <div class="card">
-    @if (!parents().length) {
-      <div class="empty-state">No parents added yet.</div>
+    @if (!filteredParents().length) {
+      <div class="empty-state">No parents found{{ filterClassId() ? ' for this class' : '' }}.</div>
     } @else {
       <table class="table">
         <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
         <tbody>
-          @for (p of parents(); track p.id) {
+          @for (p of filteredParents(); track p.id) {
             <tr>
               <td>{{ p.name }}</td>
               <td>{{ p.phone || '—' }}</td>
@@ -48,7 +60,7 @@
       <div class="field"><label>Full Name *</label><input [(ngModel)]="form.name" placeholder="Parent name" /></div>
       <div class="field"><label>Phone * <span style="color:#888;font-weight:400">(used for login)</span></label><input [(ngModel)]="form.phone" placeholder="+91 9876543210" /></div>
       <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="form.email" type="email" placeholder="parent@gmail.com" /></div>
-      <div class="field"><label>Password *</label><input [(ngModel)]="form.password" type="password" placeholder="Temporary password" /></div>
+      <div class="field"><label>Password *</label><input [(ngModel)]="form.password" type="text" placeholder="Temporary password" /></div>
       <div class="modal-actions">
         <button class="btn btn-secondary" (click)="showForm.set(false)">Cancel</button>
         <button class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Add Parent' }}</button>

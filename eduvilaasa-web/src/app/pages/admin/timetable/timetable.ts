@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -14,7 +14,7 @@ const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
   templateUrl: './timetable.html',
   styleUrl: './timetable.scss',
 })
-export class AdminTimetablePage implements OnInit {
+export class AdminTimetablePage implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
@@ -32,11 +32,15 @@ export class AdminTimetablePage implements OnInit {
     class_id: '',
     subject_name: '',
     teacher_id: '',
-    day_of_week: 0,
+    day_of_week: 1,
     start_time: '',
     end_time: '',
   };
   showForm = signal(false);
+
+  readonly todayDayIndex = (new Date().getDay() + 6) % 7;
+  readonly liveMinutes   = signal(new Date().getHours() * 60 + new Date().getMinutes());
+  private tickInterval: ReturnType<typeof setInterval> | null = null;
 
   private get base() { return `${environment.apiUrl}`; }
   private get instBase() { return `${environment.apiUrl}/institutions/${this.auth.institutionId}`; }
@@ -54,6 +58,10 @@ export class AdminTimetablePage implements OnInit {
       next: (res) => this.teachers.set((res.data ?? res) ?? []),
     });
     this.loadSlots();
+    this.tickInterval = setInterval(() => {
+      const n = new Date();
+      this.liveMinutes.set(n.getHours() * 60 + n.getMinutes());
+    }, 60_000);
   }
 
   loadSlots() {
@@ -92,7 +100,7 @@ export class AdminTimetablePage implements OnInit {
   }
 
   openForm() {
-    this.form = { class_id: '', subject_name: '', teacher_id: '', day_of_week: 0, start_time: '', end_time: '' };
+    this.form = { class_id: '', subject_name: '', teacher_id: '', day_of_week: 1, start_time: '', end_time: '' };
     this.showForm.set(true);
   }
 
@@ -128,5 +136,21 @@ export class AdminTimetablePage implements OnInit {
       next: () => { this.slots.update((arr) => arr.filter((s) => s.id !== id)); this.toast.success('Slot deleted'); },
       error: () => this.toast.error('Failed to delete slot'),
     });
+  }
+
+  ngOnDestroy() { if (this.tickInterval) clearInterval(this.tickInterval); }
+
+  isPastDay(d: number): boolean { return d < this.todayDayIndex; }
+  isToday(d:  number): boolean  { return d === this.todayDayIndex; }
+
+  slotState(slot: any, d: number): 'past' | 'live' | 'future' {
+    if (d < this.todayDayIndex) return 'past';
+    if (d > this.todayDayIndex) return 'future';
+    const now = this.liveMinutes();
+    const [eh, em] = slot.end_time.split(':').map(Number);
+    if (now >= eh * 60 + em) return 'past';
+    const [sh, sm] = slot.start_time.split(':').map(Number);
+    if (now >= sh * 60 + sm) return 'live';
+    return 'future';
   }
 }

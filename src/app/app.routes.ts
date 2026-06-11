@@ -24,6 +24,7 @@ export const routes: Routes = [
       { path: 'schools/:id', loadComponent: () => import('./pages/admin/schools/school-detail/school-detail').then(m => m.SchoolDetail) },
       { path: 'revenue', loadComponent: () => import('./pages/admin/revenue/revenue-dashboard').then(m => m.RevenueDashboard) },
       { path: 'broadcast', loadComponent: () => import('./pages/admin/broadcast/broadcast').then(m => m.BroadcastPage) },
+      { path: 'content', loadComponent: () => import('./pages/admin/content/content-library').then(m => m.ContentLibrary) },
     ]
   },
 

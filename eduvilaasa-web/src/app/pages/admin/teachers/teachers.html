@@ -22,8 +22,9 @@
         @if (isInvalid('name')) { <span class="err">Name is required</span> }
       </div>
       <div class="field">
-        <label>Phone</label>
-        <input [(ngModel)]="form.phone" placeholder="+91 9876543210" />
+        <label>Phone *</label>
+        <input [(ngModel)]="form.phone" [class.invalid]="isInvalid('phone')" (blur)="touch('phone')" placeholder="+91 9876543210" />
+        @if (isInvalid('phone')) { <span class="err">Phone number is required</span> }
       </div>
       <div class="field">
         <label>Email <span style="color:#888;font-weight:400">(optional)</span></label>
@@ -32,7 +33,7 @@
       </div>
       <div class="field">
         <label>Password *</label>
-        <input [(ngModel)]="form.password" type="password" [class.invalid]="isInvalid('password')" (blur)="touch('password')" placeholder="Min 8 characters" />
+        <input [(ngModel)]="form.password" type="text" [class.invalid]="isInvalid('password')" (blur)="touch('password')" placeholder="Min 8 characters" />
         @if (isInvalid('password')) { <span class="err">Min 8 characters</span> }
       </div>
     </div>

@@ -47,6 +47,10 @@ export class Attendance {
   @Column({ nullable: true })
   remarks: string;
 
+  // null = legacy whole-class record; populated = subject-wise
+  @Column({ type: 'varchar', nullable: true, default: null })
+  subject_name: string | null;
+
   @CreateDateColumn()
   created_at: Date;
 }

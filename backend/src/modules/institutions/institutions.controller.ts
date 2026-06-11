@@ -41,6 +41,27 @@ export class InstitutionsController {
     return this.service.findOne(id);
   }
 
+  @Get(':id/profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get institution profile — accessible to institution admin' })
+  getProfile(@Param('id') id: string, @CurrentUser() user: User) {
+    if (user.institution_id !== id) throw new ForbiddenException();
+    return this.service.getProfile(id);
+  }
+
+  @Patch(':id/profile')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.INSTITUTION_ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update institution profile — admin only' })
+  updateProfile(@Param('id') id: string, @CurrentUser() user: User, @Body() dto: any) {
+    if (user.institution_id !== id) throw new ForbiddenException();
+    const allowed = ['name', 'registration_number', 'phone', 'address', 'city', 'state', 'pincode', 'logo_url', 'principal_name'];
+    const filtered = Object.fromEntries(Object.entries(dto).filter(([k]) => allowed.includes(k)));
+    return this.service.updateProfile(id, filtered);
+  }
+
   @Get(':id/settings')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

@@ -47,6 +47,10 @@ export class SchoolDetail implements OnInit {
   err = signal('');
   activeTab = signal<'info' | 'subscription' | 'users' | 'settings'>('info');
 
+  contentAccess = signal<any[]>([]);
+  contentAccessLoading = signal(false);
+  savingContentAccess = signal<Record<string, boolean>>({});
+
   plans = PLANS;
   flagDefs = FLAG_DEFINITIONS;
 
@@ -131,5 +135,26 @@ export class SchoolDetail implements OnInit {
   userEntries() {
     const counts = (this.school() as any)?.user_counts ?? {};
     return Object.entries(counts).map(([role, count]) => ({ role, count }));
+  }
+
+  loadContentAccess() {
+    const id = this.school()?.id; if (!id) return;
+    this.contentAccessLoading.set(true);
+    this.api.getInstitutionContentAccess(id).subscribe({
+      next: (data) => { this.contentAccess.set(data); this.contentAccessLoading.set(false); },
+      error: () => this.contentAccessLoading.set(false),
+    });
+  }
+
+  toggleContentAccess(boardId: string, isEnabled: boolean) {
+    const id = this.school()?.id; if (!id) return;
+    this.savingContentAccess.update((s) => ({ ...s, [boardId]: true }));
+    this.api.setInstitutionContentAccess(id, boardId, isEnabled).subscribe({
+      next: () => {
+        this.savingContentAccess.update((s) => ({ ...s, [boardId]: false }));
+        this.loadContentAccess();
+      },
+      error: () => this.savingContentAccess.update((s) => ({ ...s, [boardId]: false })),
+    });
   }
 }

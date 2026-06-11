@@ -29,7 +29,12 @@
 .plan-option {
   padding: 20px; border: 2px solid var(--ev-border); border-radius: 10px; cursor: pointer; transition: all 0.15s;
   &:hover { border-color: #7c3aed; background: var(--ev-hover); }
-  &.selected { border-color: #7c3aed; background: #1e0a3c; }
+  &.selected {
+    border-color: #7c3aed; background: #1e0a3c;
+    .plan-option-name   { color: #c4b5fd; }
+    .plan-option-price  { color: #fff; span { color: #a78bfa; } }
+    .plan-option-limits { color: #c4b5fd; }
+  }
 }
 
 .plan-option-name { font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 8px; }
@@ -40,6 +45,19 @@
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
   padding: 16px; background: var(--ev-card-2); border-radius: 8px;
   span { font-size: 14px; color: var(--ev-text-2); strong { color: var(--ev-white); font-size: 18px; } }
+}
+
+.contact-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ede9fe;
+  border: 1px solid #7c3aed;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #4c1d95;
+  strong { color: #6d28d9; font-size: 13px; }
 }
 
 @media (max-width: 640px) {

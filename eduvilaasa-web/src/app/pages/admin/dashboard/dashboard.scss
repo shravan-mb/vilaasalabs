@@ -1,5 +1,77 @@
 .loading-text { color: var(--ev-dim); }
 
+.stat-card-green .value { color: #16a34a; }
+
+.staff-quick-links {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.quick-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: var(--ev-card);
+  border: 1px solid var(--ev-border);
+  border-radius: 10px;
+  color: var(--ev-white);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+  &:hover { background: var(--ev-hover); border-color: #7c3aed; }
+  .quick-link-icon { font-size: 20px; }
+}
+
+.card h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ev-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+.recent-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ev-dim);
+    border-bottom: 1px solid var(--ev-border);
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ev-border);
+    color: var(--ev-white);
+  }
+
+  tr:last-child td { border-bottom: none; }
+}
+
+.receipt-no {
+  font-family: monospace;
+  font-size: 11px;
+  background: var(--ev-hover);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--ev-muted);
+}
+
+.amount-cell { font-weight: 600; color: #16a34a; }
+.text-muted   { color: var(--ev-dim); }
+
 .subscription-card {
   h3 { font-size: 13px; font-weight: 600; color: var(--ev-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; }
 }
@@ -12,3 +84,4 @@
 
 .sub-label { display: block; font-size: 11px; color: var(--ev-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
 .sub-value { font-size: 16px; font-weight: 600; color: var(--ev-white); &.warning { color: #fbbf24; } }
+.sub-empty { font-size: 13px; color: var(--ev-dim); margin: 0; }

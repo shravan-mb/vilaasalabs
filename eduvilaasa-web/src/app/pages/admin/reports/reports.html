@@ -7,41 +7,72 @@
 </div>
 
 <div class="report-controls card no-print">
-  <div class="filters">
-    <div class="field">
-      <label>Class *</label>
-      <!-- Plain string — no signal, [(ngModel)] works correctly -->
-      <select [(ngModel)]="selectedClass">
-        <option value="">All Classes</option>
-        @for (c of classes(); track c.id) {
-          <option [value]="c.id">{{ c.name }}{{ c.section ? ' — ' + c.section : '' }}</option>
-        }
-      </select>
+  @if (activeTab() !== 'teacher') {
+    <div class="filters">
+      <div class="field">
+        <label>Class *</label>
+        <select [(ngModel)]="selectedClass">
+          <option value="">All Classes</option>
+          @for (c of classes(); track c.id) {
+            <option [value]="c.id">{{ c.name }}{{ c.section ? ' — ' + c.section : '' }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>From</label>
+        <input type="date" [(ngModel)]="dateFrom" />
+      </div>
+      <div class="field">
+        <label>To</label>
+        <input type="date" [(ngModel)]="dateTo" />
+      </div>
     </div>
-    <div class="field">
-      <label>From</label>
-      <input type="date" [(ngModel)]="dateFrom" />
-    </div>
-    <div class="field">
-      <label>To</label>
-      <input type="date" [(ngModel)]="dateTo" />
-    </div>
-  </div>
+  }
   <div class="tab-btns">
     <button class="btn"
       [class.btn-primary]="activeTab()==='attendance'"
       [class.btn-secondary]="activeTab()!=='attendance'"
       (click)="activeTab.set('attendance'); runAttendanceReport()">
-      Attendance Report
+      Student Attendance
     </button>
     <button class="btn"
       [class.btn-primary]="activeTab()==='tests'"
       [class.btn-secondary]="activeTab()!=='tests'"
       (click)="activeTab.set('tests'); runTestReport()">
-      Test Scores Report
+      Test Scores
+    </button>
+    <button class="btn"
+      [class.btn-primary]="activeTab()==='teacher'"
+      [class.btn-secondary]="activeTab()!=='teacher'"
+      (click)="activeTab.set('teacher'); runTeacherReport()">
+      Teacher Attendance
     </button>
   </div>
 </div>
+
+<!-- Teacher tab controls (shown above results, outside loading block) -->
+@if (activeTab() === 'teacher') {
+  <div class="card no-print" style="margin-bottom:16px">
+    <div class="filters">
+      <div class="field">
+        <label>Month</label>
+        <select [(ngModel)]="teacherMonth" (ngModelChange)="runTeacherReport()">
+          @for (m of [1,2,3,4,5,6,7,8,9,10,11,12]; track m) {
+            <option [value]="m">{{ m | number:'2.0-0' }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Year</label>
+        <select [(ngModel)]="teacherYear" (ngModelChange)="runTeacherReport()">
+          @for (y of [teacherYear-1, teacherYear, teacherYear+1]; track y) {
+            <option [value]="y">{{ y }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+}
 
 @if (loading()) {
   <div class="card"><app-skeleton [lines]="6" /></div>
@@ -84,13 +115,13 @@
       </table>
     }
   </div>
-} @else {
+} @else if (activeTab() === 'tests') {
   <div class="card print-area">
     <h2 class="print-title">Test Scores Report</h2>
     @if (!testData().length) {
       <div class="empty-state">
         @if (!selectedClass) {
-          Select a class and click <strong>Test Scores Report</strong> to view data.
+          Select a class and click <strong>Test Scores</strong> to view data.
         } @else {
           No published tests with results found for this class.
         }
@@ -111,6 +142,42 @@
               <td style="color:#4ade80">{{ t.highest }}</td>
               <td style="color:#f87171">{{ t.lowest }}</td>
               <td>{{ t.submissions }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+} @else if (activeTab() === 'teacher') {
+  <div class="card print-area">
+    <h2 class="print-title">Teacher Attendance Report</h2>
+    @if (!teacherData().length) {
+      <div class="empty-state">Click <strong>Teacher Attendance</strong> to view data.</div>
+    } @else {
+      <p style="font-size:12px;color:var(--ev-muted);margin-bottom:12px">{{ teacherData().length }} teachers</p>
+      <table class="table">
+        <thead>
+          <tr><th>#</th><th>Teacher</th><th>Present</th><th>Absent</th><th>Late</th><th>Half Day</th><th>Leave</th><th>Total</th><th>Attendance %</th></tr>
+        </thead>
+        <tbody>
+          @for (r of teacherData(); track r.teacher_id; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td class="fw-500">{{ r.teacher_name }}</td>
+              <td style="color:#4ade80">{{ r.present }}</td>
+              <td style="color:#f87171">{{ r.absent }}</td>
+              <td style="color:#fbbf24">{{ r.late }}</td>
+              <td style="color:#a78bfa">{{ r.half_day }}</td>
+              <td style="color:#94a3b8">{{ r.leave }}</td>
+              <td>{{ r.total }}</td>
+              <td>
+                <span class="badge"
+                  [class.badge-success]="r.percentage >= 75"
+                  [class.badge-yellow]="r.percentage >= 50 && r.percentage < 75"
+                  [class.badge-error]="r.percentage < 50">
+                  {{ r.percentage }}%
+                </span>
+              </td>
             </tr>
           }
         </tbody>

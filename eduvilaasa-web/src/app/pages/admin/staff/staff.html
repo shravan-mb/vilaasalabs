@@ -14,11 +14,12 @@
       <div class="empty-state">No staff members yet. Add your first staff member.</div>
     } @else {
       <table class="table">
-        <thead><tr><th>Name</th><th>Department</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody>
           @for (m of staff(); track m.id) {
             <tr>
               <td>{{ m.name }}</td>
+              <td><span class="badge badge-purple">{{ staffRoles[0].label }}</span></td>
               <td>{{ m.department || '—' }}</td>
               <td>{{ m.phone || '—' }}</td>
               <td>{{ m.email || '—' }}</td>
@@ -43,10 +44,27 @@
     <div class="modal" (click)="$event.stopPropagation()">
       <h3>Add Staff Member</h3>
       <div class="field"><label>Full Name *</label><input [(ngModel)]="form.name" placeholder="Staff name" /></div>
-      <div class="field"><label>Department</label><input [(ngModel)]="form.department" placeholder="e.g. Administration, Finance, Library" /></div>
-      <div class="field"><label>Phone</label><input [(ngModel)]="form.phone" placeholder="+91 9876543210" /></div>
+      <div class="field">
+        <label>Role *</label>
+        <select [(ngModel)]="form.role">
+          @for (r of staffRoles; track r.value) {
+            <option [value]="r.value">{{ r.label }}</option>
+          }
+        </select>
+        <span class="field-hint">{{ staffRoles[0].desc }}</span>
+      </div>
+      <div class="field">
+        <label>Department</label>
+        <select [(ngModel)]="form.department">
+          <option value="">— Select department —</option>
+          @for (d of departments; track d) {
+            <option [value]="d">{{ d }}</option>
+          }
+        </select>
+      </div>
+      <div class="field"><label>Phone * <span style="color:#888;font-weight:400;font-size:11px">(used as login username)</span></label><input [(ngModel)]="form.phone" placeholder="+91 9876543210" /></div>
       <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="form.email" type="email" placeholder="staff@school.com" /></div>
-      <div class="field"><label>Password *</label><input [(ngModel)]="form.password" type="password" placeholder="Temporary password" /></div>
+      <div class="field"><label>Password *</label><input [(ngModel)]="form.password" type="text" placeholder="Temporary password" /></div>
       <div class="modal-actions">
         <button class="btn btn-secondary" (click)="showForm.set(false)">Cancel</button>
         <button class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Add Staff' }}</button>
@@ -60,7 +78,24 @@
     <div class="modal" (click)="$event.stopPropagation()">
       <h3>Edit Staff Member</h3>
       <div class="field"><label>Full Name *</label><input [(ngModel)]="editForm.name" placeholder="Staff name" /></div>
-      <div class="field"><label>Department</label><input [(ngModel)]="editForm.department" placeholder="e.g. Administration, Finance" /></div>
+      <div class="field">
+        <label>Role *</label>
+        <select [(ngModel)]="editForm.role">
+          @for (r of staffRoles; track r.value) {
+            <option [value]="r.value">{{ r.label }}</option>
+          }
+        </select>
+        <span class="field-hint">{{ staffRoles[0].desc }}</span>
+      </div>
+      <div class="field">
+        <label>Department</label>
+        <select [(ngModel)]="editForm.department">
+          <option value="">— Select department —</option>
+          @for (d of departments; track d) {
+            <option [value]="d">{{ d }}</option>
+          }
+        </select>
+      </div>
       <div class="field"><label>Phone</label><input [(ngModel)]="editForm.phone" placeholder="+91 9876543210" /></div>
       <div class="field"><label>Email <span style="color:#888;font-weight:400">(optional)</span></label><input [(ngModel)]="editForm.email" type="email" placeholder="staff@school.com" /></div>
       <div class="modal-actions">

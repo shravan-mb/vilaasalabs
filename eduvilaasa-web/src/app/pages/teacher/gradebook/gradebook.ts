@@ -68,7 +68,9 @@ export class GradebookPage implements OnInit {
   studentId = '';
 
   ngOnInit() {
-    this.http.get<any[]>(`${environment.apiUrl}/institutions/${this.auth.institutionId}/classes`).subscribe({ next: (res) => this.classes.set(res) });
+    this.http.get<any[]>(`${environment.apiUrl}/institutions/${this.auth.institutionId}/classes`).subscribe({
+      next: (res) => this.classes.set((res ?? []).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }))),
+    });
   }
 
   loadStudents(classId: string) {

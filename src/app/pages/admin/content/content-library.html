@@ -1,0 +1,345 @@
+<div class="page-header">
+  <div>
+    <h2>Content Library</h2>
+    <p>Manage board-specific syllabus, question banks and test templates</p>
+  </div>
+</div>
+
+@if (msg())    { <div class="alert-success">{{ msg() }}</div> }
+@if (errMsg()) { <div class="alert-error">{{ errMsg() }}</div> }
+
+<div class="main-tabs">
+  <button [class.active]="mainTab()==='boards'"  (click)="mainTab.set('boards')">Boards</button>
+  <button [class.active]="mainTab()==='content'" (click)="mainTab.set('content')">Content Packs</button>
+</div>
+
+<!-- ── BOARDS TAB ─────────────────────────────────────────────────────────── -->
+@if (mainTab() === 'boards') {
+  <div class="two-col">
+
+    <!-- Create board -->
+    <div class="card">
+      <h3>Add New Board</h3>
+
+      <div class="field">
+        <label>Select Board</label>
+        <select [ngModel]="boardForm.name" (ngModelChange)="onBoardPresetChange($event)">
+          <option value="">— Choose a board —</option>
+          @for (b of predefinedBoards; track b.code) {
+            <option [value]="b.name">{{ b.name }}</option>
+          }
+        </select>
+      </div>
+
+      @if (boardForm.name) {
+        <div class="board-preview">
+          <div class="preview-row">
+            <span class="preview-label">Code</span>
+            <span class="preview-value">{{ boardForm.code }}</span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Description</span>
+            <span class="preview-value">{{ boardForm.description }}</span>
+          </div>
+        </div>
+      }
+
+      @if (boardMsg()) { <div class="inline-msg" [class.err]="boardMsg().startsWith('Failed')">{{ boardMsg() }}</div> }
+      <button class="btn-primary" style="margin-top:14px" (click)="saveBoard()" [disabled]="savingBoard() || !boardForm.name">
+        {{ savingBoard() ? 'Creating…' : '+ Add Board' }}
+      </button>
+    </div>
+
+    <!-- Board list -->
+    <div class="card">
+      <h3>All Boards</h3>
+      @if (boardsLoading()) { <p class="muted">Loading…</p> }
+      @else if (!boards().length) { <p class="muted">No boards yet. Create one to get started.</p> }
+      @else {
+        <div class="board-list">
+          @for (b of boards(); track b.id) {
+            <div class="board-row">
+              <div>
+                <div class="board-name">{{ b.name }}</div>
+                <div class="board-code">{{ b.code }}</div>
+                @if (b.description) { <div class="board-desc">{{ b.description }}</div> }
+              </div>
+              <div class="board-actions">
+                <span class="badge" [class.badge-success]="b.is_active" [class.badge-warning]="!b.is_active">
+                  {{ b.is_active ? 'Active' : 'Inactive' }}
+                </span>
+                <button class="btn-sm" (click)="toggleBoardActive(b)">
+                  {{ b.is_active ? 'Deactivate' : 'Activate' }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ── CONTENT TAB ─────────────────────────────────────────────────────────── -->
+@if (mainTab() === 'content') {
+  <!-- Selector row -->
+  <div class="card selector-card">
+    <div class="selector-row">
+      <div class="field">
+        <label>Board</label>
+        <select [ngModel]="selBoardId()" (ngModelChange)="selBoardId.set($event); loadPacks()">
+          <option value="">— Select board —</option>
+          @for (b of boards(); track b.id) {
+            <option [value]="b.id">{{ b.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Standard</label>
+        <select [ngModel]="selStandard()" (ngModelChange)="selStandard.set(+$event); onStandardChange()">
+          <option [value]="0">— Select standard —</option>
+          @for (s of standards; track s) {
+            <option [value]="s">Standard {{ s }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Subject</label>
+        <select [ngModel]="selSubject()" (ngModelChange)="selSubject.set($event)" [disabled]="!subjects.length">
+          <option value="">— Select subject —</option>
+          @for (sub of subjects; track sub) {
+            <option [value]="sub">{{ sub }}</option>
+          }
+        </select>
+      </div>
+      <button
+        class="btn-primary btn-create-pack"
+        [disabled]="!selBoardId() || !selStandard() || !selSubject()"
+        (click)="createPack()">
+        + New Pack
+      </button>
+    </div>
+  </div>
+
+  <div class="content-layout">
+    <!-- Pack list -->
+    <div class="pack-sidebar">
+      <h4>Content Packs</h4>
+      @if (packsLoading()) { <p class="muted">Loading…</p> }
+      @else if (!selBoardId() || !selStandard()) { <p class="muted">Select a board and standard to see packs.</p> }
+      @else if (!packs().length) { <p class="muted">No packs yet. Select a subject and click "+ New Pack".</p> }
+      @else {
+        @for (pack of packs(); track pack.id) {
+          <div class="pack-item" [class.active]="activePack()?.id === pack.id" (click)="selectPack(pack)">
+            <div class="pack-subject">{{ pack.subject }}</div>
+            <div class="pack-meta">Std {{ pack.standard }} · {{ pack.board?.name }}</div>
+            <div class="pack-status">
+              <span class="badge-xs" [class.published]="pack.is_published">{{ pack.is_published ? 'Published' : 'Draft' }}</span>
+              <button class="btn-xs" (click)="togglePackPublished(pack); $event.stopPropagation()">
+                {{ pack.is_published ? 'Unpublish' : 'Publish' }}
+              </button>
+              <button class="btn-xs btn-xs-danger" (click)="deletePack(pack.id); $event.stopPropagation()">Del</button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Pack content editor -->
+    <div class="pack-content">
+      @if (!activePack()) {
+        <div class="empty-pack">
+          <div class="empty-icon">📚</div>
+          <p>Select a pack from the left to manage its content</p>
+        </div>
+      } @else {
+        <div class="pack-header">
+          <h3>{{ activePack().subject }} — Standard {{ activePack().standard }}</h3>
+          <span class="muted">{{ activePack().board?.name }}</span>
+        </div>
+
+        <div class="content-tabs">
+          <button [class.active]="contentTab()==='syllabus'"  (click)="contentTab.set('syllabus')">Syllabus</button>
+          <button [class.active]="contentTab()==='questions'" (click)="contentTab.set('questions')">Questions ({{ questions().length }})</button>
+          <button [class.active]="contentTab()==='tests'"     (click)="contentTab.set('tests')">Test Templates ({{ tests().length }})</button>
+        </div>
+
+        <!-- SYLLABUS ──────────────────────────────────────────────────────── -->
+        @if (contentTab() === 'syllabus') {
+          <!-- Add chapter form -->
+          <div class="section-card">
+            <h4>Add Chapter</h4>
+            <div class="form-grid tight">
+              <div class="field"><label>No.</label><input type="number" [(ngModel)]="chapterForm.chapter_number" min="1" style="width:60px" /></div>
+              <div class="field" style="flex:1"><label>Chapter Name</label><input [(ngModel)]="chapterForm.chapter_name" placeholder="e.g. Rational Numbers" /></div>
+            </div>
+            <div class="form-grid" style="margin-top:8px">
+              <div class="field">
+                <label>Topics (one per line)</label>
+                <textarea [(ngModel)]="chapterForm.topics" rows="3" placeholder="Introduction&#10;Properties&#10;Operations"></textarea>
+              </div>
+              <div class="field">
+                <label>Learning Outcomes (one per line)</label>
+                <textarea [(ngModel)]="chapterForm.learning_outcomes" rows="3" placeholder="Understand rational numbers&#10;Solve equations"></textarea>
+              </div>
+            </div>
+            <button class="btn-primary btn-sm-top" (click)="saveChapter()" [disabled]="savingChapter() || !chapterForm.chapter_name">
+              {{ savingChapter() ? 'Adding…' : '+ Add Chapter' }}
+            </button>
+          </div>
+
+          <!-- Chapter list -->
+          @if (!chapters().length) { <p class="muted" style="margin-top:16px">No chapters yet.</p> }
+          @for (ch of chapters(); track ch.id) {
+            <div class="chapter-block">
+              <div class="chapter-header" (click)="toggleChapter(ch.id)">
+                <span class="ch-num">Ch {{ ch.chapter_number }}</span>
+                <span class="ch-name">{{ ch.chapter_name }}</span>
+                <span class="ch-notes">{{ ch.notes?.length ?? 0 }} note(s)</span>
+                <span class="ch-expand">{{ expandedChapter() === ch.id ? '▲' : '▼' }}</span>
+                <button class="btn-xs btn-xs-danger" (click)="deleteChapter(ch.id); $event.stopPropagation()">Delete</button>
+              </div>
+
+              @if (expandedChapter() === ch.id) {
+                @if (ch.topics?.length) {
+                  <div class="ch-detail"><strong>Topics:</strong> {{ ch.topics.join(', ') }}</div>
+                }
+                @if (ch.learning_outcomes?.length) {
+                  <div class="ch-detail"><strong>Outcomes:</strong> {{ ch.learning_outcomes.join(', ') }}</div>
+                }
+
+                <!-- Notes list -->
+                @if (ch.notes?.length) {
+                  <div class="notes-list">
+                    @for (note of ch.notes; track note.id) {
+                      <div class="note-item">
+                        <div class="note-title">{{ note.title }}</div>
+                        <div class="note-content">{{ note.content | slice:0:120 }}{{ note.content.length > 120 ? '…' : '' }}</div>
+                        <button class="btn-xs btn-xs-danger" (click)="deleteNote(note.id)">Remove</button>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Add note form -->
+                <div class="add-note-form">
+                  <input [(ngModel)]="noteForm[ch.id].title" placeholder="Note title" />
+                  <textarea [(ngModel)]="noteForm[ch.id].content" rows="4" placeholder="Note content (markdown supported)…"></textarea>
+                  <button class="btn-primary btn-xs-save" (click)="saveNote(ch.id)" [disabled]="savingNote() || !noteForm[ch.id]?.title || !noteForm[ch.id]?.content">
+                    {{ savingNote() ? 'Saving…' : '+ Add Note' }}
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        }
+
+        <!-- QUESTIONS ────────────────────────────────────────────────────── -->
+        @if (contentTab() === 'questions') {
+          <div class="section-toolbar">
+            <button class="btn-primary" (click)="showQForm.set(!showQForm())">
+              {{ showQForm() ? 'Cancel' : '+ Add Question' }}
+            </button>
+          </div>
+
+          @if (showQForm()) {
+            <div class="section-card">
+              <h4>New MCQ Question</h4>
+              <div class="field"><label>Question Text</label><textarea [(ngModel)]="qForm.question_text" rows="3" placeholder="Enter question…"></textarea></div>
+              <div class="options-grid">
+                @for (opt of qForm.options; track $index; let i = $index) {
+                  <div class="field"><label>Option {{ 'ABCD'[i] }}</label><input [(ngModel)]="qForm.options[i]" placeholder="Option {{ 'ABCD'[i] }}" /></div>
+                }
+              </div>
+              <div class="form-grid tight" style="margin-top:8px">
+                <div class="field">
+                  <label>Correct Answer</label>
+                  <select [(ngModel)]="qForm.correct_answer">
+                    <option value="">—</option>
+                    @for (opt of qForm.options; track $index; let i = $index) {
+                      @if (opt) { <option [value]="opt">{{ 'ABCD'[i] }}: {{ opt }}</option> }
+                    }
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Difficulty</label>
+                  <select [(ngModel)]="qForm.difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
+                <div class="field"><label>Marks</label><input type="number" [(ngModel)]="qForm.marks" min="1" style="width:70px" /></div>
+                <div class="field"><label>Chapter (optional)</label><input [(ngModel)]="qForm.chapter" placeholder="e.g. Rational Numbers" /></div>
+              </div>
+              <div class="field" style="margin-top:8px"><label>Explanation (optional)</label><textarea [(ngModel)]="qForm.explanation" rows="2" placeholder="Explain why this answer is correct…"></textarea></div>
+              <button class="btn-primary" style="margin-top:12px" (click)="saveQuestion()"
+                [disabled]="savingQ() || !qForm.question_text || !qForm.correct_answer">
+                {{ savingQ() ? 'Saving…' : 'Save Question' }}
+              </button>
+            </div>
+          }
+
+          @if (!questions().length) { <p class="muted" style="margin-top:16px">No questions yet in this pack.</p> }
+          @for (q of questions(); track q.id) {
+            <div class="q-row">
+              <div class="q-text">{{ q.question_text }}</div>
+              <div class="q-meta">
+                <span class="badge-xs">{{ q.difficulty }}</span>
+                <span class="badge-xs">{{ q.marks }} mk</span>
+                @if (q.chapter) { <span class="muted-sm">{{ q.chapter }}</span> }
+              </div>
+              <div class="q-options">
+                @for (opt of q.options; track $index) {
+                  <span [class.correct]="opt === q.correct_answer">{{ opt }}</span>
+                }
+              </div>
+              <button class="btn-xs btn-xs-danger" (click)="deleteQuestion(q.id)">Delete</button>
+            </div>
+          }
+        }
+
+        <!-- TEST TEMPLATES ───────────────────────────────────────────────── -->
+        @if (contentTab() === 'tests') {
+          <div class="section-toolbar">
+            <button class="btn-primary" (click)="showTestForm.set(!showTestForm())">
+              {{ showTestForm() ? 'Cancel' : '+ Add Test Template' }}
+            </button>
+          </div>
+
+          @if (showTestForm()) {
+            <div class="section-card">
+              <h4>New Test Template</h4>
+              <div class="field"><label>Title</label><input [(ngModel)]="testForm.title" placeholder="e.g. Chapter 1 – Practice Test Set 1" /></div>
+              <div class="field"><label>Description (optional)</label><textarea [(ngModel)]="testForm.description" rows="2" placeholder="Instructions or notes…"></textarea></div>
+              <div class="form-grid tight" style="margin-top:8px">
+                <div class="field"><label>Total Questions</label><input type="number" [(ngModel)]="testForm.total_questions" min="1" /></div>
+                <div class="field"><label>Total Marks</label><input type="number" [(ngModel)]="testForm.total_marks" min="1" /></div>
+                <div class="field"><label>Duration (min)</label><input type="number" [(ngModel)]="testForm.duration_minutes" min="5" /></div>
+              </div>
+              <button class="btn-primary" style="margin-top:12px" (click)="saveTest()" [disabled]="savingTest() || !testForm.title">
+                {{ savingTest() ? 'Saving…' : 'Save Template' }}
+              </button>
+            </div>
+          }
+
+          @if (!tests().length) { <p class="muted" style="margin-top:16px">No test templates yet in this pack.</p> }
+          @for (t of tests(); track t.id) {
+            <div class="test-row">
+              <div>
+                <div class="test-title">{{ t.title }}</div>
+                @if (t.description) { <div class="test-desc">{{ t.description }}</div> }
+                <div class="test-meta">
+                  <span>{{ t.total_questions }} Qs</span>
+                  <span>{{ t.total_marks }} marks</span>
+                  <span>{{ t.duration_minutes }} min</span>
+                </div>
+              </div>
+              <button class="btn-xs btn-xs-danger" (click)="deleteTest(t.id)">Delete</button>
+            </div>
+          }
+        }
+      }
+    </div>
+  </div>
+}
